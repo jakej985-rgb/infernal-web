@@ -19,7 +19,7 @@ spec:
       serviceAccountName: 421970311289-compute@developer.gserviceaccount.com
 
       containers:
-        - image: gcr.io/421970311289/infernal-web  # 👈 YOUR BUILT IMAGE
+        - image: gcr.io/421970311289/infernal-web
           ports:
             - containerPort: 8080
           resources:
