@@ -1,32 +1,23 @@
-apiVersion: serving.knative.dev/v1
-kind: Service
-metadata:
-  name: infernal-web
-  namespace: "421970311289"
-  annotations:
-    run.googleapis.com/ingress: all
-    run.googleapis.com/invoker-iam-disabled: "true"
+steps:
+# Build image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/421970311289/infernal-web', '.']
 
-spec:
-  template:
-    metadata:
-      annotations:
-        run.googleapis.com/cpu-throttling: "false"
-        run.googleapis.com/startup-cpu-boost: "true"
-    spec:
-      containerConcurrency: 80
-      timeoutSeconds: 300
-      serviceAccountName: 421970311289-compute@developer.gserviceaccount.com
+# Push image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/421970311289/infernal-web']
 
-      containers:
-        - image: gcr.io/421970311289/infernal-web
-          ports:
-            - containerPort: 8080
-          resources:
-            limits:
-              cpu: 1000m
-              memory: 512Mi
+# Deploy to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+    - run
+    - deploy
+    - infernal-web
+    - --image=gcr.io/421970311289/infernal-web
+    - --region=us-central1
+    - --platform=managed
+    - --allow-unauthenticated
 
-  traffic:
-    - percent: 100
-      latestRevision: true
+images:
+- gcr.io/421970311289/infernal-web
