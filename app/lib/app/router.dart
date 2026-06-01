@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/presentation/login_page.dart';
+import '../features/auth/domain/auth_service.dart';
+import '../features/auth/domain/auth_state.dart';
 import '../features/dashboard/presentation/dashboard_page.dart';
 import '../features/appointments/presentation/appointments_list_page.dart';
 import '../features/appointments/presentation/appointment_form_page.dart';
@@ -55,6 +57,8 @@ final GlobalKey<NavigatorState> _shellNavigatorKey =
 
 /// Router provider for app-wide access
 final routerProvider = Provider<GoRouter>((ref) {
+  final authStateAsync = ref.watch(authServiceProvider);
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.dashboard,
@@ -240,19 +244,32 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
 
-    // Redirect logic (placeholder for auth)
-    // redirect: (context, state) {
-    //   final isLoggedIn = ref.read(authStateProvider).isLoggedIn;
-    //   final isLoginRoute = state.matchedLocation == AppRoutes.login;
-    //
-    //   if (!isLoggedIn && !isLoginRoute) {
-    //     return AppRoutes.login;
-    //   }
-    //   if (isLoggedIn && isLoginRoute) {
-    //     return AppRoutes.dashboard;
-    //   }
-    //   return null;
-    // },
+    // Redirect logic using authStateAsync
+    redirect: (context, state) {
+      if (authStateAsync.isLoading) {
+        return null;
+      }
+
+      final authState = authStateAsync.valueOrNull;
+      if (authState == null) {
+        return null;
+      }
+
+      final isLoggedIn = authState.maybeWhen(
+        authenticated: (_) => true,
+        orElse: () => false,
+      );
+
+      final isLoginRoute = state.matchedLocation == AppRoutes.login;
+
+      if (!isLoggedIn && !isLoginRoute) {
+        return AppRoutes.login;
+      }
+      if (isLoggedIn && isLoginRoute) {
+        return AppRoutes.dashboard;
+      }
+      return null;
+    },
     errorBuilder: (context, state) =>
         Scaffold(body: Center(child: Text('Page not found: ${state.uri}'))),
   );
