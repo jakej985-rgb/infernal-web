@@ -114,7 +114,7 @@ class SettingsPage extends ConsumerWidget {
             ),
             _SettingsItem(
               title: 'API Connection',
-              subtitle: ref.watch(sharedPreferencesProvider).getString('api_base_url') ?? 'http://localhost:8080',
+              subtitle: ref.watch(sharedPreferencesProvider).getString('api_base_url') ?? 'https://api.inkandsteel.xyz',
               icon: Icons.cloud_queue,
               onTap: () => _showApiEndpointDialog(context, ref),
             ),
@@ -238,7 +238,7 @@ class SettingsPage extends ConsumerWidget {
 
   void _showApiEndpointDialog(BuildContext context, WidgetRef ref) {
     final prefs = ref.read(sharedPreferencesProvider);
-    final currentUrl = prefs.getString('api_base_url') ?? 'http://localhost:8080';
+    final currentUrl = prefs.getString('api_base_url') ?? 'https://api.inkandsteel.xyz';
     final urlCtrl = TextEditingController(text: currentUrl);
 
     showDialog(

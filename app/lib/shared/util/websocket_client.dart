@@ -30,7 +30,7 @@ class WebSocketClient extends _$WebSocketClient {
     if (_isDisposed) return;
 
     final prefs = ref.read(sharedPreferencesProvider);
-    final baseUrl = prefs.getString('api_base_url') ?? 'localhost:8080';
+    final baseUrl = prefs.getString('api_base_url') ?? 'api.inkandsteel.xyz';
     final token = prefs.getString('auth_jwt_token') ?? '';
 
     // Determine scheme based on base URL

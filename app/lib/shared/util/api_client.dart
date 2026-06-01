@@ -13,7 +13,7 @@ Dio apiClient(Ref ref) {
   final secureStorage = ref.watch(secureStorageProvider);
 
   // Dynamic Base URL fallback
-  final apiBaseUrl = prefs.getString('api_base_url') ?? 'http://localhost:8080';
+  final apiBaseUrl = prefs.getString('api_base_url') ?? 'https://api.inkandsteel.xyz';
 
   final dio = Dio(BaseOptions(
     baseUrl: apiBaseUrl.startsWith('http') ? apiBaseUrl : 'http://$apiBaseUrl',

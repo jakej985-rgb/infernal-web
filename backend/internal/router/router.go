@@ -13,6 +13,7 @@ func NewRouter(db *database.DB, jwtSecret string, hub *ws.Hub) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Global Middlewares
+	r.Use(mw.CORSMiddleware())
 	r.Use(chimiddleware.Logger)
 	r.Use(chimiddleware.Recoverer)
 
