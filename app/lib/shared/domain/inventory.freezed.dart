@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$InventoryItem {
 
- int get id; String get name; String get category; double get stockQuantity; double get minimumQuantity; String get unit; String? get supplier; DateTime? get lastOrderedAt; DateTime get updatedAt; bool get isDeleted;
+ int get id; String get syncId; String get name; String get category; double get stockQuantity; double get minimumQuantity; String get unit; String? get supplier; DateTime? get lastOrderedAt; DateTime get updatedAt; bool get isDeleted;
 /// Create a copy of InventoryItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $InventoryItemCopyWith<InventoryItem> get copyWith => _$InventoryItemCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InventoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.stockQuantity, stockQuantity) || other.stockQuantity == stockQuantity)&&(identical(other.minimumQuantity, minimumQuantity) || other.minimumQuantity == minimumQuantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.lastOrderedAt, lastOrderedAt) || other.lastOrderedAt == lastOrderedAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InventoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.syncId, syncId) || other.syncId == syncId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.stockQuantity, stockQuantity) || other.stockQuantity == stockQuantity)&&(identical(other.minimumQuantity, minimumQuantity) || other.minimumQuantity == minimumQuantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.lastOrderedAt, lastOrderedAt) || other.lastOrderedAt == lastOrderedAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,stockQuantity,minimumQuantity,unit,supplier,lastOrderedAt,updatedAt,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,syncId,name,category,stockQuantity,minimumQuantity,unit,supplier,lastOrderedAt,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'InventoryItem(id: $id, name: $name, category: $category, stockQuantity: $stockQuantity, minimumQuantity: $minimumQuantity, unit: $unit, supplier: $supplier, lastOrderedAt: $lastOrderedAt, updatedAt: $updatedAt, isDeleted: $isDeleted)';
+  return 'InventoryItem(id: $id, syncId: $syncId, name: $name, category: $category, stockQuantity: $stockQuantity, minimumQuantity: $minimumQuantity, unit: $unit, supplier: $supplier, lastOrderedAt: $lastOrderedAt, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $InventoryItemCopyWith<$Res>  {
   factory $InventoryItemCopyWith(InventoryItem value, $Res Function(InventoryItem) _then) = _$InventoryItemCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String category, double stockQuantity, double minimumQuantity, String unit, String? supplier, DateTime? lastOrderedAt, DateTime updatedAt, bool isDeleted
+ int id, String syncId, String name, String category, double stockQuantity, double minimumQuantity, String unit, String? supplier, DateTime? lastOrderedAt, DateTime updatedAt, bool isDeleted
 });
 
 
@@ -65,10 +65,11 @@ class _$InventoryItemCopyWithImpl<$Res>
 
 /// Create a copy of InventoryItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? category = null,Object? stockQuantity = null,Object? minimumQuantity = null,Object? unit = null,Object? supplier = freezed,Object? lastOrderedAt = freezed,Object? updatedAt = null,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? syncId = null,Object? name = null,Object? category = null,Object? stockQuantity = null,Object? minimumQuantity = null,Object? unit = null,Object? supplier = freezed,Object? lastOrderedAt = freezed,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as int,syncId: null == syncId ? _self.syncId : syncId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,stockQuantity: null == stockQuantity ? _self.stockQuantity : stockQuantity // ignore: cast_nullable_to_non_nullable
 as double,minimumQuantity: null == minimumQuantity ? _self.minimumQuantity : minimumQuantity // ignore: cast_nullable_to_non_nullable
@@ -162,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String category,  double stockQuantity,  double minimumQuantity,  String unit,  String? supplier,  DateTime? lastOrderedAt,  DateTime updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String syncId,  String name,  String category,  double stockQuantity,  double minimumQuantity,  String unit,  String? supplier,  DateTime? lastOrderedAt,  DateTime updatedAt,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InventoryItem() when $default != null:
-return $default(_that.id,_that.name,_that.category,_that.stockQuantity,_that.minimumQuantity,_that.unit,_that.supplier,_that.lastOrderedAt,_that.updatedAt,_that.isDeleted);case _:
+return $default(_that.id,_that.syncId,_that.name,_that.category,_that.stockQuantity,_that.minimumQuantity,_that.unit,_that.supplier,_that.lastOrderedAt,_that.updatedAt,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -183,10 +184,10 @@ return $default(_that.id,_that.name,_that.category,_that.stockQuantity,_that.min
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String category,  double stockQuantity,  double minimumQuantity,  String unit,  String? supplier,  DateTime? lastOrderedAt,  DateTime updatedAt,  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String syncId,  String name,  String category,  double stockQuantity,  double minimumQuantity,  String unit,  String? supplier,  DateTime? lastOrderedAt,  DateTime updatedAt,  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _InventoryItem():
-return $default(_that.id,_that.name,_that.category,_that.stockQuantity,_that.minimumQuantity,_that.unit,_that.supplier,_that.lastOrderedAt,_that.updatedAt,_that.isDeleted);case _:
+return $default(_that.id,_that.syncId,_that.name,_that.category,_that.stockQuantity,_that.minimumQuantity,_that.unit,_that.supplier,_that.lastOrderedAt,_that.updatedAt,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +204,10 @@ return $default(_that.id,_that.name,_that.category,_that.stockQuantity,_that.min
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String category,  double stockQuantity,  double minimumQuantity,  String unit,  String? supplier,  DateTime? lastOrderedAt,  DateTime updatedAt,  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String syncId,  String name,  String category,  double stockQuantity,  double minimumQuantity,  String unit,  String? supplier,  DateTime? lastOrderedAt,  DateTime updatedAt,  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _InventoryItem() when $default != null:
-return $default(_that.id,_that.name,_that.category,_that.stockQuantity,_that.minimumQuantity,_that.unit,_that.supplier,_that.lastOrderedAt,_that.updatedAt,_that.isDeleted);case _:
+return $default(_that.id,_that.syncId,_that.name,_that.category,_that.stockQuantity,_that.minimumQuantity,_that.unit,_that.supplier,_that.lastOrderedAt,_that.updatedAt,_that.isDeleted);case _:
   return null;
 
 }
@@ -218,10 +219,11 @@ return $default(_that.id,_that.name,_that.category,_that.stockQuantity,_that.min
 @JsonSerializable()
 
 class _InventoryItem implements InventoryItem {
-  const _InventoryItem({required this.id, required this.name, required this.category, required this.stockQuantity, required this.minimumQuantity, required this.unit, this.supplier, required this.lastOrderedAt, required this.updatedAt, this.isDeleted = false});
+  const _InventoryItem({required this.id, this.syncId = '', required this.name, required this.category, required this.stockQuantity, required this.minimumQuantity, required this.unit, this.supplier, required this.lastOrderedAt, required this.updatedAt, this.isDeleted = false});
   factory _InventoryItem.fromJson(Map<String, dynamic> json) => _$InventoryItemFromJson(json);
 
 @override final  int id;
+@override@JsonKey() final  String syncId;
 @override final  String name;
 @override final  String category;
 @override final  double stockQuantity;
@@ -245,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InventoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.stockQuantity, stockQuantity) || other.stockQuantity == stockQuantity)&&(identical(other.minimumQuantity, minimumQuantity) || other.minimumQuantity == minimumQuantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.lastOrderedAt, lastOrderedAt) || other.lastOrderedAt == lastOrderedAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InventoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.syncId, syncId) || other.syncId == syncId)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.stockQuantity, stockQuantity) || other.stockQuantity == stockQuantity)&&(identical(other.minimumQuantity, minimumQuantity) || other.minimumQuantity == minimumQuantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.lastOrderedAt, lastOrderedAt) || other.lastOrderedAt == lastOrderedAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,stockQuantity,minimumQuantity,unit,supplier,lastOrderedAt,updatedAt,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,syncId,name,category,stockQuantity,minimumQuantity,unit,supplier,lastOrderedAt,updatedAt,isDeleted);
 
 @override
 String toString() {
-  return 'InventoryItem(id: $id, name: $name, category: $category, stockQuantity: $stockQuantity, minimumQuantity: $minimumQuantity, unit: $unit, supplier: $supplier, lastOrderedAt: $lastOrderedAt, updatedAt: $updatedAt, isDeleted: $isDeleted)';
+  return 'InventoryItem(id: $id, syncId: $syncId, name: $name, category: $category, stockQuantity: $stockQuantity, minimumQuantity: $minimumQuantity, unit: $unit, supplier: $supplier, lastOrderedAt: $lastOrderedAt, updatedAt: $updatedAt, isDeleted: $isDeleted)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$InventoryItemCopyWith<$Res> implements $InventoryItemCopy
   factory _$InventoryItemCopyWith(_InventoryItem value, $Res Function(_InventoryItem) _then) = __$InventoryItemCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String category, double stockQuantity, double minimumQuantity, String unit, String? supplier, DateTime? lastOrderedAt, DateTime updatedAt, bool isDeleted
+ int id, String syncId, String name, String category, double stockQuantity, double minimumQuantity, String unit, String? supplier, DateTime? lastOrderedAt, DateTime updatedAt, bool isDeleted
 });
 
 
@@ -282,10 +284,11 @@ class __$InventoryItemCopyWithImpl<$Res>
 
 /// Create a copy of InventoryItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? category = null,Object? stockQuantity = null,Object? minimumQuantity = null,Object? unit = null,Object? supplier = freezed,Object? lastOrderedAt = freezed,Object? updatedAt = null,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? syncId = null,Object? name = null,Object? category = null,Object? stockQuantity = null,Object? minimumQuantity = null,Object? unit = null,Object? supplier = freezed,Object? lastOrderedAt = freezed,Object? updatedAt = null,Object? isDeleted = null,}) {
   return _then(_InventoryItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as int,syncId: null == syncId ? _self.syncId : syncId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,stockQuantity: null == stockQuantity ? _self.stockQuantity : stockQuantity // ignore: cast_nullable_to_non_nullable
 as double,minimumQuantity: null == minimumQuantity ? _self.minimumQuantity : minimumQuantity // ignore: cast_nullable_to_non_nullable

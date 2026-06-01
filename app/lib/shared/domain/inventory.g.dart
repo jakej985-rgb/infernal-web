@@ -9,6 +9,7 @@ part of 'inventory.dart';
 _InventoryItem _$InventoryItemFromJson(Map<String, dynamic> json) =>
     _InventoryItem(
       id: (json['id'] as num).toInt(),
+      syncId: json['syncId'] as String? ?? '',
       name: json['name'] as String,
       category: json['category'] as String,
       stockQuantity: (json['stockQuantity'] as num).toDouble(),
@@ -25,6 +26,7 @@ _InventoryItem _$InventoryItemFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$InventoryItemToJson(_InventoryItem instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'syncId': instance.syncId,
       'name': instance.name,
       'category': instance.category,
       'stockQuantity': instance.stockQuantity,

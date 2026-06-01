@@ -8,6 +8,7 @@ abstract class InventoryItem with _$InventoryItem {
 
   const factory InventoryItem({
     required int id,
+    @Default('') String syncId,
     required String name,
     required String category,
     required double stockQuantity,

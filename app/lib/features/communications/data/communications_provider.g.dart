@@ -95,7 +95,7 @@ final class CommunicationsProvider
   }
 }
 
-String _$communicationsHash() => r'77f2e7d2e5f96ea8ae200acb110ab371348a3fce';
+String _$communicationsHash() => r'e952627952b77be45488378ca41eff58d201bea8';
 
 @ProviderFor(CommunicationsService)
 final communicationsServiceProvider = CommunicationsServiceProvider._();

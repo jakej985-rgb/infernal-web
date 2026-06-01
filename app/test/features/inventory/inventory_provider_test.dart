@@ -89,6 +89,7 @@ void main() {
       final driftItems = [
         InventoryItem(
           id: 1,
+          syncId: 'mock-sync-id',
           name: 'Ink',
           category: 'Inks',
           stockQuantity: 10,

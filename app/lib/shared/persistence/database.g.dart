@@ -7358,6 +7358,16 @@ class $InventoryItemsTable extends InventoryItems
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
+  @override
+  late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
+    'sync_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -7476,6 +7486,7 @@ class $InventoryItemsTable extends InventoryItems
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    syncId,
     name,
     category,
     stockQuantity,
@@ -7500,6 +7511,12 @@ class $InventoryItemsTable extends InventoryItems
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sync_id')) {
+      context.handle(
+        _syncIdMeta,
+        syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta),
+      );
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -7583,6 +7600,10 @@ class $InventoryItemsTable extends InventoryItems
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      syncId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_id'],
+      )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -7630,6 +7651,7 @@ class $InventoryItemsTable extends InventoryItems
 
 class InventoryItem extends DataClass implements Insertable<InventoryItem> {
   final int id;
+  final String syncId;
   final String name;
   final String category;
   final double stockQuantity;
@@ -7641,6 +7663,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
   final bool isDeleted;
   const InventoryItem({
     required this.id,
+    required this.syncId,
     required this.name,
     required this.category,
     required this.stockQuantity,
@@ -7655,6 +7678,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['sync_id'] = Variable<String>(syncId);
     map['name'] = Variable<String>(name);
     map['category'] = Variable<String>(category);
     map['stock_quantity'] = Variable<double>(stockQuantity);
@@ -7674,6 +7698,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
   InventoryItemsCompanion toCompanion(bool nullToAbsent) {
     return InventoryItemsCompanion(
       id: Value(id),
+      syncId: Value(syncId),
       name: Value(name),
       category: Value(category),
       stockQuantity: Value(stockQuantity),
@@ -7697,6 +7722,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return InventoryItem(
       id: serializer.fromJson<int>(json['id']),
+      syncId: serializer.fromJson<String>(json['syncId']),
       name: serializer.fromJson<String>(json['name']),
       category: serializer.fromJson<String>(json['category']),
       stockQuantity: serializer.fromJson<double>(json['stockQuantity']),
@@ -7713,6 +7739,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'syncId': serializer.toJson<String>(syncId),
       'name': serializer.toJson<String>(name),
       'category': serializer.toJson<String>(category),
       'stockQuantity': serializer.toJson<double>(stockQuantity),
@@ -7727,6 +7754,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
 
   InventoryItem copyWith({
     int? id,
+    String? syncId,
     String? name,
     String? category,
     double? stockQuantity,
@@ -7738,6 +7766,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
     bool? isDeleted,
   }) => InventoryItem(
     id: id ?? this.id,
+    syncId: syncId ?? this.syncId,
     name: name ?? this.name,
     category: category ?? this.category,
     stockQuantity: stockQuantity ?? this.stockQuantity,
@@ -7753,6 +7782,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
   InventoryItem copyWithCompanion(InventoryItemsCompanion data) {
     return InventoryItem(
       id: data.id.present ? data.id.value : this.id,
+      syncId: data.syncId.present ? data.syncId.value : this.syncId,
       name: data.name.present ? data.name.value : this.name,
       category: data.category.present ? data.category.value : this.category,
       stockQuantity: data.stockQuantity.present
@@ -7775,6 +7805,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
   String toString() {
     return (StringBuffer('InventoryItem(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
           ..write('stockQuantity: $stockQuantity, ')
@@ -7791,6 +7822,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
   @override
   int get hashCode => Object.hash(
     id,
+    syncId,
     name,
     category,
     stockQuantity,
@@ -7806,6 +7838,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
       identical(this, other) ||
       (other is InventoryItem &&
           other.id == this.id &&
+          other.syncId == this.syncId &&
           other.name == this.name &&
           other.category == this.category &&
           other.stockQuantity == this.stockQuantity &&
@@ -7819,6 +7852,7 @@ class InventoryItem extends DataClass implements Insertable<InventoryItem> {
 
 class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
   final Value<int> id;
+  final Value<String> syncId;
   final Value<String> name;
   final Value<String> category;
   final Value<double> stockQuantity;
@@ -7830,6 +7864,7 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
   final Value<bool> isDeleted;
   const InventoryItemsCompanion({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     this.name = const Value.absent(),
     this.category = const Value.absent(),
     this.stockQuantity = const Value.absent(),
@@ -7842,6 +7877,7 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
   });
   InventoryItemsCompanion.insert({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     required String name,
     required String category,
     this.stockQuantity = const Value.absent(),
@@ -7856,6 +7892,7 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
        unit = Value(unit);
   static Insertable<InventoryItem> custom({
     Expression<int>? id,
+    Expression<String>? syncId,
     Expression<String>? name,
     Expression<String>? category,
     Expression<double>? stockQuantity,
@@ -7868,6 +7905,7 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (syncId != null) 'sync_id': syncId,
       if (name != null) 'name': name,
       if (category != null) 'category': category,
       if (stockQuantity != null) 'stock_quantity': stockQuantity,
@@ -7882,6 +7920,7 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
 
   InventoryItemsCompanion copyWith({
     Value<int>? id,
+    Value<String>? syncId,
     Value<String>? name,
     Value<String>? category,
     Value<double>? stockQuantity,
@@ -7894,6 +7933,7 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
   }) {
     return InventoryItemsCompanion(
       id: id ?? this.id,
+      syncId: syncId ?? this.syncId,
       name: name ?? this.name,
       category: category ?? this.category,
       stockQuantity: stockQuantity ?? this.stockQuantity,
@@ -7911,6 +7951,9 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (syncId.present) {
+      map['sync_id'] = Variable<String>(syncId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -7946,6 +7989,7 @@ class InventoryItemsCompanion extends UpdateCompanion<InventoryItem> {
   String toString() {
     return (StringBuffer('InventoryItemsCompanion(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
           ..write('stockQuantity: $stockQuantity, ')
@@ -7978,6 +8022,16 @@ class $CommunicationsTableTable extends CommunicationsTable
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
+  );
+  static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
+  @override
+  late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
+    'sync_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
   );
   static const VerificationMeta _clientIdMeta = const VerificationMeta(
     'clientId',
@@ -8052,9 +8106,50 @@ class $CommunicationsTableTable extends CommunicationsTable
     requiredDuringInsert: false,
     defaultValue: const Constant('SENT'),
   );
+  static const VerificationMeta _lastModifiedUtcMeta = const VerificationMeta(
+    'lastModifiedUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastModifiedUtc =
+      GeneratedColumn<DateTime>(
+        'last_modified_utc',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: currentDateAndTime,
+      );
+  static const VerificationMeta _lastModifiedByMeta = const VerificationMeta(
+    'lastModifiedBy',
+  );
+  @override
+  late final GeneratedColumn<String> lastModifiedBy = GeneratedColumn<String>(
+    'last_modified_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    syncId,
     clientId,
     clientName,
     type,
@@ -8062,6 +8157,9 @@ class $CommunicationsTableTable extends CommunicationsTable
     content,
     sentAt,
     status,
+    lastModifiedUtc,
+    lastModifiedBy,
+    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8077,6 +8175,12 @@ class $CommunicationsTableTable extends CommunicationsTable
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sync_id')) {
+      context.handle(
+        _syncIdMeta,
+        syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta),
+      );
     }
     if (data.containsKey('client_id')) {
       context.handle(
@@ -8128,6 +8232,30 @@ class $CommunicationsTableTable extends CommunicationsTable
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
     }
+    if (data.containsKey('last_modified_utc')) {
+      context.handle(
+        _lastModifiedUtcMeta,
+        lastModifiedUtc.isAcceptableOrUnknown(
+          data['last_modified_utc']!,
+          _lastModifiedUtcMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_modified_by')) {
+      context.handle(
+        _lastModifiedByMeta,
+        lastModifiedBy.isAcceptableOrUnknown(
+          data['last_modified_by']!,
+          _lastModifiedByMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
     return context;
   }
 
@@ -8143,6 +8271,10 @@ class $CommunicationsTableTable extends CommunicationsTable
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
+      )!,
+      syncId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_id'],
       )!,
       clientId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -8172,6 +8304,18 @@ class $CommunicationsTableTable extends CommunicationsTable
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      lastModifiedUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_modified_utc'],
+      )!,
+      lastModifiedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_modified_by'],
+      )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
     );
   }
 
@@ -8184,6 +8328,7 @@ class $CommunicationsTableTable extends CommunicationsTable
 class CommunicationsTableData extends DataClass
     implements Insertable<CommunicationsTableData> {
   final int id;
+  final String syncId;
   final int? clientId;
   final String clientName;
   final String type;
@@ -8191,8 +8336,12 @@ class CommunicationsTableData extends DataClass
   final String content;
   final DateTime sentAt;
   final String status;
+  final DateTime lastModifiedUtc;
+  final String lastModifiedBy;
+  final bool isDeleted;
   const CommunicationsTableData({
     required this.id,
+    required this.syncId,
     this.clientId,
     required this.clientName,
     required this.type,
@@ -8200,11 +8349,15 @@ class CommunicationsTableData extends DataClass
     required this.content,
     required this.sentAt,
     required this.status,
+    required this.lastModifiedUtc,
+    required this.lastModifiedBy,
+    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['sync_id'] = Variable<String>(syncId);
     if (!nullToAbsent || clientId != null) {
       map['client_id'] = Variable<int>(clientId);
     }
@@ -8214,12 +8367,16 @@ class CommunicationsTableData extends DataClass
     map['content'] = Variable<String>(content);
     map['sent_at'] = Variable<DateTime>(sentAt);
     map['status'] = Variable<String>(status);
+    map['last_modified_utc'] = Variable<DateTime>(lastModifiedUtc);
+    map['last_modified_by'] = Variable<String>(lastModifiedBy);
+    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
   CommunicationsTableCompanion toCompanion(bool nullToAbsent) {
     return CommunicationsTableCompanion(
       id: Value(id),
+      syncId: Value(syncId),
       clientId: clientId == null && nullToAbsent
           ? const Value.absent()
           : Value(clientId),
@@ -8229,6 +8386,9 @@ class CommunicationsTableData extends DataClass
       content: Value(content),
       sentAt: Value(sentAt),
       status: Value(status),
+      lastModifiedUtc: Value(lastModifiedUtc),
+      lastModifiedBy: Value(lastModifiedBy),
+      isDeleted: Value(isDeleted),
     );
   }
 
@@ -8239,6 +8399,7 @@ class CommunicationsTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CommunicationsTableData(
       id: serializer.fromJson<int>(json['id']),
+      syncId: serializer.fromJson<String>(json['syncId']),
       clientId: serializer.fromJson<int?>(json['clientId']),
       clientName: serializer.fromJson<String>(json['clientName']),
       type: serializer.fromJson<String>(json['type']),
@@ -8246,6 +8407,9 @@ class CommunicationsTableData extends DataClass
       content: serializer.fromJson<String>(json['content']),
       sentAt: serializer.fromJson<DateTime>(json['sentAt']),
       status: serializer.fromJson<String>(json['status']),
+      lastModifiedUtc: serializer.fromJson<DateTime>(json['lastModifiedUtc']),
+      lastModifiedBy: serializer.fromJson<String>(json['lastModifiedBy']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -8253,6 +8417,7 @@ class CommunicationsTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'syncId': serializer.toJson<String>(syncId),
       'clientId': serializer.toJson<int?>(clientId),
       'clientName': serializer.toJson<String>(clientName),
       'type': serializer.toJson<String>(type),
@@ -8260,11 +8425,15 @@ class CommunicationsTableData extends DataClass
       'content': serializer.toJson<String>(content),
       'sentAt': serializer.toJson<DateTime>(sentAt),
       'status': serializer.toJson<String>(status),
+      'lastModifiedUtc': serializer.toJson<DateTime>(lastModifiedUtc),
+      'lastModifiedBy': serializer.toJson<String>(lastModifiedBy),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
   CommunicationsTableData copyWith({
     int? id,
+    String? syncId,
     Value<int?> clientId = const Value.absent(),
     String? clientName,
     String? type,
@@ -8272,8 +8441,12 @@ class CommunicationsTableData extends DataClass
     String? content,
     DateTime? sentAt,
     String? status,
+    DateTime? lastModifiedUtc,
+    String? lastModifiedBy,
+    bool? isDeleted,
   }) => CommunicationsTableData(
     id: id ?? this.id,
+    syncId: syncId ?? this.syncId,
     clientId: clientId.present ? clientId.value : this.clientId,
     clientName: clientName ?? this.clientName,
     type: type ?? this.type,
@@ -8281,10 +8454,14 @@ class CommunicationsTableData extends DataClass
     content: content ?? this.content,
     sentAt: sentAt ?? this.sentAt,
     status: status ?? this.status,
+    lastModifiedUtc: lastModifiedUtc ?? this.lastModifiedUtc,
+    lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
+    isDeleted: isDeleted ?? this.isDeleted,
   );
   CommunicationsTableData copyWithCompanion(CommunicationsTableCompanion data) {
     return CommunicationsTableData(
       id: data.id.present ? data.id.value : this.id,
+      syncId: data.syncId.present ? data.syncId.value : this.syncId,
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
       clientName: data.clientName.present
           ? data.clientName.value
@@ -8294,6 +8471,13 @@ class CommunicationsTableData extends DataClass
       content: data.content.present ? data.content.value : this.content,
       sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
       status: data.status.present ? data.status.value : this.status,
+      lastModifiedUtc: data.lastModifiedUtc.present
+          ? data.lastModifiedUtc.value
+          : this.lastModifiedUtc,
+      lastModifiedBy: data.lastModifiedBy.present
+          ? data.lastModifiedBy.value
+          : this.lastModifiedBy,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -8301,13 +8485,17 @@ class CommunicationsTableData extends DataClass
   String toString() {
     return (StringBuffer('CommunicationsTableData(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('clientId: $clientId, ')
           ..write('clientName: $clientName, ')
           ..write('type: $type, ')
           ..write('direction: $direction, ')
           ..write('content: $content, ')
           ..write('sentAt: $sentAt, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('lastModifiedUtc: $lastModifiedUtc, ')
+          ..write('lastModifiedBy: $lastModifiedBy, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
@@ -8315,6 +8503,7 @@ class CommunicationsTableData extends DataClass
   @override
   int get hashCode => Object.hash(
     id,
+    syncId,
     clientId,
     clientName,
     type,
@@ -8322,24 +8511,32 @@ class CommunicationsTableData extends DataClass
     content,
     sentAt,
     status,
+    lastModifiedUtc,
+    lastModifiedBy,
+    isDeleted,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CommunicationsTableData &&
           other.id == this.id &&
+          other.syncId == this.syncId &&
           other.clientId == this.clientId &&
           other.clientName == this.clientName &&
           other.type == this.type &&
           other.direction == this.direction &&
           other.content == this.content &&
           other.sentAt == this.sentAt &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.lastModifiedUtc == this.lastModifiedUtc &&
+          other.lastModifiedBy == this.lastModifiedBy &&
+          other.isDeleted == this.isDeleted);
 }
 
 class CommunicationsTableCompanion
     extends UpdateCompanion<CommunicationsTableData> {
   final Value<int> id;
+  final Value<String> syncId;
   final Value<int?> clientId;
   final Value<String> clientName;
   final Value<String> type;
@@ -8347,8 +8544,12 @@ class CommunicationsTableCompanion
   final Value<String> content;
   final Value<DateTime> sentAt;
   final Value<String> status;
+  final Value<DateTime> lastModifiedUtc;
+  final Value<String> lastModifiedBy;
+  final Value<bool> isDeleted;
   const CommunicationsTableCompanion({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     this.clientId = const Value.absent(),
     this.clientName = const Value.absent(),
     this.type = const Value.absent(),
@@ -8356,9 +8557,13 @@ class CommunicationsTableCompanion
     this.content = const Value.absent(),
     this.sentAt = const Value.absent(),
     this.status = const Value.absent(),
+    this.lastModifiedUtc = const Value.absent(),
+    this.lastModifiedBy = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   });
   CommunicationsTableCompanion.insert({
     this.id = const Value.absent(),
+    this.syncId = const Value.absent(),
     this.clientId = const Value.absent(),
     required String clientName,
     required String type,
@@ -8366,12 +8571,16 @@ class CommunicationsTableCompanion
     required String content,
     this.sentAt = const Value.absent(),
     this.status = const Value.absent(),
+    this.lastModifiedUtc = const Value.absent(),
+    this.lastModifiedBy = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   }) : clientName = Value(clientName),
        type = Value(type),
        direction = Value(direction),
        content = Value(content);
   static Insertable<CommunicationsTableData> custom({
     Expression<int>? id,
+    Expression<String>? syncId,
     Expression<int>? clientId,
     Expression<String>? clientName,
     Expression<String>? type,
@@ -8379,9 +8588,13 @@ class CommunicationsTableCompanion
     Expression<String>? content,
     Expression<DateTime>? sentAt,
     Expression<String>? status,
+    Expression<DateTime>? lastModifiedUtc,
+    Expression<String>? lastModifiedBy,
+    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (syncId != null) 'sync_id': syncId,
       if (clientId != null) 'client_id': clientId,
       if (clientName != null) 'client_name': clientName,
       if (type != null) 'type': type,
@@ -8389,11 +8602,15 @@ class CommunicationsTableCompanion
       if (content != null) 'content': content,
       if (sentAt != null) 'sent_at': sentAt,
       if (status != null) 'status': status,
+      if (lastModifiedUtc != null) 'last_modified_utc': lastModifiedUtc,
+      if (lastModifiedBy != null) 'last_modified_by': lastModifiedBy,
+      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
   CommunicationsTableCompanion copyWith({
     Value<int>? id,
+    Value<String>? syncId,
     Value<int?>? clientId,
     Value<String>? clientName,
     Value<String>? type,
@@ -8401,9 +8618,13 @@ class CommunicationsTableCompanion
     Value<String>? content,
     Value<DateTime>? sentAt,
     Value<String>? status,
+    Value<DateTime>? lastModifiedUtc,
+    Value<String>? lastModifiedBy,
+    Value<bool>? isDeleted,
   }) {
     return CommunicationsTableCompanion(
       id: id ?? this.id,
+      syncId: syncId ?? this.syncId,
       clientId: clientId ?? this.clientId,
       clientName: clientName ?? this.clientName,
       type: type ?? this.type,
@@ -8411,6 +8632,9 @@ class CommunicationsTableCompanion
       content: content ?? this.content,
       sentAt: sentAt ?? this.sentAt,
       status: status ?? this.status,
+      lastModifiedUtc: lastModifiedUtc ?? this.lastModifiedUtc,
+      lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -8419,6 +8643,9 @@ class CommunicationsTableCompanion
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (syncId.present) {
+      map['sync_id'] = Variable<String>(syncId.value);
     }
     if (clientId.present) {
       map['client_id'] = Variable<int>(clientId.value);
@@ -8441,6 +8668,15 @@ class CommunicationsTableCompanion
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (lastModifiedUtc.present) {
+      map['last_modified_utc'] = Variable<DateTime>(lastModifiedUtc.value);
+    }
+    if (lastModifiedBy.present) {
+      map['last_modified_by'] = Variable<String>(lastModifiedBy.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
     return map;
   }
 
@@ -8448,13 +8684,17 @@ class CommunicationsTableCompanion
   String toString() {
     return (StringBuffer('CommunicationsTableCompanion(')
           ..write('id: $id, ')
+          ..write('syncId: $syncId, ')
           ..write('clientId: $clientId, ')
           ..write('clientName: $clientName, ')
           ..write('type: $type, ')
           ..write('direction: $direction, ')
           ..write('content: $content, ')
           ..write('sentAt: $sentAt, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('lastModifiedUtc: $lastModifiedUtc, ')
+          ..write('lastModifiedBy: $lastModifiedBy, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
@@ -11707,6 +11947,7 @@ typedef $$AuditLogsTableProcessedTableManager =
 typedef $$InventoryItemsTableCreateCompanionBuilder =
     InventoryItemsCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       required String name,
       required String category,
       Value<double> stockQuantity,
@@ -11720,6 +11961,7 @@ typedef $$InventoryItemsTableCreateCompanionBuilder =
 typedef $$InventoryItemsTableUpdateCompanionBuilder =
     InventoryItemsCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       Value<String> name,
       Value<String> category,
       Value<double> stockQuantity,
@@ -11742,6 +11984,11 @@ class $$InventoryItemsTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncId => $composableBuilder(
+    column: $table.syncId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11805,6 +12052,11 @@ class $$InventoryItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get syncId => $composableBuilder(
+    column: $table.syncId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -11862,6 +12114,9 @@ class $$InventoryItemsTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get syncId =>
+      $composableBuilder(column: $table.syncId, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -11931,6 +12186,7 @@ class $$InventoryItemsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 Value<double> stockQuantity = const Value.absent(),
@@ -11942,6 +12198,7 @@ class $$InventoryItemsTableTableManager
                 Value<bool> isDeleted = const Value.absent(),
               }) => InventoryItemsCompanion(
                 id: id,
+                syncId: syncId,
                 name: name,
                 category: category,
                 stockQuantity: stockQuantity,
@@ -11955,6 +12212,7 @@ class $$InventoryItemsTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 required String name,
                 required String category,
                 Value<double> stockQuantity = const Value.absent(),
@@ -11966,6 +12224,7 @@ class $$InventoryItemsTableTableManager
                 Value<bool> isDeleted = const Value.absent(),
               }) => InventoryItemsCompanion.insert(
                 id: id,
+                syncId: syncId,
                 name: name,
                 category: category,
                 stockQuantity: stockQuantity,
@@ -12004,6 +12263,7 @@ typedef $$InventoryItemsTableProcessedTableManager =
 typedef $$CommunicationsTableTableCreateCompanionBuilder =
     CommunicationsTableCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       Value<int?> clientId,
       required String clientName,
       required String type,
@@ -12011,10 +12271,14 @@ typedef $$CommunicationsTableTableCreateCompanionBuilder =
       required String content,
       Value<DateTime> sentAt,
       Value<String> status,
+      Value<DateTime> lastModifiedUtc,
+      Value<String> lastModifiedBy,
+      Value<bool> isDeleted,
     });
 typedef $$CommunicationsTableTableUpdateCompanionBuilder =
     CommunicationsTableCompanion Function({
       Value<int> id,
+      Value<String> syncId,
       Value<int?> clientId,
       Value<String> clientName,
       Value<String> type,
@@ -12022,6 +12286,9 @@ typedef $$CommunicationsTableTableUpdateCompanionBuilder =
       Value<String> content,
       Value<DateTime> sentAt,
       Value<String> status,
+      Value<DateTime> lastModifiedUtc,
+      Value<String> lastModifiedBy,
+      Value<bool> isDeleted,
     });
 
 class $$CommunicationsTableTableFilterComposer
@@ -12035,6 +12302,11 @@ class $$CommunicationsTableTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncId => $composableBuilder(
+    column: $table.syncId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12072,6 +12344,21 @@ class $$CommunicationsTableTableFilterComposer
     column: $table.status,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<DateTime> get lastModifiedUtc => $composableBuilder(
+    column: $table.lastModifiedUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastModifiedBy => $composableBuilder(
+    column: $table.lastModifiedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$CommunicationsTableTableOrderingComposer
@@ -12085,6 +12372,11 @@ class $$CommunicationsTableTableOrderingComposer
   });
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncId => $composableBuilder(
+    column: $table.syncId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -12122,6 +12414,21 @@ class $$CommunicationsTableTableOrderingComposer
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get lastModifiedUtc => $composableBuilder(
+    column: $table.lastModifiedUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastModifiedBy => $composableBuilder(
+    column: $table.lastModifiedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CommunicationsTableTableAnnotationComposer
@@ -12135,6 +12442,9 @@ class $$CommunicationsTableTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get syncId =>
+      $composableBuilder(column: $table.syncId, builder: (column) => column);
 
   GeneratedColumn<int> get clientId =>
       $composableBuilder(column: $table.clientId, builder: (column) => column);
@@ -12158,6 +12468,19 @@ class $$CommunicationsTableTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastModifiedUtc => $composableBuilder(
+    column: $table.lastModifiedUtc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastModifiedBy => $composableBuilder(
+    column: $table.lastModifiedBy,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 }
 
 class $$CommunicationsTableTableTableManager
@@ -12204,6 +12527,7 @@ class $$CommunicationsTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 Value<int?> clientId = const Value.absent(),
                 Value<String> clientName = const Value.absent(),
                 Value<String> type = const Value.absent(),
@@ -12211,8 +12535,12 @@ class $$CommunicationsTableTableTableManager
                 Value<String> content = const Value.absent(),
                 Value<DateTime> sentAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<DateTime> lastModifiedUtc = const Value.absent(),
+                Value<String> lastModifiedBy = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => CommunicationsTableCompanion(
                 id: id,
+                syncId: syncId,
                 clientId: clientId,
                 clientName: clientName,
                 type: type,
@@ -12220,10 +12548,14 @@ class $$CommunicationsTableTableTableManager
                 content: content,
                 sentAt: sentAt,
                 status: status,
+                lastModifiedUtc: lastModifiedUtc,
+                lastModifiedBy: lastModifiedBy,
+                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> syncId = const Value.absent(),
                 Value<int?> clientId = const Value.absent(),
                 required String clientName,
                 required String type,
@@ -12231,8 +12563,12 @@ class $$CommunicationsTableTableTableManager
                 required String content,
                 Value<DateTime> sentAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<DateTime> lastModifiedUtc = const Value.absent(),
+                Value<String> lastModifiedBy = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => CommunicationsTableCompanion.insert(
                 id: id,
+                syncId: syncId,
                 clientId: clientId,
                 clientName: clientName,
                 type: type,
@@ -12240,6 +12576,9 @@ class $$CommunicationsTableTableTableManager
                 content: content,
                 sentAt: sentAt,
                 status: status,
+                lastModifiedUtc: lastModifiedUtc,
+                lastModifiedBy: lastModifiedBy,
+                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

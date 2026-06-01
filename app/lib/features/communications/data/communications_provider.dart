@@ -16,6 +16,7 @@ Stream<List<CommunicationRitual>> communications(Ref ref) {
   return ref.watch(communicationsDaoProvider).watchAllCommunications().map((rows) {
     return rows.map((row) => CommunicationRitual(
       id: row.id,
+      syncId: row.syncId,
       clientId: row.clientId,
       clientName: row.clientName,
       type: row.type,
@@ -23,6 +24,9 @@ Stream<List<CommunicationRitual>> communications(Ref ref) {
       content: row.content,
       sentAt: row.sentAt,
       status: row.status,
+      lastModifiedUtc: row.lastModifiedUtc,
+      lastModifiedBy: row.lastModifiedBy,
+      isDeleted: row.isDeleted,
     )).toList();
   });
 }

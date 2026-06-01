@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:alpine
+    container_name: infernal-db
+    environment:
+      POSTGRES_DB: infernal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - infernal_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d infernal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: infernal-backend
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: infernal
+      DB_HOST: db
+      ENV: development
+      MIGRATIONS_DIR: migrations
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  infernal_pgdata:

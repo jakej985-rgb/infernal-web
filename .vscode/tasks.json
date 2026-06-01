@@ -2,40 +2,43 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/legacy/InfernalInkSteelSuite.Web/InfernalInkSteelSuite.Web.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
+            "label": "Flutter Build Runner (Build)",
+            "type": "shell",
+            "command": "dart run build_runner build --delete-conflicting-outputs",
+            "options": {
+                "cwd": "${workspaceFolder}/app"
+            },
+            "group": "build",
+            "problemMatcher": []
         },
         {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/legacy/InfernalInkSteelSuite.Web/InfernalInkSteelSuite.Web.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
+            "label": "Flutter Build Runner (Watch)",
+            "type": "shell",
+            "command": "dart run build_runner watch --delete-conflicting-outputs",
+            "options": {
+                "cwd": "${workspaceFolder}/app"
+            },
+            "group": "build",
+            "problemMatcher": []
         },
         {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/legacy/InfernalInkSteelSuite.Web/InfernalInkSteelSuite.Web.csproj"
-            ],
-            "problemMatcher": "$msCompile"
+            "label": "Flutter Run (Web)",
+            "type": "shell",
+            "command": "flutter run -d chrome",
+            "options": {
+                "cwd": "${workspaceFolder}/app"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Flutter Test",
+            "type": "shell",
+            "command": "flutter test",
+            "options": {
+                "cwd": "${workspaceFolder}/app"
+            },
+            "group": "test",
+            "problemMatcher": []
         }
     ]
 }

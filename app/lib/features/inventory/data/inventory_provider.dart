@@ -17,6 +17,7 @@ Stream<List<domain.InventoryItem>> inventoryItems(Ref ref) {
   return ref.watch(inventoryDaoProvider).watchAllItems().map((rows) {
     return rows.map((row) => domain.InventoryItem(
       id: row.id,
+      syncId: row.syncId,
       name: row.name,
       category: row.category,
       stockQuantity: row.stockQuantity,
@@ -43,6 +44,7 @@ class InventoryService extends _$InventoryService {
     // Convert Domain -> Drift
     final dbItem = InventoryItem(
       id: item.id,
+      syncId: item.syncId,
       name: item.name,
       category: item.category,
       stockQuantity: item.stockQuantity,
