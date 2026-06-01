@@ -52,6 +52,10 @@ class SyncManager {
     final prefs = _ref.read(sharedPreferencesProvider);
     final dio = _ref.read(apiClientProvider);
     final useApi = _ref.read(useApiProvider);
+    if (useApi) {
+      debugPrint('[SyncManager] Direct API mode is active. Skipping synchronization.');
+      return true;
+    }
     final idMapper = _ref.read(idMapperProvider);
 
     // 1. Get the last sync timestamp
