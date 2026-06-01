@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+env:
+  PROJECT_ID: m3tal-project
+  SERVICE_NAME: infernal-web
+  REGION: us-central1
+  IMAGE: gcr.io/m3tal-project/infernal-web
+
 jobs:
   deploy:
     name: Deploy App
@@ -24,6 +30,19 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Deploy via Cloud Build
+      - name: Configure Docker
         run: |
-          gcloud builds submit --config cloudbuild.yaml .
+          gcloud auth configure-docker --quiet
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.IMAGE }} .
+          docker push ${{ env.IMAGE }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.IMAGE }}
+          flags: '--allow-unauthenticated'
