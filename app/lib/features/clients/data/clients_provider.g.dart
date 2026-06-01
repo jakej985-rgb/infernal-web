@@ -61,6 +61,47 @@ abstract class _$ClientSearchQuery extends $Notifier<String> {
   }
 }
 
+@ProviderFor(clientService)
+final clientServiceProvider = ClientServiceProvider._();
+
+final class ClientServiceProvider
+    extends $FunctionalProvider<ClientService, ClientService, ClientService>
+    with $Provider<ClientService> {
+  ClientServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'clientServiceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$clientServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<ClientService> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ClientService create(Ref ref) {
+    return clientService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ClientService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ClientService>(value),
+    );
+  }
+}
+
+String _$clientServiceHash() => r'8660c7771994342fdd72d20a7905ba3aff6e2fca';
+
 @ProviderFor(filteredClients)
 final filteredClientsProvider = FilteredClientsProvider._();
 
@@ -100,7 +141,7 @@ final class FilteredClientsProvider
   }
 }
 
-String _$filteredClientsHash() => r'3538a0692514e80e1ded315b1eef9c17feea352b';
+String _$filteredClientsHash() => r'f1aaa0bbaf76ff0948291e9bcc4c221d2240a630';
 
 @ProviderFor(clientDetail)
 final clientDetailProvider = ClientDetailFamily._();
@@ -157,7 +198,7 @@ final class ClientDetailProvider
   }
 }
 
-String _$clientDetailHash() => r'56d39c80dd1bbaa08b7758c6738b911cbeed1446';
+String _$clientDetailHash() => r'8d1e0ebc6092317ae239991b44c258a3dd829dfa';
 
 final class ClientDetailFamily extends $Family
     with $FunctionalFamilyOverride<Stream<domain.Client?>, int> {
@@ -176,44 +217,3 @@ final class ClientDetailFamily extends $Family
   @override
   String toString() => r'clientDetailProvider';
 }
-
-@ProviderFor(clientsService)
-final clientsServiceProvider = ClientsServiceProvider._();
-
-final class ClientsServiceProvider
-    extends $FunctionalProvider<ClientsService, ClientsService, ClientsService>
-    with $Provider<ClientsService> {
-  ClientsServiceProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'clientsServiceProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$clientsServiceHash();
-
-  @$internal
-  @override
-  $ProviderElement<ClientsService> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ClientsService create(Ref ref) {
-    return clientsService(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ClientsService value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ClientsService>(value),
-    );
-  }
-}
-
-String _$clientsServiceHash() => r'6f2125f56d0408e1d47ab05e8adf290cd6fad191';

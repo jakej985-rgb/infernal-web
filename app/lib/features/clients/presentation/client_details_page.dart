@@ -151,7 +151,7 @@ class ClientDetailsPage extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref.read(clientsServiceProvider).deleteClient(id);
+              await ref.read(clientServiceProvider).deleteClient(id);
               if (context.mounted) context.pop();
             },
             child: const Text(

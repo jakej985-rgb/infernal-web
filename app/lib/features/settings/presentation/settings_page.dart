@@ -8,6 +8,7 @@ import '../../../shared/presentation/widgets/neon_plate.dart';
 import '../../../shared/presentation/widgets/neon_divider.dart';
 import '../data/settings_provider.dart';
 import '../../../shared/persistence/database.dart';
+import '../../../shared/util/shared_prefs_provider.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -99,6 +100,12 @@ class SettingsPage extends ConsumerWidget {
           icon: Icons.settings,
           color: InfernalColors.voidColor,
           items: [
+            _SettingsItem(
+              title: 'API Connection',
+              subtitle: ref.watch(sharedPreferencesProvider).getString('api_base_url') ?? 'http://localhost:8080',
+              icon: Icons.cloud_queue,
+              onTap: () => _showApiEndpointDialog(context, ref),
+            ),
             _SettingsItem(
               title: 'Reset to Defaults',
               subtitle: 'Revert all settings to factory defaults',
@@ -213,6 +220,54 @@ class SettingsPage extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showApiEndpointDialog(BuildContext context, WidgetRef ref) {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final currentUrl = prefs.getString('api_base_url') ?? 'http://localhost:8080';
+    final urlCtrl = TextEditingController(text: currentUrl);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: InfernalColors.surface,
+        title: const Text('API CONNECTION SETTINGS', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter the central Go API server base URL:',
+              style: TextStyle(color: InfernalColors.textSecondary, fontSize: 13),
+            ),
+            const SizedBox(height: InfernalSpacing.md),
+            TextField(
+              controller: urlCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Base URL',
+                hintText: 'e.g., http://localhost:8080',
+              ),
+              style: const TextStyle(color: InfernalColors.textPrimary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+          ElevatedButton(
+            onPressed: () async {
+              await prefs.setString('api_base_url', urlCtrl.text.trim());
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('API base URL updated. Restarting sync and connection...')),
+                );
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('SAVE'),
+          ),
+        ],
       ),
     );
   }

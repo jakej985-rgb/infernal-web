@@ -252,7 +252,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
     setState(() => _isSaving = true);
 
     try {
-      final service = ref.read(clientsServiceProvider);
+      final service = ref.read(clientServiceProvider);
       String photoPath = _existingPhotoPath ?? '';
 
       // Save new image if picked
