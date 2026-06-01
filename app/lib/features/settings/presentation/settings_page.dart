@@ -9,6 +9,7 @@ import '../../../shared/presentation/widgets/neon_divider.dart';
 import '../data/settings_provider.dart';
 import '../../../shared/persistence/database.dart';
 import '../../../shared/util/shared_prefs_provider.dart';
+import '../../../shared/data/use_api_provider.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -100,6 +101,17 @@ class SettingsPage extends ConsumerWidget {
           icon: Icons.settings,
           color: InfernalColors.voidColor,
           items: [
+            _SettingsItem(
+              title: 'API Mode',
+              subtitle: ref.watch(useApiProvider)
+                  ? 'Direct central Cloud SQL API'
+                  : 'Local Drift SQLite database (offline)',
+              icon: Icons.sync_alt,
+              onTap: () {
+                final current = ref.read(useApiProvider);
+                ref.read(useApiProvider.notifier).toggle(!current);
+              },
+            ),
             _SettingsItem(
               title: 'API Connection',
               subtitle: ref.watch(sharedPreferencesProvider).getString('api_base_url') ?? 'http://localhost:8080',

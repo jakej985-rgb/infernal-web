@@ -11,6 +11,8 @@ import '../persistence/repositories_impl.dart';
 import '../domain/dtos.dart';
 import 'api_client.dart';
 import 'shared_prefs_provider.dart';
+import '../data/use_api_provider.dart';
+import '../cache/id_mapper.dart';
 
 part 'sync_manager.g.dart';
 
@@ -49,6 +51,8 @@ class SyncManager {
     debugPrint('[SyncManager] Starting synchronization cycle...');
     final prefs = _ref.read(sharedPreferencesProvider);
     final dio = _ref.read(apiClientProvider);
+    final useApi = _ref.read(useApiProvider);
+    final idMapper = _ref.read(idMapperProvider);
 
     // 1. Get the last sync timestamp
     final lastSyncStr = prefs.getString(_lastSyncKey);
@@ -57,22 +61,29 @@ class SyncManager {
 
     try {
       // 2. Query local unsynced updates (items modified after lastSync)
-      final localClients = await _clientRepo.getUnsynced();
-      final unsyncedClients = localClients.where((c) => c.lastModifiedUtc.isAfter(lastSync)).map((c) {
-        return ClientSyncDTO(
-          id: c.syncId,
-          name: c.fullName,
-          email: c.email,
-          phone: c.phone,
-          isDeleted: c.isDeleted,
-          updatedAt: c.lastModifiedUtc,
-        );
-      }).toList();
+      // If we are in Direct API mode, clients are managed centrally in real-time.
+      // We skip uploading local SQLite client table modifications.
+      final unsyncedClients = <ClientSyncDTO>[];
+      if (!useApi) {
+        final localClients = await _clientRepo.getUnsynced();
+        for (final c in localClients.where((c) => c.lastModifiedUtc.isAfter(lastSync))) {
+          unsyncedClients.add(ClientSyncDTO(
+            id: c.syncId,
+            name: c.fullName,
+            email: c.email,
+            phone: c.phone,
+            isDeleted: c.isDeleted,
+            updatedAt: c.lastModifiedUtc,
+          ));
+        }
+      }
 
       final localAppts = await _apptRepo.getUnsynced();
       final unsyncedAppts = <ApptSyncDTO>[];
       for (final a in localAppts.where((a) => a.lastModifiedUtc.isAfter(lastSync))) {
-        final clientSyncId = await _clientRepo.getSyncId(a.clientId);
+        final clientSyncId = useApi
+            ? idMapper.getUuid('client', a.clientId)
+            : await _clientRepo.getSyncId(a.clientId);
         if (clientSyncId != null) {
           unsyncedAppts.add(ApptSyncDTO(
             id: a.syncId,
@@ -107,7 +118,9 @@ class SyncManager {
       final localDocs = await _docRepo.getUnsynced();
       final unsyncedDocs = <DocSyncDTO>[];
       for (final d in localDocs.where((d) => d.lastModifiedUtc.isAfter(lastSync))) {
-        final clientSyncId = await _clientRepo.getSyncId(d.clientId);
+        final clientSyncId = useApi
+            ? idMapper.getUuid('client', d.clientId)
+            : await _clientRepo.getSyncId(d.clientId);
         unsyncedDocs.add(DocSyncDTO(
           id: d.syncId,
           clientId: clientSyncId,
@@ -122,7 +135,9 @@ class SyncManager {
       final localComms = await _commRepo.getUnsynced();
       final unsyncedComms = <CommSyncDTO>[];
       for (final cm in localComms.where((cm) => (cm.lastModifiedUtc ?? DateTime.fromMillisecondsSinceEpoch(0)).isAfter(lastSync))) {
-        final clientSyncId = await _clientRepo.getSyncId(cm.clientId ?? 0);
+        final clientSyncId = useApi
+            ? idMapper.getUuid('client', cm.clientId ?? 0)
+            : await _clientRepo.getSyncId(cm.clientId ?? 0);
         if (clientSyncId != null) {
           unsyncedComms.add(CommSyncDTO(
             id: cm.syncId,
@@ -167,6 +182,14 @@ class SyncManager {
       
       // Process Clients
       for (final c in syncResponse.clients) {
+        // Warm up / Register mapping globally so referencing entities can translate correctly
+        await idMapper.registerUuid('client', c.id);
+
+        if (useApi) {
+          // Skip local database modifications in direct API mode
+          continue;
+        }
+
         final parts = c.name.split(' ');
         final firstName = parts.first;
         final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
@@ -186,7 +209,9 @@ class SyncManager {
 
       // Process Appointments
       for (final a in syncResponse.appointments) {
-        final localClientId = await _clientRepo.getLocalId(a.clientId);
+        final localClientId = useApi
+            ? await idMapper.registerUuid('client', a.clientId)
+            : await _clientRepo.getLocalId(a.clientId);
         if (localClientId != null) {
           final domainAppt = domain.Appointment(
             id: 0,
@@ -224,7 +249,9 @@ class SyncManager {
 
       // Process Documents
       for (final d in syncResponse.documents) {
-        final localClientId = await _clientRepo.getLocalId(d.clientId ?? '');
+        final localClientId = useApi
+            ? (d.clientId != null ? await idMapper.registerUuid('client', d.clientId!) : null)
+            : await _clientRepo.getLocalId(d.clientId ?? '');
         final domainDoc = domain.Document(
           id: 0,
           syncId: d.id,
@@ -241,7 +268,9 @@ class SyncManager {
 
       // Process Communications
       for (final cm in syncResponse.communications) {
-        final localClientId = await _clientRepo.getLocalId(cm.clientId);
+        final localClientId = useApi
+            ? await idMapper.registerUuid('client', cm.clientId)
+            : await _clientRepo.getLocalId(cm.clientId);
         if (localClientId != null) {
           final domainComm = domain.CommunicationRitual(
             id: 0,

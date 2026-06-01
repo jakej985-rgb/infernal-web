@@ -5,6 +5,17 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'tables/tables.dart';
 import 'daos/daos.dart';
 
+// ============================================================================
+// 🚨 ARCHITECTURAL BOUNDARY RULE
+// 
+// ONLY implementations of services inside `shared/persistence/` (such as
+// `drift_client_service.dart`) are allowed to import DAOs, tables, or companion
+// classes from this folder.
+//
+// Individual features (e.g. features/clients) must NEVER import this database.
+// All interactions must go through abstract Service interfaces.
+// ============================================================================
+
 
 part 'database.g.dart';
 

@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../shared/data/interfaces/client_service.dart';
-import '../../../../shared/data/api/client_api_service.dart';
+import '../../../../shared/data/use_api_provider.dart';
 import '../../../../shared/domain/client.dart' as domain;
 
 part 'clients_provider.g.dart';
@@ -14,11 +14,11 @@ class ClientSearchQuery extends _$ClientSearchQuery {
   void set(String query) => state = query;
 }
 
+// Points to the globalClientServiceProvider in shared/data/use_api_provider.dart
+// to maintain feature-level abstraction while enabling global api toggle switching.
 @riverpod
 ClientService clientService(Ref ref) {
-  // Toggle between API mode (Production/Extracted) and Drift mode (Local Legacy) in one line:
-  return ref.watch(clientApiServiceProvider);
-  // return ref.watch(driftClientServiceProvider);
+  return ref.watch(globalClientServiceProvider);
 }
 
 @riverpod

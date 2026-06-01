@@ -16,8 +16,9 @@ class IdMapper {
   final SharedPreferences _prefs;
   static const _storageKey = 'id_mapper_mappings';
 
-  final Map<int, String> _idToUuid = {};
-  final Map<String, int> _uuidToId = {};
+  // Partitioned by entityType (e.g. 'client', 'appointment')
+  final Map<String, Map<int, String>> _idToUuid = {};
+  final Map<String, Map<String, int>> _uuidToId = {};
 
   IdMapper(this._prefs) {
     _loadMappings();
@@ -27,19 +28,44 @@ class IdMapper {
     try {
       final jsonStr = _prefs.getString(_storageKey);
       if (jsonStr != null && jsonStr.isNotEmpty) {
-        final Map<String, dynamic> data = jsonDecode(jsonStr);
-        data.forEach((key, value) {
-          final id = int.tryParse(key);
-          final uuid = value as String;
-          if (id != null) {
-            _idToUuid[id] = uuid;
-            _uuidToId[uuid] = id;
+        final dynamic data = jsonDecode(jsonStr);
+        if (data is Map<String, dynamic>) {
+          // Detect if it is the legacy flat format or the new nested format
+          final firstValue = data.values.isEmpty ? null : data.values.first;
+          if (firstValue is Map) {
+            // New nested format: { "client": { "uuid": id, ... } }
+            data.forEach((entityType, mappings) {
+              if (mappings is Map<String, dynamic>) {
+                final typeUuidToId = _uuidToId.putIfAbsent(entityType, () => {});
+                final typeIdToUuid = _idToUuid.putIfAbsent(entityType, () => {});
+                mappings.forEach((uuid, idVal) {
+                  final id = idVal as int;
+                  typeIdToUuid[id] = uuid;
+                  typeUuidToId[uuid] = id;
+                });
+              }
+            });
+            debugPrint('[IdMapper] Successfully loaded nested mappings.');
+          } else {
+            // Legacy flat format: { "12345": "uuid" } -> Migrate to "client"
+            final typeUuidToId = _uuidToId.putIfAbsent('client', () => {});
+            final typeIdToUuid = _idToUuid.putIfAbsent('client', () => {});
+            data.forEach((key, value) {
+              final id = int.tryParse(key);
+              final uuid = value as String;
+              if (id != null) {
+                typeIdToUuid[id] = uuid;
+                typeUuidToId[uuid] = id;
+              }
+            });
+            debugPrint('[IdMapper] Migrated legacy flat mappings to "client" namespace.');
+            // Save in the new format immediately to persist migration
+            _saveMappings();
           }
-        });
-        debugPrint('[IdMapper] Successfully loaded ${_idToUuid.length} mappings from persistent storage.');
+        }
       }
     } catch (e) {
-      debugPrint('[IdMapper] Error loading persistent mappings (possible corruption fallback triggered): $e');
+      debugPrint('[IdMapper] Error loading/migrating persistent mappings: $e');
       _idToUuid.clear();
       _uuidToId.clear();
       try {
@@ -50,9 +76,9 @@ class IdMapper {
 
   Future<void> _saveMappings() async {
     try {
-      final Map<String, String> data = {};
-      _idToUuid.forEach((key, value) {
-        data[key.toString()] = value;
+      final Map<String, Map<String, int>> data = {};
+      _uuidToId.forEach((entityType, mappings) {
+        data[entityType] = mappings;
       });
       await _prefs.setString(_storageKey, jsonEncode(data));
     } catch (e) {
@@ -63,31 +89,38 @@ class IdMapper {
   /// Registers a UUID and returns its stable, unique 31-bit positive integer ID.
   /// If the UUID already has an integer ID, that ID is returned.
   /// Otherwise, a new stable integer ID is generated, cached, and persisted.
-  Future<int> registerUuid(String uuid) async {
-    if (_uuidToId.containsKey(uuid)) {
-      return _uuidToId[uuid]!;
+  Future<int> registerUuid(String entityType, String uuid) async {
+    final typeUuidToId = _uuidToId.putIfAbsent(entityType, () => {});
+    final typeIdToUuid = _idToUuid.putIfAbsent(entityType, () => {});
+
+    if (typeUuidToId.containsKey(uuid)) {
+      return typeUuidToId[uuid]!;
     }
 
     var id = uuid.hashCode & 0x7FFFFFFF;
     if (id == 0) id = 1;
 
     var saltCount = 1;
-    while (_idToUuid.containsKey(id) && _idToUuid[id] != uuid) {
+    while (typeIdToUuid.containsKey(id) && typeIdToUuid[id] != uuid) {
       id = '${uuid}_$saltCount'.hashCode & 0x7FFFFFFF;
       if (id == 0) id = 1;
       saltCount++;
     }
 
-    _idToUuid[id] = uuid;
-    _uuidToId[uuid] = id;
+    typeIdToUuid[id] = uuid;
+    typeUuidToId[uuid] = id;
 
     await _saveMappings();
     return id;
   }
 
-  /// Look up UUID by integer ID
-  String? getUuid(int id) => _idToUuid[id];
+  /// Look up UUID by integer ID for a specific entity type
+  String? getUuid(String entityType, int id) {
+    return _idToUuid[entityType]?[id];
+  }
 
-  /// Look up integer ID by UUID
-  int? getId(String uuid) => _uuidToId[uuid];
+  /// Look up integer ID by UUID for a specific entity type
+  int? getId(String entityType, String uuid) {
+    return _uuidToId[entityType]?[uuid];
+  }
 }

@@ -1,0 +1,374 @@
+.
+├── analysis_options.yaml
+├── analyze_output.txt
+├── android
+│   ├── app
+│   │   ├── build.gradle.kts
+│   │   └── src
+│   │       ├── debug
+│   │       │   └── AndroidManifest.xml
+│   │       ├── main
+│   │       │   ├── AndroidManifest.xml
+│   │       │   ├── java
+│   │       │   │   └── io
+│   │       │   ├── kotlin
+│   │       │   │   └── com
+│   │       │   └── res
+│   │       │       ├── drawable
+│   │       │       ├── drawable-v21
+│   │       │       ├── mipmap-hdpi
+│   │       │       ├── mipmap-mdpi
+│   │       │       ├── mipmap-xhdpi
+│   │       │       ├── mipmap-xxhdpi
+│   │       │       ├── mipmap-xxxhdpi
+│   │       │       ├── values
+│   │       │       └── values-night
+│   │       └── profile
+│   │           └── AndroidManifest.xml
+│   ├── build.gradle.kts
+│   ├── gradle
+│   │   └── wrapper
+│   │       └── gradle-wrapper.properties
+│   ├── gradle.properties
+│   ├── local.properties
+│   └── settings.gradle.kts
+├── build
+│   ├── a3406a4b68c69e4c07df28d872a9e3f3
+│   │   ├── _composite.stamp
+│   │   ├── gen_dart_plugin_registrant.stamp
+│   │   └── gen_localizations.stamp
+│   ├── e526d636a6238c5a01b25d33d78dd941.cache.dill.track.dill
+│   ├── flutter_assets
+│   │   ├── AssetManifest.bin
+│   │   ├── AssetManifest.bin.json
+│   │   ├── FontManifest.json
+│   │   ├── fonts
+│   │   │   └── MaterialIcons-Regular.otf
+│   │   ├── NOTICES
+│   │   ├── packages
+│   │   │   └── cupertino_icons
+│   │   │       └── assets
+│   │   │           └── CupertinoIcons.ttf
+│   │   └── shaders
+│   │       ├── ink_sparkle.frag
+│   │       └── stretch_effect.frag
+│   ├── native_assets
+│   │   └── linux
+│   │       └── native_assets.json
+│   ├── test_cache
+│   │   └── build
+│   │       └── e526d636a6238c5a01b25d33d78dd941.cache.dill.track.dill
+│   └── unit_test_assets
+│       ├── AssetManifest.bin
+│       ├── FontManifest.json
+│       ├── fonts
+│       │   └── MaterialIcons-Regular.otf
+│       ├── NativeAssetsManifest.json
+│       ├── NOTICES.Z
+│       ├── packages
+│       │   └── cupertino_icons
+│       │       └── assets
+│       │           └── CupertinoIcons.ttf
+│       └── shaders
+│           ├── ink_sparkle.frag
+│           └── stretch_effect.frag
+├── devtools_options.yaml
+├── flutter_01.log
+├── flutter_02.log
+├── ios
+│   ├── Flutter
+│   │   ├── AppFrameworkInfo.plist
+│   │   ├── Debug.xcconfig
+│   │   ├── ephemeral
+│   │   │   ├── flutter_lldb_helper.py
+│   │   │   ├── flutter_lldbinit
+│   │   │   └── flutter_native_integration.env
+│   │   ├── flutter_export_environment.sh
+│   │   ├── Generated.xcconfig
+│   │   └── Release.xcconfig
+│   ├── Runner
+│   │   ├── AppDelegate.swift
+│   │   ├── Assets.xcassets
+│   │   │   ├── AppIcon.appiconset
+│   │   │   │   ├── Contents.json
+│   │   │   │   ├── Icon-App-1024x1024@1x.png
+│   │   │   │   ├── Icon-App-20x20@1x.png
+│   │   │   │   ├── Icon-App-20x20@2x.png
+│   │   │   │   ├── Icon-App-20x20@3x.png
+│   │   │   │   ├── Icon-App-29x29@1x.png
+│   │   │   │   ├── Icon-App-29x29@2x.png
+│   │   │   │   ├── Icon-App-29x29@3x.png
+│   │   │   │   ├── Icon-App-40x40@1x.png
+│   │   │   │   ├── Icon-App-40x40@2x.png
+│   │   │   │   ├── Icon-App-40x40@3x.png
+│   │   │   │   ├── Icon-App-60x60@2x.png
+│   │   │   │   ├── Icon-App-60x60@3x.png
+│   │   │   │   ├── Icon-App-76x76@1x.png
+│   │   │   │   ├── Icon-App-76x76@2x.png
+│   │   │   │   └── Icon-App-83.5x83.5@2x.png
+│   │   │   └── LaunchImage.imageset
+│   │   │       ├── Contents.json
+│   │   │       ├── LaunchImage@2x.png
+│   │   │       ├── LaunchImage@3x.png
+│   │   │       ├── LaunchImage.png
+│   │   │       └── README.md
+│   │   ├── Base.lproj
+│   │   │   ├── LaunchScreen.storyboard
+│   │   │   └── Main.storyboard
+│   │   ├── GeneratedPluginRegistrant.h
+│   │   ├── GeneratedPluginRegistrant.m
+│   │   ├── Info.plist
+│   │   └── Runner-Bridging-Header.h
+│   ├── RunnerTests
+│   │   └── RunnerTests.swift
+│   ├── Runner.xcodeproj
+│   │   ├── project.pbxproj
+│   │   ├── project.xcworkspace
+│   │   │   ├── contents.xcworkspacedata
+│   │   │   └── xcshareddata
+│   │   │       ├── IDEWorkspaceChecks.plist
+│   │   │       └── WorkspaceSettings.xcsettings
+│   │   └── xcshareddata
+│   │       └── xcschemes
+│   │           └── Runner.xcscheme
+│   └── Runner.xcworkspace
+│       ├── contents.xcworkspacedata
+│       └── xcshareddata
+│           ├── IDEWorkspaceChecks.plist
+│           └── WorkspaceSettings.xcsettings
+├── lib
+│   ├── app
+│   │   ├── app.dart
+│   │   ├── router.dart
+│   │   └── theme
+│   │       ├── infernal_theme.dart
+│   │       ├── theme.dart
+│   │       └── tokens.dart
+│   ├── features
+│   │   ├── admin
+│   │   │   ├── data
+│   │   │   │   ├── user_management_provider.dart
+│   │   │   │   └── user_management_provider.g.dart
+│   │   │   └── presentation
+│   │   │       ├── system_status_page.dart
+│   │   │       ├── user_form_page.dart
+│   │   │       └── user_list_page.dart
+│   │   ├── appointments
+│   │   │   ├── data
+│   │   │   │   ├── appointments_provider.dart
+│   │   │   │   └── appointments_provider.g.dart
+│   │   │   └── presentation
+│   │   │       ├── appointment_details_page.dart
+│   │   │       ├── appointment_form_page.dart
+│   │   │       ├── appointments_list_page.dart
+│   │   │       └── widgets
+│   │   │           ├── appointment_status_chip.dart
+│   │   │           └── client_selection_modal.dart
+│   │   ├── auth
+│   │   │   ├── data
+│   │   │   │   ├── user_repository.dart
+│   │   │   │   └── user_repository.g.dart
+│   │   │   ├── domain
+│   │   │   │   ├── auth_service.dart
+│   │   │   │   ├── auth_service.g.dart
+│   │   │   │   ├── auth_state.dart
+│   │   │   │   └── auth_state.freezed.dart
+│   │   │   └── presentation
+│   │   │       └── login_page.dart
+│   │   ├── clients
+│   │   │   ├── data
+│   │   │   │   ├── clients_provider.dart
+│   │   │   │   └── clients_provider.g.dart
+│   │   │   └── presentation
+│   │   │       ├── client_details_page.dart
+│   │   │       ├── client_form_page.dart
+│   │   │       ├── clients_list_page.dart
+│   │   │       └── widgets
+│   │   │           └── client_status_chip.dart
+│   │   ├── communications
+│   │   │   ├── data
+│   │   │   │   ├── communications_provider.dart
+│   │   │   │   └── communications_provider.g.dart
+│   │   │   └── presentation
+│   │   │       └── communications_hub_page.dart
+│   │   ├── dashboard
+│   │   │   ├── data
+│   │   │   │   ├── stats_repository.dart
+│   │   │   │   └── stats_repository.g.dart
+│   │   │   ├── domain
+│   │   │   │   ├── dashboard_stats.dart
+│   │   │   │   └── dashboard_stats.freezed.dart
+│   │   │   └── presentation
+│   │   │       ├── dashboard_page.dart
+│   │   │       └── widgets
+│   │   │           └── metric_card.dart
+│   │   ├── documents
+│   │   │   ├── data
+│   │   │   │   ├── documents_provider.dart
+│   │   │   │   └── documents_provider.g.dart
+│   │   │   └── presentation
+│   │   │       ├── document_details_page.dart
+│   │   │       ├── document_form_page.dart
+│   │   │       └── documents_list_page.dart
+│   │   ├── inventory
+│   │   │   ├── data
+│   │   │   │   ├── inventory_provider.dart
+│   │   │   │   └── inventory_provider.g.dart
+│   │   │   └── presentation
+│   │   │       ├── inventory_form_page.dart
+│   │   │       └── inventory_hub_page.dart
+│   │   ├── quotes
+│   │   │   ├── data
+│   │   │   │   ├── quotes_provider.dart
+│   │   │   │   └── quotes_provider.g.dart
+│   │   │   └── presentation
+│   │   │       ├── quote_details_page.dart
+│   │   │       ├── quote_form_page.dart
+│   │   │       └── quotes_list_page.dart
+│   │   ├── reports
+│   │   │   ├── data
+│   │   │   │   ├── stats_provider.dart
+│   │   │   │   ├── stats_provider.freezed.dart
+│   │   │   │   └── stats_provider.g.dart
+│   │   │   └── presentation
+│   │   │       └── stats_overview_page.dart
+│   │   ├── settings
+│   │   │   ├── data
+│   │   │   │   ├── settings_provider.dart
+│   │   │   │   └── settings_provider.g.dart
+│   │   │   └── presentation
+│   │   │       └── settings_page.dart
+│   │   └── tools
+│   │       └── presentation
+│   │           ├── flash_roulette_page.dart
+│   │           ├── pain_estimator_page.dart
+│   │           └── tools_hub_page.dart
+│   ├── main.dart
+│   └── shared
+│       ├── cache
+│       │   ├── id_mapper.dart
+│       │   └── id_mapper.g.dart
+│       ├── data
+│       │   ├── api
+│       │   │   ├── client_api_service.dart
+│       │   │   └── client_api_service.g.dart
+│       │   └── interfaces
+│       │       └── client_service.dart
+│       ├── domain
+│       │   ├── appointment.dart
+│       │   ├── appointment.freezed.dart
+│       │   ├── appointment.g.dart
+│       │   ├── client.dart
+│       │   ├── client.freezed.dart
+│       │   ├── client.g.dart
+│       │   ├── communication.dart
+│       │   ├── communication.freezed.dart
+│       │   ├── communication.g.dart
+│       │   ├── document.dart
+│       │   ├── document.freezed.dart
+│       │   ├── document.g.dart
+│       │   ├── domain.dart
+│       │   ├── dtos.dart
+│       │   ├── dtos.g.dart
+│       │   ├── enums.dart
+│       │   ├── inventory.dart
+│       │   ├── inventory.freezed.dart
+│       │   ├── inventory.g.dart
+│       │   ├── quote.dart
+│       │   ├── quote.freezed.dart
+│       │   ├── quote.g.dart
+│       │   ├── repositories.dart
+│       │   ├── shop_settings.dart
+│       │   ├── shop_settings.freezed.dart
+│       │   ├── shop_settings.g.dart
+│       │   ├── user.dart
+│       │   ├── user.freezed.dart
+│       │   └── user.g.dart
+│       ├── persistence
+│       │   ├── daos
+│       │   │   ├── appointments_dao.dart
+│       │   │   ├── appointments_dao.g.dart
+│       │   │   ├── audit_logs_dao.dart
+│       │   │   ├── audit_logs_dao.g.dart
+│       │   │   ├── clients_dao.dart
+│       │   │   ├── clients_dao.g.dart
+│       │   │   ├── communications_dao.dart
+│       │   │   ├── communications_dao.g.dart
+│       │   │   ├── daos.dart
+│       │   │   ├── documents_dao.dart
+│       │   │   ├── documents_dao.g.dart
+│       │   │   ├── inventory_dao.dart
+│       │   │   ├── inventory_dao.g.dart
+│       │   │   ├── quotes_dao.dart
+│       │   │   ├── quotes_dao.g.dart
+│       │   │   ├── shop_settings_dao.dart
+│       │   │   ├── shop_settings_dao.g.dart
+│       │   │   ├── users_dao.dart
+│       │   │   └── users_dao.g.dart
+│       │   ├── database.dart
+│       │   ├── database.g.dart
+│       │   ├── drift_client_service.dart
+│       │   ├── drift_client_service.g.dart
+│       │   ├── persistence.dart
+│       │   ├── repositories_impl.dart
+│       │   ├── repositories_impl.g.dart
+│       │   └── tables
+│       │       ├── appointments_table.dart
+│       │       ├── audit_logs_table.dart
+│       │       ├── clients_table.dart
+│       │       ├── communications_table.dart
+│       │       ├── documents_table.dart
+│       │       ├── inventory_table.dart
+│       │       ├── quotes_table.dart
+│       │       ├── shop_settings_table.dart
+│       │       ├── tables.dart
+│       │       └── users_table.dart
+│       ├── presentation
+│       │   └── widgets
+│       │       ├── neon_divider.dart
+│       │       └── neon_plate.dart
+│       ├── util
+│       │   ├── api_client.dart
+│       │   ├── api_client.g.dart
+│       │   ├── secure_storage.dart
+│       │   ├── secure_storage.g.dart
+│       │   ├── shared_prefs_provider.dart
+│       │   ├── shared_prefs_provider.g.dart
+│       │   ├── sync_manager.dart
+│       │   ├── sync_manager.g.dart
+│       │   ├── sync_worker.dart
+│       │   ├── sync_worker.g.dart
+│       │   ├── websocket_client.dart
+│       │   └── websocket_client.g.dart
+│       └── widgets
+│           └── app_shell.dart
+├── pubspec.lock
+├── pubspec.yaml
+├── README.md
+├── structure.txt
+├── test
+│   ├── domain
+│   │   └── domain_test.dart
+│   ├── features
+│   │   ├── auth
+│   │   │   └── auth_service_test.dart
+│   │   ├── communications
+│   │   │   ├── communications_page_test.dart
+│   │   │   └── communications_provider_test.dart
+│   │   └── inventory
+│   │       ├── inventory_page_test.dart
+│   │       └── inventory_provider_test.dart
+│   └── widget_test.dart
+└── web
+    ├── drift_worker.js
+    ├── favicon.png
+    ├── icons
+    │   ├── Icon-192.png
+    │   ├── Icon-512.png
+    │   ├── Icon-maskable-192.png
+    │   └── Icon-maskable-512.png
+    ├── index.html
+    ├── manifest.json
+    └── sqlite3.wasm
+
+122 directories, 250 files

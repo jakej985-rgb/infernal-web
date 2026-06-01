@@ -13,16 +13,16 @@ import '../../domain/client.dart' as domain;
 import '../../util/api_client.dart';
 import '../interfaces/client_service.dart';
 
-part 'client_api_service.g.dart';
+part 'client_service_api_impl.g.dart';
 
 @riverpod
-ClientApiService clientApiService(Ref ref) {
-  return ClientApiService(ref);
+ClientServiceApiImpl clientServiceApiImpl(Ref ref) {
+  return ClientServiceApiImpl(ref);
 }
 
-class ClientApiService implements ClientService {
+class ClientServiceApiImpl implements ClientService {
   final Ref _ref;
-  ClientApiService(this._ref);
+  ClientServiceApiImpl(this._ref);
 
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   Dio get _dio => _ref.read(apiClientProvider);
@@ -81,12 +81,12 @@ class ClientApiService implements ClientService {
   }
 
   Future<String?> _resolveUuid(int id) async {
-    final uuid = _idMapper.getUuid(id);
+    final uuid = _idMapper.getUuid('client', id);
     if (uuid != null) return uuid;
 
     // If UUID mapping is missing locally, resolve it by loading list of clients
     await _getClientsDeduplicated();
-    return _idMapper.getUuid(id);
+    return _idMapper.getUuid('client', id);
   }
 
   @override
@@ -136,7 +136,7 @@ class ClientApiService implements ClientService {
       final uuid = (response.data as Map<String, dynamic>)['id'] as String;
       
       // Warm up map cache
-      await _idMapper.registerUuid(uuid);
+      await _idMapper.registerUuid('client', uuid);
 
       // Trigger hot stream refresh for active subscribers
       _triggerClientsUpdate();
@@ -230,7 +230,7 @@ class ClientApiService implements ClientService {
 
   Future<domain.Client> _mapToDomain(Map<String, dynamic> json) async {
     final uuid = json['id'] as String;
-    final id = await _idMapper.registerUuid(uuid);
+    final id = await _idMapper.registerUuid('client', uuid);
 
     final fullName = json['name'] as String? ?? '';
     final parts = fullName.trim().split(' ');
