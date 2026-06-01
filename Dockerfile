@@ -5,6 +5,8 @@ WORKDIR /app
 
 # Copy everything
 COPY . .
+
+# Go into Flutter project
 WORKDIR /app/app
 
 # Build Flutter web
@@ -15,15 +17,11 @@ RUN flutter build web --release
 # ---------- SERVE STAGE ----------
 FROM nginx:alpine
 
-# Remove default nginx site config
 RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy built web app
-COPY --from=build /app/build/web /usr/share/nginx/html
+# ✅ FIXED PATH
+COPY --from=build /app/app/build/web /usr/share/nginx/html
 
 EXPOSE 8080
-
 CMD ["nginx", "-g", "daemon off;"]
