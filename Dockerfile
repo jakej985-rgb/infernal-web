@@ -1,10 +1,11 @@
 # ---------- BUILD STAGE ----------
 FROM ghcr.io/cirruslabs/flutter:stable AS build
 
-WORKDIR /app/app
+WORKDIR /app
 
 # Copy everything
 COPY . .
+WORKDIR /app/app
 
 # Build Flutter web
 RUN flutter config --enable-web
