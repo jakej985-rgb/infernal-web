@@ -250,7 +250,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final authState = authStateAsync.valueOrNull;
+      final authState = authStateAsync.asData?.value;
       if (authState == null) {
         return null;
       }
