@@ -1,7 +1,7 @@
 # ---------- BUILD STAGE ----------
 FROM ghcr.io/cirruslabs/flutter:stable AS build
 
-WORKDIR /app
+WORKDIR /app/app
 
 # Copy everything
 COPY . .
