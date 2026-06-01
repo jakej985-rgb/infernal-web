@@ -50,7 +50,7 @@ jobs:
           service: ${{ env.API_SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.API_IMAGE }}
-          flags: '--allow-unauthenticated --add-cloudsql-instances=m3tal-project:us-central1:infernal-db --set-env-vars=DB_USER=m3tal,DB_NAME=infernal,DB_HOST=/cloudsql/m3tal-project:us-central1:infernal-db'
+          flags: '--allow-unauthenticated --add-cloudsql-instances=m3tal-project:us-central1:infernal-db --set-env-vars=DB_USER=m3tal,DB_NAME=infernal,DB_HOST=/cloudsql/m3tal-project:us-central1:infernal-db,DB_PASS=${{ secrets.DB_PASS }}'
 
       - name: Deploy Web to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
