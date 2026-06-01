@@ -5,9 +5,11 @@ on:
 
 env:
   PROJECT_ID: m3tal-project
-  SERVICE_NAME: infernal-web
+  API_SERVICE_NAME: infernal-api
+  WEB_SERVICE_NAME: infernal-web
   REGION: us-central1
-  IMAGE: gcr.io/m3tal-project/infernal-web
+  API_IMAGE: gcr.io/m3tal-project/infernal-api
+  WEB_IMAGE: gcr.io/m3tal-project/infernal-web
 
 jobs:
   deploy:
@@ -32,15 +34,28 @@ jobs:
         run: |
           gcloud auth configure-docker --quiet
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Docker Images
         run: |
-          docker build -t ${{ env.IMAGE }} .
-          docker push ${{ env.IMAGE }}
+          # Build and push Go API
+          docker build -t ${{ env.API_IMAGE }} -f backend/Dockerfile backend
+          docker push ${{ env.API_IMAGE }}
+          
+          # Build and push Flutter Web
+          docker build -t ${{ env.WEB_IMAGE }} -f Dockerfile .
+          docker push ${{ env.WEB_IMAGE }}
 
-      - name: Deploy to Cloud Run
+      - name: Deploy API to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: ${{ env.SERVICE_NAME }}
+          service: ${{ env.API_SERVICE_NAME }}
           region: ${{ env.REGION }}
-          image: ${{ env.IMAGE }}
+          image: ${{ env.API_IMAGE }}
+          flags: '--allow-unauthenticated --add-cloudsql-instances=m3tal-project:us-central1:infernal-db --set-env-vars=DB_USER=m3tal,DB_NAME=infernal,DB_HOST=/cloudsql/m3tal-project:us-central1:infernal-db'
+
+      - name: Deploy Web to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.WEB_SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.WEB_IMAGE }}
           flags: '--allow-unauthenticated'
