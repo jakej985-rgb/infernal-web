@@ -42,7 +42,7 @@ final class ShopSettingsNotifierProvider
 }
 
 String _$shopSettingsNotifierHash() =>
-    r'3285bf96503cabbd80702d4d12525457d79df459';
+    r'2bb20cfb3e6e2b430bcd45bab5262654a7ac4e12';
 
 abstract class _$ShopSettingsNotifier extends $Notifier<ShopSettings> {
   ShopSettings build();

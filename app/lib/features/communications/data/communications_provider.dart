@@ -1,84 +1,27 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
 import '../../../shared/cache/id_mapper.dart';
-import '../../../shared/util/api_client.dart';
 import '../../../../shared/domain/communication.dart';
 
 part 'communications_provider.g.dart';
 
-final _communicationsController = StreamController<List<CommunicationRitual>>.broadcast();
-Future<List<CommunicationRitual>>? _pendingCommsFetch;
-
-Future<List<CommunicationRitual>> _fetchCommunications(Ref ref) async {
-  final dio = ref.read(apiClientProvider);
-  final idMapper = ref.read(idMapperProvider);
-  try {
-    final response = await dio.get('/communications');
-    final rawList = response.data as List;
-    final rituals = <CommunicationRitual>[];
-    for (final item in rawList) {
-      final map = item as Map<String, dynamic>;
-      final uuid = map['id'] as String;
-      final id = await idMapper.registerUuid('communication', uuid);
-      final clientUuid = map['client_id'] as String? ?? '';
-      
-      int? clientId;
-      if (clientUuid.isNotEmpty) {
-        clientId = await idMapper.registerUuid('client', clientUuid);
-      }
-      
-      final type = map['type'] as String? ?? 'SMS';
-      final content = map['content'] as String? ?? '';
-      
-      final createdAtStr = map['created_at'] as String?;
-      final createdAt = createdAtStr != null ? DateTime.parse(createdAtStr).toLocal() : DateTime.now();
-
-      rituals.add(CommunicationRitual(
-        id: id,
-        syncId: uuid,
-        clientId: clientId,
-        clientName: 'Client $clientId', // Or resolve via clients list if denormalized
-        type: type,
-        direction: 'OUTBOUND',
-        content: content,
-        sentAt: createdAt,
-        status: 'SENT',
-        lastModifiedUtc: createdAt,
-        lastModifiedBy: 'App',
-        isDeleted: false,
-      ));
-    }
-    return rituals;
-  } on DioException catch (e) {
-    throw ApiClientException.fromDioError(e);
-  } catch (e) {
-    throw ApiClientException('An unexpected error occurred: $e');
-  }
-}
-
-void _triggerCommsUpdate(Ref ref) async {
-  if (_pendingCommsFetch != null) return;
-  _pendingCommsFetch = _fetchCommunications(ref);
-  try {
-    final list = await _pendingCommsFetch!;
-    if (!_communicationsController.isClosed) {
-      _communicationsController.add(list);
-    }
-  } catch (e) {
-    if (!_communicationsController.isClosed) {
-      _communicationsController.addError(e);
-    }
-  } finally {
-    _pendingCommsFetch = null;
-  }
-}
+CollectionReference<Map<String, dynamic>> _communicationsRef() =>
+    FirebaseFirestore.instance.collection('organizations').doc('default-org').collection('communications');
 
 @riverpod
 Stream<List<CommunicationRitual>> communications(Ref ref) {
-  _triggerCommsUpdate(ref);
-  return _communicationsController.stream;
+  final idMapper = ref.watch(idMapperProvider);
+  return _communicationsRef()
+      .where('isDeleted', isEqualTo: false)
+      .snapshots()
+      .asyncMap((snapshot) async {
+    final list = <CommunicationRitual>[];
+    for (final doc in snapshot.docs) {
+      list.add(await _mapDocToDomain(doc, idMapper));
+    }
+    return list;
+  });
 }
 
 @riverpod
@@ -86,46 +29,78 @@ class CommunicationsService extends _$CommunicationsService {
   @override
   FutureOr<void> build() {}
 
-  Dio get _dio => ref.read(apiClientProvider);
   IdMapper get _idMapper => ref.read(idMapperProvider);
 
   Future<void> sendCommunication(CommunicationRitual ritual) async {
-    try {
-      String? clientUuid;
-      if (ritual.clientId != null) {
-        clientUuid = _idMapper.getUuid('client', ritual.clientId!);
-      }
-      if (clientUuid == null) {
-        throw ApiClientException('Could not resolve client UUID.');
-      }
-      final payload = {
-        'client_id': clientUuid,
-        'type': ritual.type,
-        'content': ritual.content,
-      };
-      final response = await _dio.post('/communications', data: payload);
-      final uuid = (response.data as Map<String, dynamic>)['id'] as String;
-      await _idMapper.registerUuid('communication', uuid);
-      _triggerCommsUpdate(ref);
-    } on DioException catch (e) {
-      throw ApiClientException.fromDioError(e);
+    final docRef = _communicationsRef().doc();
+    final uuid = docRef.id;
+
+    String? clientUuid;
+    if (ritual.clientId != null) {
+      clientUuid = _idMapper.getUuid('client', ritual.clientId!);
     }
+
+    await docRef.set({
+      'client_id': clientUuid,
+      'client_name': ritual.clientName,
+      'type': ritual.type,
+      'direction': ritual.direction,
+      'content': ritual.content,
+      'sentAt': FieldValue.serverTimestamp(),
+      'status': ritual.status,
+      'lastModifiedBy': ritual.lastModifiedBy,
+      'isDeleted': false,
+    });
+
+    await _idMapper.registerUuid('communication', uuid);
   }
 
   Future<void> deleteCommunication(int id) async {
-    try {
-      var uuid = _idMapper.getUuid('communication', id);
-      if (uuid == null) {
-        await _fetchCommunications(ref);
-        uuid = _idMapper.getUuid('communication', id);
-      }
-      if (uuid == null) {
-        throw ApiClientException('Could not resolve communication UUID.');
-      }
-      await _dio.delete('/communications/$uuid');
-      _triggerCommsUpdate(ref);
-    } on DioException catch (e) {
-      throw ApiClientException.fromDioError(e);
-    }
+    final uuid = _idMapper.getUuid('communication', id);
+    if (uuid == null) throw Exception('Cannot resolve ID for communication.');
+
+    await _communicationsRef().doc(uuid).update({
+      'isDeleted': true,
+      'sentAt': FieldValue.serverTimestamp(),
+    });
   }
+}
+
+Future<CommunicationRitual> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc, IdMapper idMapper) async {
+  final uuid = doc.id;
+  final id = await idMapper.registerUuid('communication', uuid);
+
+  final data = doc.data() ?? {};
+  final clientUuid = data['client_id'] as String?;
+  int? clientId;
+  if (clientUuid != null && clientUuid.isNotEmpty) {
+    clientId = await idMapper.registerUuid('client', clientUuid);
+  }
+
+  final clientName = data['client_name'] as String? ?? '';
+  final type = data['type'] as String? ?? 'SMS';
+  final direction = data['direction'] as String? ?? 'OUTBOUND';
+  final content = data['content'] as String? ?? '';
+  
+  final sentAtTimestamp = data['sentAt'] as Timestamp?;
+  final sentAt = sentAtTimestamp?.toDate() ?? DateTime.now();
+
+  final status = data['status'] as String? ?? 'SENT';
+  final lastModifiedBy = data['lastModifiedBy'] as String? ?? 'App';
+  final isDeleted = data['isDeleted'] as bool? ?? false;
+
+  return CommunicationRitual(
+    id: id,
+    syncId: uuid,
+    clientId: clientId,
+    clientName: clientName,
+    type: type,
+    direction: direction,
+    content: content,
+    sentAt: sentAt,
+    status: status,
+    lastModifiedUtc: sentAt.toUtc(),
+    lastModifiedBy: lastModifiedBy,
+    isDeleted: isDeleted,
+  );
 }

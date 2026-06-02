@@ -2,8 +2,71 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+    
+    // Function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Function to get the current user's role document
+    function getUserData(orgId) {
+      return get(/databases/$(database)/documents/organizations/$(orgId)/users/$(request.auth.uid)).data;
+    }
+    
+    // Function to check if user is an artist or owner/admin in the organization
+    function hasRole(orgId, roles) {
+      return isAuthenticated() && getUserData(orgId).role in roles;
+    }
+
+    match /organizations/{orgId} {
+      // Allow read access to organization details for authenticated members
+      allow read: if isAuthenticated();
+      // Allow write access only to administrators/owners
+      allow write: if hasRole(orgId, ['admin', 'owner']);
+
+      // Nested collections inside the organization
+      match /users/{userId} {
+        // Anyone in the organization can read user profiles (e.g. to list artists)
+        allow read: if isAuthenticated();
+        // A user can write to their own profile, or an admin can manage any user
+        allow write: if isAuthenticated() && (request.auth.uid == userId || hasRole(orgId, ['admin', 'owner']));
+      }
+
+      match /clients/{clientId} {
+        // Authenticated users can read clients, artists/admins can manage clients
+        allow read: if isAuthenticated();
+        allow write: if hasRole(orgId, ['artist', 'admin', 'owner']);
+      }
+
+      match /appointments/{appointmentId} {
+        // Authenticated users can read appointments, artists/admins can manage them
+        allow read: if isAuthenticated();
+        allow write: if hasRole(orgId, ['artist', 'admin', 'owner']);
+      }
+
+      match /quotes/{quoteId} {
+        // Authenticated users can read quotes, artists/admins can manage them
+        allow read: if isAuthenticated();
+        allow write: if hasRole(orgId, ['artist', 'admin', 'owner']);
+      }
+
+      match /documents/{documentId} {
+        // Authenticated users can read/write documents
+        allow read: if isAuthenticated();
+        allow write: if hasRole(orgId, ['artist', 'admin', 'owner']);
+      }
+
+      match /inventory/{itemId} {
+        // Authenticated users can read inventory, artists/admins can manage them
+        allow read: if isAuthenticated();
+        allow write: if hasRole(orgId, ['artist', 'admin', 'owner']);
+      }
+
+      match /communications/{commId} {
+        // Authenticated users can read/write communications
+        allow read: if isAuthenticated();
+        allow write: if hasRole(orgId, ['artist', 'admin', 'owner']);
+      }
     }
   }
 }

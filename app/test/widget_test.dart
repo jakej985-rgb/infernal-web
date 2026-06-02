@@ -73,8 +73,8 @@ void main() {
       ),
     );
 
-    // Verify the dashboard loads (has "THE ALTAR" text)
+    // Verify the dashboard loads (has "DASHBOARD" text)
     await tester.pumpAndSettle();
-    expect(find.text('THE ALTAR'), findsOneWidget);
+    expect(find.text('DASHBOARD'), findsOneWidget);
   });
 }

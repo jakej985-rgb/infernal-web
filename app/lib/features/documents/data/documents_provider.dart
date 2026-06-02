@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
+import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart' as fb_storage;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../shared/cache/id_mapper.dart';
-import '../../../shared/util/api_client.dart';
 import '../../../../shared/domain/document.dart' as domain;
 
 part 'documents_provider.g.dart';
@@ -15,75 +16,24 @@ class DocumentSearchQuery extends _$DocumentSearchQuery {
   void set(String query) => state = query;
 }
 
-final _documentsController = StreamController<List<domain.Document>>.broadcast();
-Future<List<domain.Document>>? _pendingDocsFetch;
-
-Future<List<domain.Document>> _fetchDocuments(Ref ref) async {
-  final dio = ref.read(apiClientProvider);
-  final idMapper = ref.read(idMapperProvider);
-  try {
-    final response = await dio.get('/documents');
-    final rawList = response.data as List;
-    final docs = <domain.Document>[];
-    for (final item in rawList) {
-      final map = item as Map<String, dynamic>;
-      final uuid = map['id'] as String;
-      final id = await idMapper.registerUuid('document', uuid);
-      
-      final clientUuid = map['client_id'] as String? ?? '';
-      int clientId = 0;
-      if (clientUuid.isNotEmpty) {
-        clientId = await idMapper.registerUuid('client', clientUuid);
-      }
-
-      final name = map['name'] as String? ?? '';
-      final filePath = map['file_path'] as String? ?? '';
-      final createdAtStr = map['created_at'] as String?;
-      final createdAt = createdAtStr != null ? DateTime.parse(createdAtStr).toLocal() : DateTime.now();
-
-      docs.add(domain.Document(
-        id: id,
-        syncId: uuid,
-        uploadedByUserId: 1, // Default local user ID
-        clientId: clientId,
-        title: name,
-        filePath: filePath,
-        createdAt: createdAt,
-        lastModifiedUtc: createdAt,
-        lastModifiedBy: 'App',
-      ));
-    }
-    return docs;
-  } on DioException catch (e) {
-    throw ApiClientException.fromDioError(e);
-  } catch (e) {
-    throw ApiClientException('An unexpected error occurred: $e');
-  }
-}
-
-void _triggerDocsUpdate(Ref ref) async {
-  if (_pendingDocsFetch != null) return;
-  _pendingDocsFetch = _fetchDocuments(ref);
-  try {
-    final list = await _pendingDocsFetch!;
-    if (!_documentsController.isClosed) {
-      _documentsController.add(list);
-    }
-  } catch (e) {
-    if (!_documentsController.isClosed) {
-      _documentsController.addError(e);
-    }
-  } finally {
-    _pendingDocsFetch = null;
-  }
-}
+CollectionReference<Map<String, dynamic>> _documentsRef() =>
+    FirebaseFirestore.instance.collection('organizations').doc('default-org').collection('documents');
 
 @riverpod
 Stream<List<domain.Document>> filteredDocuments(Ref ref) {
   final query = ref.watch(documentSearchQueryProvider);
-  _triggerDocsUpdate(ref);
+  final idMapper = ref.watch(idMapperProvider);
 
-  return _documentsController.stream.map((docs) {
+  return _documentsRef()
+      .where('isDeleted', isEqualTo: false)
+      .snapshots()
+      .asyncMap((snapshot) async {
+    final list = <domain.Document>[];
+    for (final doc in snapshot.docs) {
+      list.add(await _mapDocToDomain(doc, idMapper));
+    }
+    return list;
+  }).map((docs) {
     if (query.isEmpty) return docs;
     final lowerQ = query.toLowerCase();
     return docs.where((doc) {
@@ -95,10 +45,15 @@ Stream<List<domain.Document>> filteredDocuments(Ref ref) {
 
 @riverpod
 Stream<domain.Document?> documentDetail(Ref ref, int id) {
-  _triggerDocsUpdate(ref);
-  return _documentsController.stream.map((docs) {
-    final match = docs.where((d) => d.id == id);
-    return match.isEmpty ? null : match.first;
+  final idMapper = ref.watch(idMapperProvider);
+  final uuid = idMapper.getUuid('document', id);
+  if (uuid == null) {
+    return Stream.value(null);
+  }
+
+  return _documentsRef().doc(uuid).snapshots().asyncMap((doc) async {
+    if (!doc.exists) return null;
+    return await _mapDocToDomain(doc, idMapper);
   });
 }
 
@@ -111,50 +66,94 @@ class DocumentsService {
   final Ref _ref;
   DocumentsService(this._ref);
 
-  Dio get _dio => _ref.read(apiClientProvider);
   IdMapper get _idMapper => _ref.read(idMapperProvider);
 
   Future<void> createDocument(domain.Document doc) async {
-    try {
-      final clientUuid = _idMapper.getUuid('client', doc.clientId);
-      if (clientUuid == null) {
-        throw ApiClientException('Could not resolve client UUID.');
-      }
-
-      // We upload a dummy file via multipart form data to satisfy the Go backend
-      final formData = FormData.fromMap({
-        'file': MultipartFile.fromString('dummy file contents', filename: doc.title),
-        'client_id': clientUuid,
-      });
-
-      final response = await _dio.post('/documents/upload', data: formData);
-      final uuid = (response.data as Map<String, dynamic>)['id'] as String;
-      await _idMapper.registerUuid('document', uuid);
-      _triggerDocsUpdate(_ref);
-    } on DioException catch (e) {
-      throw ApiClientException.fromDioError(e);
+    final clientUuid = _idMapper.getUuid('client', doc.clientId);
+    if (clientUuid == null) {
+      throw Exception('Could not resolve client UUID.');
     }
+
+    final docRef = _documentsRef().doc();
+    final uuid = docRef.id;
+
+    // 1. Upload file bytes to Firebase Storage
+    final storageRef = fb_storage.FirebaseStorage.instance
+        .ref()
+        .child('organizations')
+        .child('default-org')
+        .child('clients')
+        .child(clientUuid)
+        .child('documents')
+        .child('${uuid}_${doc.title}');
+
+    final uploadTask = storageRef.putData(Uint8List.fromList('dummy file contents'.codeUnits));
+    final snapshot = await uploadTask;
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+
+    // 2. Save metadata to Firestore
+    await docRef.set({
+      'client_id': clientUuid,
+      'title': doc.title,
+      'filePath': downloadUrl,
+      'uploadedByUserId': 'default-admin-uuid',
+      'isDeleted': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    await _idMapper.registerUuid('document', uuid);
   }
 
   Future<void> updateDocument(domain.Document doc) async {
-    // The backend does not have an update route for documents, so we simulate it or re-create
-    await createDocument(doc);
+    final uuid = _idMapper.getUuid('document', doc.id);
+    if (uuid == null) throw Exception('Could not resolve document UUID.');
+
+    final clientUuid = _idMapper.getUuid('client', doc.clientId);
+    if (clientUuid == null) throw Exception('Could not resolve client UUID.');
+
+    await _documentsRef().doc(uuid).update({
+      'client_id': clientUuid,
+      'title': doc.title,
+      'filePath': doc.filePath,
+    });
   }
 
   Future<void> deleteDocument(int id) async {
-    try {
-      var uuid = _idMapper.getUuid('document', id);
-      if (uuid == null) {
-        await _fetchDocuments(_ref);
-        uuid = _idMapper.getUuid('document', id);
-      }
-      if (uuid == null) {
-        throw ApiClientException('Could not resolve document UUID.');
-      }
-      await _dio.delete('/documents/$uuid');
-      _triggerDocsUpdate(_ref);
-    } on DioException catch (e) {
-      throw ApiClientException.fromDioError(e);
-    }
+    final uuid = _idMapper.getUuid('document', id);
+    if (uuid == null) throw Exception('Could not resolve document UUID.');
+
+    await _documentsRef().doc(uuid).update({
+      'isDeleted': true,
+    });
   }
+}
+
+Future<domain.Document> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc, IdMapper idMapper) async {
+  final uuid = doc.id;
+  final id = await idMapper.registerUuid('document', uuid);
+
+  final data = doc.data() ?? {};
+  final clientUuid = data['client_id'] as String? ?? '';
+  int clientId = 0;
+  if (clientUuid.isNotEmpty) {
+    clientId = await idMapper.registerUuid('client', clientUuid);
+  }
+
+  final title = data['title'] as String? ?? '';
+  final filePath = data['filePath'] as String? ?? '';
+  
+  final createdAtTimestamp = data['createdAt'] as Timestamp?;
+  final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
+
+  return domain.Document(
+    id: id,
+    syncId: uuid,
+    uploadedByUserId: 1, // Default local user ID
+    clientId: clientId,
+    title: title,
+    filePath: filePath,
+    createdAt: createdAt,
+    lastModifiedUtc: createdAt.toUtc(),
+    lastModifiedBy: 'App',
+  );
 }

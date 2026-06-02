@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/util/shared_prefs_provider.dart';
 
@@ -57,10 +59,14 @@ class ShopSettings {
 
 @riverpod
 class ShopSettingsNotifier extends _$ShopSettingsNotifier {
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _subscription;
+
   @override
   ShopSettings build() {
     final prefs = ref.watch(sharedPreferencesProvider);
-    return ShopSettings(
+    
+    // Initial fallback from local cache (SharedPreferences) to ensure instant synchronous load
+    final cachedSettings = ShopSettings(
       shopName: prefs.getString('settings_shop_name') ?? 'Infernal Ink & Steel',
       logoPath: prefs.getString('settings_logo_path') ?? '',
       accentColor: prefs.getString('settings_accent_color') ?? '#FF0000',
@@ -72,6 +78,57 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
       shopMinimumRate: prefs.getDouble('settings_shop_minimum_rate') ?? 80.0,
       taxRate: prefs.getDouble('settings_tax_rate') ?? 0.08,
     );
+
+    // Listen to Firestore document updates to stay real-time
+    _subscription = FirebaseFirestore.instance
+        .collection('organizations')
+        .doc('default-org')
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists) {
+        final data = doc.data()?['settings'] as Map<String, dynamic>?;
+        if (data != null) {
+          final updated = _mapMapToSettings(data);
+          state = updated;
+          _saveToCache(updated);
+        }
+      }
+    });
+
+    ref.onDispose(() {
+      _subscription?.cancel();
+    });
+
+    return cachedSettings;
+  }
+
+  ShopSettings _mapMapToSettings(Map<String, dynamic> data) {
+    return ShopSettings(
+      shopName: data['shopName'] as String? ?? 'Infernal Ink & Steel',
+      logoPath: data['logoPath'] as String? ?? '',
+      accentColor: data['accentColor'] as String? ?? '#FF0000',
+      depositType: data['depositType'] as String? ?? 'percentage',
+      depositAmount: (data['depositAmount'] as num?)?.toDouble() ?? 20.0,
+      tattooPerHour: (data['tattooPerHour'] as num?)?.toDouble() ?? 150.0,
+      piercingSingle: (data['piercingSingle'] as num?)?.toDouble() ?? 50.0,
+      piercingMulti: (data['piercingMulti'] as num?)?.toDouble() ?? 80.0,
+      shopMinimumRate: (data['shopMinimumRate'] as num?)?.toDouble() ?? 80.0,
+      taxRate: (data['taxRate'] as num?)?.toDouble() ?? 0.08,
+    );
+  }
+
+  Future<void> _saveToCache(ShopSettings settings) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setString('settings_shop_name', settings.shopName);
+    await prefs.setString('settings_logo_path', settings.logoPath);
+    await prefs.setString('settings_accent_color', settings.accentColor);
+    await prefs.setString('settings_deposit_type', settings.depositType);
+    await prefs.setDouble('settings_deposit_amount', settings.depositAmount);
+    await prefs.setDouble('settings_tattoo_per_hour', settings.tattooPerHour);
+    await prefs.setDouble('settings_piercing_single', settings.piercingSingle);
+    await prefs.setDouble('settings_piercing_multi', settings.piercingMulti);
+    await prefs.setDouble('settings_shop_minimum_rate', settings.shopMinimumRate);
+    await prefs.setDouble('settings_tax_rate', settings.taxRate);
   }
 
   Future<void> updateShopProfile({
@@ -79,11 +136,15 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
     String? logoPath,
     String? accentColor,
   }) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    if (shopName != null) await prefs.setString('settings_shop_name', shopName);
-    if (logoPath != null) await prefs.setString('settings_logo_path', logoPath);
-    if (accentColor != null) await prefs.setString('settings_accent_color', accentColor);
-    ref.invalidateSelf();
+    final updates = <String, dynamic>{};
+    if (shopName != null) updates['settings.shopName'] = shopName;
+    if (logoPath != null) updates['settings.logoPath'] = logoPath;
+    if (accentColor != null) updates['settings.accentColor'] = accentColor;
+
+    await FirebaseFirestore.instance
+        .collection('organizations')
+        .doc('default-org')
+        .set(updates, SetOptions(merge: true));
   }
 
   Future<void> updatePricing({
@@ -93,38 +154,53 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
     double? shopMinimumRate,
     double? taxRate,
   }) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    if (tattooPerHour != null) await prefs.setDouble('settings_tattoo_per_hour', tattooPerHour);
-    if (piercingSingle != null) await prefs.setDouble('settings_piercing_single', piercingSingle);
-    if (piercingMulti != null) await prefs.setDouble('settings_piercing_multi', piercingMulti);
-    if (shopMinimumRate != null) await prefs.setDouble('settings_shop_minimum_rate', shopMinimumRate);
-    if (taxRate != null) await prefs.setDouble('settings_tax_rate', taxRate);
-    ref.invalidateSelf();
+    final updates = <String, dynamic>{};
+    if (tattooPerHour != null) updates['settings.tattooPerHour'] = tattooPerHour;
+    if (piercingSingle != null) updates['settings.piercingSingle'] = piercingSingle;
+    if (piercingMulti != null) updates['settings.piercingMulti'] = piercingMulti;
+    if (shopMinimumRate != null) updates['settings.shopMinimumRate'] = shopMinimumRate;
+    if (taxRate != null) updates['settings.taxRate'] = taxRate;
+
+    await FirebaseFirestore.instance
+        .collection('organizations')
+        .doc('default-org')
+        .set(updates, SetOptions(merge: true));
   }
 
   Future<void> updateDepositConfig({
     String? depositType,
     double? depositAmount,
   }) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    if (depositType != null) await prefs.setString('settings_deposit_type', depositType);
-    if (depositAmount != null) await prefs.setDouble('settings_deposit_amount', depositAmount);
-    ref.invalidateSelf();
+    final updates = <String, dynamic>{};
+    if (depositType != null) updates['settings.depositType'] = depositType;
+    if (depositAmount != null) updates['settings.depositAmount'] = depositAmount;
+
+    await FirebaseFirestore.instance
+        .collection('organizations')
+        .doc('default-org')
+        .set(updates, SetOptions(merge: true));
   }
 
   Future<void> resetToDefaults() async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.remove('settings_shop_name');
-    await prefs.remove('settings_logo_path');
-    await prefs.remove('settings_accent_color');
-    await prefs.remove('settings_deposit_type');
-    await prefs.remove('settings_deposit_amount');
-    await prefs.remove('settings_tattoo_per_hour');
-    await prefs.remove('settings_piercing_single');
-    await prefs.remove('settings_piercing_multi');
-    await prefs.remove('settings_shop_minimum_rate');
-    await prefs.remove('settings_tax_rate');
-    ref.invalidateSelf();
+    const defaultSettings = ShopSettings();
+    
+    final updates = <String, dynamic>{
+      'settings.shopName': defaultSettings.shopName,
+      'settings.logoPath': defaultSettings.logoPath,
+      'settings.accentColor': defaultSettings.accentColor,
+      'settings.depositType': defaultSettings.depositType,
+      'settings.depositAmount': defaultSettings.depositAmount,
+      'settings.tattooPerHour': defaultSettings.tattooPerHour,
+      'settings.piercingSingle': defaultSettings.piercingSingle,
+      'settings.piercingMulti': defaultSettings.piercingMulti,
+      'settings.shopMinimumRate': defaultSettings.shopMinimumRate,
+      'settings.taxRate': defaultSettings.taxRate,
+    };
+
+    await FirebaseFirestore.instance
+        .collection('organizations')
+        .doc('default-org')
+        .set(updates, SetOptions(merge: true));
   }
 }
 
