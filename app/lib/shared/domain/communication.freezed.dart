@@ -15,10 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CommunicationRitual {
 
- int get id; String get syncId; int? get clientId; String get clientName; String get type;// SMS, Email, Ritual
- String get direction;// INBOUND, OUTBOUND
- String get content; DateTime get sentAt; String get status;// PENDING, SENT, FAILED
- DateTime? get lastModifiedUtc; String get lastModifiedBy; bool get isDeleted;
+ int get id; String get syncId; int? get clientId; String get clientName; String get type; String get direction; String get content; DateTime get sentAt; String get status; DateTime? get lastModifiedUtc; String get lastModifiedBy; bool get isDeleted;
 /// Create a copy of CommunicationRitual
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -231,13 +228,10 @@ class _CommunicationRitual implements CommunicationRitual {
 @override final  int? clientId;
 @override final  String clientName;
 @override final  String type;
-// SMS, Email, Ritual
 @override final  String direction;
-// INBOUND, OUTBOUND
 @override final  String content;
 @override final  DateTime sentAt;
 @override@JsonKey() final  String status;
-// PENDING, SENT, FAILED
 @override final  DateTime? lastModifiedUtc;
 @override@JsonKey() final  String lastModifiedBy;
 @override@JsonKey() final  bool isDeleted;

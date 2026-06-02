@@ -12,37 +12,41 @@ abstract final class InfernalColors {
   static const Color surface = Color(0xFF1B1B1E); // Sleek matte black surface
   static const Color surfaceVariant = Color(0xFF26262B);
   static const Color surfaceElevated = Color(0xFF303036);
- 
+
   // Text colors
   static const Color textPrimary = Color(0xFFF1F1F3);
   static const Color textSecondary = Color(0xFFADB5BD);
   static const Color textMuted = Color(0xFF6C757D);
   static const Color textAccent = Color(0xFFFF922B); // Tangerine/ember accent
- 
+
   // Accent colors (Tattoo & Piercing studio theme)
-  static const Color blood = Color(0xFFC92A2A); // Crimson Red - Ink primary accent
-  static const Color arcane = Color(0xFF8E9AAF); // Cool Metallic Steel Grey/Silver
+  static const Color blood = Color(
+    0xFFC92A2A,
+  ); // Crimson Red - Ink primary accent
+  static const Color arcane = Color(
+    0xFF8E9AAF,
+  ); // Cool Metallic Steel Grey/Silver
   static const Color gold = Color(0xFFC5A059); // Warm Brass/Bronze
   static const Color voidColor = Color(0xFF343A40); // Dark Slate Charcoal
   static const Color ember = Color(0xFFD9480F); // Warm Copper / Rust Orange
- 
+
   // Status colors
   static const Color success = Color(0xFF2B8A3E); // Deep forest green
   static const Color warning = Color(0xFFE67E22);
   static const Color error = Color(0xFFC92A2A);
   static const Color info = Color(0xFF1971C2);
- 
+
   // Border/divider
   static const Color border = Color(0xFF2C2E33);
   static const Color divider = Color(0xFF212529);
- 
+
   // Appointment status colors
   static const Color scheduled = arcane;
   static const Color completed = success;
   static const Color cancelled = error;
   static const Color noShow = warning;
   static const Color blockOff = voidColor;
- 
+
   // Glow/Neon Effects
   static Color bloodGlow = blood.withValues(alpha: 0.3);
   static Color arcaneGlow = arcane.withValues(alpha: 0.3);

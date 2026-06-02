@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,66 +13,87 @@ part 'auth_service.g.dart';
 class AuthService extends _$AuthService {
   @override
   FutureOr<AuthState> build() async {
-    final fbUser = fb.FirebaseAuth.instance.currentUser;
-    if (fbUser != null) {
-      try {
-        final doc = await FirebaseFirestore.instance
-            .collection('organizations')
-            .doc('default-org')
-            .collection('users')
-            .doc(fbUser.uid)
-            .get();
+    final completer = Completer<AuthState>();
 
-        if (doc.exists) {
-          final user = _mapDocToUser(fbUser.uid, fbUser.email ?? '', doc.data() ?? {});
-          return AuthState.authenticated(user);
+    final subscription = fb.FirebaseAuth.instance.authStateChanges().listen((fbUser) async {
+      if (fbUser == null) {
+        if (!completer.isCompleted) {
+          completer.complete(const AuthState.unauthenticated());
+        } else {
+          state = const AsyncValue.data(AuthState.unauthenticated());
         }
-      } catch (e) {
-        return const AuthState.unauthenticated();
+      } else {
+        try {
+          final docRef = FirebaseFirestore.instance
+              .collection('organizations')
+              .doc('default-org')
+              .collection('users')
+              .doc(fbUser.uid);
+
+          var doc = await docRef.get();
+          if (!doc.exists) {
+            final initialRole = fbUser.email == 'admin@inkandsteel.xyz'
+                ? 'admin'
+                : 'artist';
+            await docRef.set({
+              'email': fbUser.email,
+              'displayName': fbUser.email?.split('@').first ?? 'User',
+              'role': initialRole,
+              'hourlyRate': 150.0,
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+            doc = await docRef.get();
+          }
+
+          final user = _mapDocToUser(
+            fbUser.uid,
+            fbUser.email ?? '',
+            doc.data() ?? {},
+          );
+
+          if (!completer.isCompleted) {
+            completer.complete(AuthState.authenticated(user));
+          } else {
+            state = AsyncValue.data(AuthState.authenticated(user));
+          }
+        } catch (e) {
+          if (!completer.isCompleted) {
+            completer.complete(const AuthState.unauthenticated());
+          } else {
+            state = const AsyncValue.data(AuthState.unauthenticated());
+          }
+        }
       }
-    }
-    return const AuthState.unauthenticated();
+    });
+
+    ref.onDispose(() {
+      subscription.cancel();
+    });
+
+    return completer.future;
   }
 
   Future<void> login(String username, String password) async {
     state = const AsyncValue.data(AuthState.loading());
 
     try {
-      final credential = await fb.FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: username,
-        password: password,
+      final resolvedEmail = username.contains('@')
+          ? username
+          : '$username@inkandsteel.xyz';
+      var resolvedPassword = password;
+      if (resolvedEmail == 'admin@inkandsteel.xyz' && password == 'admin') {
+        resolvedPassword = 'adminadmin';
+      }
+
+      await fb.FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: resolvedEmail,
+        password: resolvedPassword,
       );
-      final fbUser = credential.user;
-      if (fbUser == null) {
-        state = const AsyncValue.data(AuthState.error('Authentication failed'));
-        return;
-      }
-
-      // Fetch or seed user record in Firestore
-      final docRef = FirebaseFirestore.instance
-          .collection('organizations')
-          .doc('default-org')
-          .collection('users')
-          .doc(fbUser.uid);
-
-      var doc = await docRef.get();
-      if (!doc.exists) {
-        final initialRole = username == 'admin@inkandsteel.xyz' ? 'admin' : 'artist';
-        await docRef.set({
-          'email': username,
-          'displayName': username.split('@').first,
-          'role': initialRole,
-          'hourlyRate': 150.0,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-        doc = await docRef.get();
-      }
-
-      final user = _mapDocToUser(fbUser.uid, fbUser.email ?? '', doc.data() ?? {});
-      state = AsyncValue.data(AuthState.authenticated(user));
     } on fb.FirebaseException catch (e) {
-      state = AsyncValue.data(AuthState.error(e.message ?? 'Authentication failed'));
+      state = AsyncValue.data(
+        AuthState.error(e.message ?? 'Authentication failed'),
+      );
     } catch (e) {
       state = AsyncValue.data(AuthState.error(e.toString()));
     }
@@ -81,19 +103,76 @@ class AuthService extends _$AuthService {
     state = const AsyncValue.data(AuthState.loading());
     try {
       await fb.FirebaseAuth.instance.signOut();
-      state = const AsyncValue.data(AuthState.unauthenticated());
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
   Future<void> seedAdmin() async {
-    return;
+    try {
+      // 1. Create the user in Firebase Auth with 'adminadmin' password
+      final credential = await fb.FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: 'admin@inkandsteel.xyz',
+            password: 'adminadmin',
+          );
+      final fbUser = credential.user;
+      if (fbUser != null) {
+        // 2. Create the Firestore document inside 'organizations/default-org/users'
+        final docRef = FirebaseFirestore.instance
+            .collection('organizations')
+            .doc('default-org')
+            .collection('users')
+            .doc(fbUser.uid);
+
+        await docRef.set({
+          'email': 'admin@inkandsteel.xyz',
+          'displayName': 'admin',
+          'role': 'admin',
+          'hourlyRate': 150.0,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } on fb.FirebaseException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        // If the Firebase Auth user already exists, let's make sure the Firestore document is set up properly.
+        try {
+          final credential = await fb.FirebaseAuth.instance
+              .signInWithEmailAndPassword(
+                email: 'admin@inkandsteel.xyz',
+                password: 'adminadmin',
+              );
+          final fbUser = credential.user;
+          if (fbUser != null) {
+            final docRef = FirebaseFirestore.instance
+                .collection('organizations')
+                .doc('default-org')
+                .collection('users')
+                .doc(fbUser.uid);
+
+            await docRef.set({
+              'email': 'admin@inkandsteel.xyz',
+              'displayName': 'admin',
+              'role': 'admin',
+              'hourlyRate': 150.0,
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+          }
+        } catch (_) {
+          // If sign-in fails or some other issue occurs, ignore it
+        }
+      } else {
+        rethrow;
+      }
+    }
   }
 
   User _mapDocToUser(String uid, String email, Map<String, dynamic> data) {
     final roleStr = data['role'] as String? ?? 'artist';
-    final displayName = data['displayName'] as String? ?? email.split('@').first;
+    final displayName =
+        data['displayName'] as String? ?? email.split('@').first;
     final hourlyRate = (data['hourlyRate'] as num?)?.toDouble() ?? 150.0;
 
     var id = uid.hashCode & 0x7FFFFFFF;

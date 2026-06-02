@@ -16,8 +16,11 @@ class DocumentSearchQuery extends _$DocumentSearchQuery {
   void set(String query) => state = query;
 }
 
-CollectionReference<Map<String, dynamic>> _documentsRef() =>
-    FirebaseFirestore.instance.collection('organizations').doc('default-org').collection('documents');
+CollectionReference<Map<String, dynamic>> _documentsRef() => FirebaseFirestore
+    .instance
+    .collection('organizations')
+    .doc('default-org')
+    .collection('documents');
 
 @riverpod
 Stream<List<domain.Document>> filteredDocuments(Ref ref) {
@@ -28,19 +31,20 @@ Stream<List<domain.Document>> filteredDocuments(Ref ref) {
       .where('isDeleted', isEqualTo: false)
       .snapshots()
       .asyncMap((snapshot) async {
-    final list = <domain.Document>[];
-    for (final doc in snapshot.docs) {
-      list.add(await _mapDocToDomain(doc, idMapper));
-    }
-    return list;
-  }).map((docs) {
-    if (query.isEmpty) return docs;
-    final lowerQ = query.toLowerCase();
-    return docs.where((doc) {
-      return doc.title.toLowerCase().contains(lowerQ) ||
-             doc.filePath.toLowerCase().contains(lowerQ);
-    }).toList();
-  });
+        final list = <domain.Document>[];
+        for (final doc in snapshot.docs) {
+          list.add(await _mapDocToDomain(doc, idMapper));
+        }
+        return list;
+      })
+      .map((docs) {
+        if (query.isEmpty) return docs;
+        final lowerQ = query.toLowerCase();
+        return docs.where((doc) {
+          return doc.title.toLowerCase().contains(lowerQ) ||
+              doc.filePath.toLowerCase().contains(lowerQ);
+        }).toList();
+      });
 }
 
 @riverpod
@@ -87,7 +91,9 @@ class DocumentsService {
         .child('documents')
         .child('${uuid}_${doc.title}');
 
-    final uploadTask = storageRef.putData(Uint8List.fromList('dummy file contents'.codeUnits));
+    final uploadTask = storageRef.putData(
+      Uint8List.fromList('dummy file contents'.codeUnits),
+    );
     final snapshot = await uploadTask;
     final downloadUrl = await snapshot.ref.getDownloadURL();
 
@@ -122,13 +128,14 @@ class DocumentsService {
     final uuid = _idMapper.getUuid('document', id);
     if (uuid == null) throw Exception('Could not resolve document UUID.');
 
-    await _documentsRef().doc(uuid).update({
-      'isDeleted': true,
-    });
+    await _documentsRef().doc(uuid).update({'isDeleted': true});
   }
 }
 
-Future<domain.Document> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc, IdMapper idMapper) async {
+Future<domain.Document> _mapDocToDomain(
+  DocumentSnapshot<Map<String, dynamic>> doc,
+  IdMapper idMapper,
+) async {
   final uuid = doc.id;
   final id = await idMapper.registerUuid('document', uuid);
 
@@ -141,7 +148,7 @@ Future<domain.Document> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> d
 
   final title = data['title'] as String? ?? '';
   final filePath = data['filePath'] as String? ?? '';
-  
+
   final createdAtTimestamp = data['createdAt'] as Timestamp?;
   final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
 

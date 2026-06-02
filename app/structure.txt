@@ -58,20 +58,70 @@
 │   ├── test_cache
 │   │   └── build
 │   │       └── e526d636a6238c5a01b25d33d78dd941.cache.dill.track.dill
-│   └── unit_test_assets
-│       ├── AssetManifest.bin
-│       ├── FontManifest.json
-│       ├── fonts
-│       │   └── MaterialIcons-Regular.otf
-│       ├── NativeAssetsManifest.json
-│       ├── NOTICES.Z
-│       ├── packages
-│       │   └── cupertino_icons
-│       │       └── assets
-│       │           └── CupertinoIcons.ttf
-│       └── shaders
-│           ├── ink_sparkle.frag
-│           └── stretch_effect.frag
+│   ├── unit_test_assets
+│   │   ├── AssetManifest.bin
+│   │   ├── FontManifest.json
+│   │   ├── fonts
+│   │   │   └── MaterialIcons-Regular.otf
+│   │   ├── NativeAssetsManifest.json
+│   │   ├── NOTICES.Z
+│   │   ├── packages
+│   │   │   └── cupertino_icons
+│   │   │       └── assets
+│   │   │           └── CupertinoIcons.ttf
+│   │   └── shaders
+│   │       ├── ink_sparkle.frag
+│   │       └── stretch_effect.frag
+│   └── web
+│       ├── assets
+│       │   ├── AssetManifest.bin
+│       │   ├── AssetManifest.bin.json
+│       │   ├── FontManifest.json
+│       │   ├── fonts
+│       │   │   └── MaterialIcons-Regular.otf
+│       │   ├── NOTICES
+│       │   ├── packages
+│       │   │   └── cupertino_icons
+│       │   │       └── assets
+│       │   └── shaders
+│       │       ├── ink_sparkle.frag
+│       │       └── stretch_effect.frag
+│       ├── canvaskit
+│       │   ├── canvaskit.js
+│       │   ├── canvaskit.js.symbols
+│       │   ├── canvaskit.wasm
+│       │   ├── chromium
+│       │   │   ├── canvaskit.js
+│       │   │   ├── canvaskit.js.symbols
+│       │   │   └── canvaskit.wasm
+│       │   ├── experimental_webparagraph
+│       │   │   ├── canvaskit.js
+│       │   │   ├── canvaskit.js.symbols
+│       │   │   └── canvaskit.wasm
+│       │   ├── skwasm_heavy.js
+│       │   ├── skwasm_heavy.js.symbols
+│       │   ├── skwasm_heavy.wasm
+│       │   ├── skwasm.js
+│       │   ├── skwasm.js.symbols
+│       │   ├── skwasm.wasm
+│       │   ├── wimp.js
+│       │   ├── wimp.js.symbols
+│       │   └── wimp.wasm
+│       ├── drift_worker.js
+│       ├── favicon.png
+│       ├── flutter_bootstrap.js
+│       ├── flutter.js
+│       ├── flutter_service_worker.js
+│       ├── icons
+│       │   ├── Icon-192.png
+│       │   ├── Icon-512.png
+│       │   ├── Icon-maskable-192.png
+│       │   └── Icon-maskable-512.png
+│       ├── index.html
+│       ├── main.dart.js
+│       ├── manifest.json
+│       ├── sqlite3.wasm
+│       └── version.json
 ├── devtools_options.yaml
 ├── flutter_01.log
 ├── flutter_02.log
@@ -165,9 +215,6 @@
 │   │   │           ├── appointment_status_chip.dart
 │   │   │           └── client_selection_modal.dart
 │   │   ├── auth
-│   │   │   ├── data
-│   │   │   │   ├── user_repository.dart
-│   │   │   │   └── user_repository.g.dart
 │   │   │   ├── domain
 │   │   │   │   ├── auth_service.dart
 │   │   │   │   ├── auth_service.g.dart
@@ -243,6 +290,7 @@
 │   │           ├── flash_roulette_page.dart
 │   │           ├── pain_estimator_page.dart
 │   │           └── tools_hub_page.dart
+│   ├── firebase_options.dart
 │   ├── main.dart
 │   └── shared
 │       ├── cache
@@ -250,10 +298,21 @@
 │       │   └── id_mapper.g.dart
 │       ├── data
 │       │   ├── api
-│       │   │   ├── client_api_service.dart
-│       │   │   └── client_api_service.g.dart
-│       │   └── interfaces
-│       │       └── client_service.dart
+│       │   │   ├── appointment_service_api_impl.dart
+│       │   │   ├── appointment_service_api_impl.g.dart
+│       │   │   ├── client_service_api_impl.dart
+│       │   │   └── client_service_api_impl.g.dart
+│       │   ├── firebase
+│       │   │   ├── appointment_service_firebase_impl.dart
+│       │   │   ├── appointment_service_firebase_impl.g.dart
+│       │   │   ├── client_service_firebase_impl.dart
+│       │   │   └── client_service_firebase_impl.g.dart
+│       │   ├── infernal_labels_provider.dart
+│       │   ├── interfaces
+│       │   │   ├── appointment_service.dart
+│       │   │   └── client_service.dart
+│       │   ├── use_api_provider.dart
+│       │   └── use_api_provider.g.dart
 │       ├── domain
 │       │   ├── appointment.dart
 │       │   ├── appointment.freezed.dart
@@ -284,45 +343,6 @@
 │       │   ├── user.dart
 │       │   ├── user.freezed.dart
 │       │   └── user.g.dart
-│       ├── persistence
-│       │   ├── daos
-│       │   │   ├── appointments_dao.dart
-│       │   │   ├── appointments_dao.g.dart
-│       │   │   ├── audit_logs_dao.dart
-│       │   │   ├── audit_logs_dao.g.dart
-│       │   │   ├── clients_dao.dart
-│       │   │   ├── clients_dao.g.dart
-│       │   │   ├── communications_dao.dart
-│       │   │   ├── communications_dao.g.dart
-│       │   │   ├── daos.dart
-│       │   │   ├── documents_dao.dart
-│       │   │   ├── documents_dao.g.dart
-│       │   │   ├── inventory_dao.dart
-│       │   │   ├── inventory_dao.g.dart
-│       │   │   ├── quotes_dao.dart
-│       │   │   ├── quotes_dao.g.dart
-│       │   │   ├── shop_settings_dao.dart
-│       │   │   ├── shop_settings_dao.g.dart
-│       │   │   ├── users_dao.dart
-│       │   │   └── users_dao.g.dart
-│       │   ├── database.dart
-│       │   ├── database.g.dart
-│       │   ├── drift_client_service.dart
-│       │   ├── drift_client_service.g.dart
-│       │   ├── persistence.dart
-│       │   ├── repositories_impl.dart
-│       │   ├── repositories_impl.g.dart
-│       │   └── tables
-│       │       ├── appointments_table.dart
-│       │       ├── audit_logs_table.dart
-│       │       ├── clients_table.dart
-│       │       ├── communications_table.dart
-│       │       ├── documents_table.dart
-│       │       ├── inventory_table.dart
-│       │       ├── quotes_table.dart
-│       │       ├── shop_settings_table.dart
-│       │       ├── tables.dart
-│       │       └── users_table.dart
 │       ├── presentation
 │       │   └── widgets
 │       │       ├── neon_divider.dart
@@ -334,10 +354,6 @@
 │       │   ├── secure_storage.g.dart
 │       │   ├── shared_prefs_provider.dart
 │       │   ├── shared_prefs_provider.g.dart
-│       │   ├── sync_manager.dart
-│       │   ├── sync_manager.g.dart
-│       │   ├── sync_worker.dart
-│       │   ├── sync_worker.g.dart
 │       │   ├── websocket_client.dart
 │       │   └── websocket_client.g.dart
 │       └── widgets
@@ -350,14 +366,6 @@
 │   ├── domain
 │   │   └── domain_test.dart
 │   ├── features
-│   │   ├── auth
-│   │   │   └── auth_service_test.dart
-│   │   ├── communications
-│   │   │   ├── communications_page_test.dart
-│   │   │   └── communications_provider_test.dart
-│   │   └── inventory
-│   │       ├── inventory_page_test.dart
-│   │       └── inventory_provider_test.dart
 │   └── widget_test.dart
 └── web
     ├── drift_worker.js
@@ -371,4 +379,4 @@
     ├── manifest.json
     └── sqlite3.wasm
 
-122 directories, 250 files
+127 directories, 253 files

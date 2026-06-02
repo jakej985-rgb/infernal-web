@@ -5,7 +5,6 @@ part 'communication.g.dart';
 
 @freezed
 abstract class CommunicationRitual with _$CommunicationRitual {
-
   const factory CommunicationRitual({
     required int id,
     @Default('') String syncId,
@@ -21,5 +20,6 @@ abstract class CommunicationRitual with _$CommunicationRitual {
     @Default(false) bool isDeleted,
   }) = _CommunicationRitual;
 
-  factory CommunicationRitual.fromJson(Map<String, dynamic> json) => _$CommunicationRitualFromJson(json);
+  factory CommunicationRitual.fromJson(Map<String, dynamic> json) =>
+      _$CommunicationRitualFromJson(json);
 }

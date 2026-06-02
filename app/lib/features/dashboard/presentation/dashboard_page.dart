@@ -52,11 +52,14 @@ class DashboardPage extends ConsumerWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout, color: InfernalColors.textMuted),
-                onPressed: () => ref.read(authServiceProvider.notifier).logout(),
+                onPressed: () =>
+                    ref.read(authServiceProvider.notifier).logout(),
               ),
             ],
           ),
-          const SliverToBoxAdapter(child: NeonDivider(blurRadius: 10, thickness: 0.5)),
+          const SliverToBoxAdapter(
+            child: NeonDivider(blurRadius: 10, thickness: 0.5),
+          ),
           SliverPadding(
             padding: const EdgeInsets.all(InfernalSpacing.md),
             sliver: statsAsync.when(
@@ -96,16 +99,28 @@ class DashboardPage extends ConsumerWidget {
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (e, _) => SliverToBoxAdapter(
-                child: Text('Error: $e', style: const TextStyle(color: InfernalColors.error)),
+                child: Text(
+                  'Error: $e',
+                  style: const TextStyle(color: InfernalColors.error),
+                ),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(InfernalSpacing.md, InfernalSpacing.lg, InfernalSpacing.md, InfernalSpacing.sm),
+              padding: const EdgeInsets.fromLTRB(
+                InfernalSpacing.md,
+                InfernalSpacing.lg,
+                InfernalSpacing.md,
+                InfernalSpacing.sm,
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.visibility, color: InfernalColors.blood, size: 20),
+                  const Icon(
+                    Icons.visibility,
+                    color: InfernalColors.blood,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     UiLabels.get('timeline_title', useInfernal),
@@ -126,7 +141,15 @@ class DashboardPage extends ConsumerWidget {
                 return SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(InfernalSpacing.xl),
-                    child: Center(child: Text(UiLabels.get('no_upcoming_appointments', useInfernal), style: const TextStyle(color: InfernalColors.textMuted, fontStyle: FontStyle.italic))),
+                    child: Center(
+                      child: Text(
+                        UiLabels.get('no_upcoming_appointments', useInfernal),
+                        style: const TextStyle(
+                          color: InfernalColors.textMuted,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
                   ),
                 );
               }
@@ -135,18 +158,41 @@ class DashboardPage extends ConsumerWidget {
                   final appt = appointments[index];
                   final timeFmt = DateFormat.jm().format(appt.startTime);
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: InfernalSpacing.md, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: InfernalSpacing.md,
+                      vertical: 4,
+                    ),
                     child: NeonPlate(
                       color: InfernalColors.blood,
                       padding: EdgeInsets.zero,
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: InfernalColors.blood.withValues(alpha: 0.1),
-                          child: const Icon(Icons.circle, size: 12, color: InfernalColors.blood),
+                          backgroundColor: InfernalColors.blood.withValues(
+                            alpha: 0.1,
+                          ),
+                          child: const Icon(
+                            Icons.circle,
+                            size: 12,
+                            color: InfernalColors.blood,
+                          ),
                         ),
-                        title: Text(appt.clientName, style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold)),
-                        subtitle: Text('$timeFmt • ${appt.serviceType}', style: const TextStyle(color: InfernalColors.textSecondary)),
-                        trailing: const Icon(Icons.chevron_right, color: InfernalColors.textMuted),
+                        title: Text(
+                          appt.clientName,
+                          style: const TextStyle(
+                            color: InfernalColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '$timeFmt • ${appt.serviceType}',
+                          style: const TextStyle(
+                            color: InfernalColors.textSecondary,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.chevron_right,
+                          color: InfernalColors.textMuted,
+                        ),
                         onTap: () => context.go(AppRoutes.appointments),
                       ),
                     ),
@@ -154,15 +200,32 @@ class DashboardPage extends ConsumerWidget {
                 }, childCount: appointments.length),
               );
             },
-            loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
-            error: (e, _) => SliverToBoxAdapter(child: Text('Error: $e', style: const TextStyle(color: InfernalColors.error))),
+            loading: () => const SliverToBoxAdapter(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => SliverToBoxAdapter(
+              child: Text(
+                'Error: $e',
+                style: const TextStyle(color: InfernalColors.error),
+              ),
+            ),
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(InfernalSpacing.md, InfernalSpacing.xl, InfernalSpacing.md, InfernalSpacing.md),
+              padding: const EdgeInsets.fromLTRB(
+                InfernalSpacing.md,
+                InfernalSpacing.xl,
+                InfernalSpacing.md,
+                InfernalSpacing.md,
+              ),
               child: Text(
                 UiLabels.get('summoning_grid_title', useInfernal),
-                style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 14),
+                style: const TextStyle(
+                  color: InfernalColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  fontSize: 14,
+                ),
               ),
             ),
           ),

@@ -22,13 +22,17 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
 
   static const String _orgId = 'default-org';
 
-  CollectionReference<Map<String, dynamic>> get _apptsRef =>
-      _firestore.collection('organizations').doc(_orgId).collection('appointments');
+  CollectionReference<Map<String, dynamic>> get _apptsRef => _firestore
+      .collection('organizations')
+      .doc(_orgId)
+      .collection('appointments');
 
   @override
   Future<List<domain.Appointment>> getAppointments() async {
     try {
-      final snapshot = await _apptsRef.where('isDeleted', isEqualTo: false).get();
+      final snapshot = await _apptsRef
+          .where('isDeleted', isEqualTo: false)
+          .get();
       final appointments = <domain.Appointment>[];
       for (final doc in snapshot.docs) {
         appointments.add(await _mapDocToDomain(doc));
@@ -70,7 +74,10 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
         'title': appointment.serviceType,
         'notes': appointment.notes ?? '',
         'start_time': appointment.dateTime.toUtc().toIso8601String(),
-        'end_time': appointment.dateTime.add(Duration(minutes: appointment.durationMinutes)).toUtc().toIso8601String(),
+        'end_time': appointment.dateTime
+            .add(Duration(minutes: appointment.durationMinutes))
+            .toUtc()
+            .toIso8601String(),
         'isDeleted': false,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -97,7 +104,10 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
         'title': appointment.serviceType,
         'notes': appointment.notes ?? '',
         'start_time': appointment.dateTime.toUtc().toIso8601String(),
-        'end_time': appointment.dateTime.add(Duration(minutes: appointment.durationMinutes)).toUtc().toIso8601String(),
+        'end_time': appointment.dateTime
+            .add(Duration(minutes: appointment.durationMinutes))
+            .toUtc()
+            .toIso8601String(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -122,10 +132,9 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
 
   @override
   Stream<List<domain.Appointment>> watchAppointments() {
-    return _apptsRef
-        .where('isDeleted', isEqualTo: false)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    return _apptsRef.where('isDeleted', isEqualTo: false).snapshots().asyncMap((
+      snapshot,
+    ) async {
       final appointments = <domain.Appointment>[];
       for (final doc in snapshot.docs) {
         appointments.add(await _mapDocToDomain(doc));
@@ -146,7 +155,9 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
     });
   }
 
-  Future<domain.Appointment> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc) async {
+  Future<domain.Appointment> _mapDocToDomain(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
     final uuid = doc.id;
     final id = await _idMapper.registerUuid('appointment', uuid);
 
@@ -161,8 +172,12 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
     final startTimeStr = data['start_time'] as String? ?? '';
     final endTimeStr = data['end_time'] as String? ?? '';
 
-    final startTime = startTimeStr.isNotEmpty ? DateTime.parse(startTimeStr).toLocal() : DateTime.now();
-    final endTime = endTimeStr.isNotEmpty ? DateTime.parse(endTimeStr).toLocal() : DateTime.now();
+    final startTime = startTimeStr.isNotEmpty
+        ? DateTime.parse(startTimeStr).toLocal()
+        : DateTime.now();
+    final endTime = endTimeStr.isNotEmpty
+        ? DateTime.parse(endTimeStr).toLocal()
+        : DateTime.now();
     final duration = endTime.difference(startTime).inMinutes;
 
     final updatedAtTimestamp = data['updatedAt'] as Timestamp?;

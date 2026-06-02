@@ -27,11 +27,19 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.item?.name ?? '');
-    _categoryController = TextEditingController(text: widget.item?.category ?? '');
-    _stockController = TextEditingController(text: widget.item?.stockQuantity.toString() ?? '0');
-    _minStockController = TextEditingController(text: widget.item?.minimumQuantity.toString() ?? '0');
+    _categoryController = TextEditingController(
+      text: widget.item?.category ?? '',
+    );
+    _stockController = TextEditingController(
+      text: widget.item?.stockQuantity.toString() ?? '0',
+    );
+    _minStockController = TextEditingController(
+      text: widget.item?.minimumQuantity.toString() ?? '0',
+    );
     _unitController = TextEditingController(text: widget.item?.unit ?? 'pcs');
-    _supplierController = TextEditingController(text: widget.item?.supplier ?? '');
+    _supplierController = TextEditingController(
+      text: widget.item?.supplier ?? '',
+    );
   }
 
   @override
@@ -52,7 +60,9 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
       final stock = double.tryParse(_stockController.text) ?? 0.0;
       final minStock = double.tryParse(_minStockController.text) ?? 0.0;
       final unit = _unitController.text;
-      final supplier = _supplierController.text.isEmpty ? null : _supplierController.text;
+      final supplier = _supplierController.text.isEmpty
+          ? null
+          : _supplierController.text;
 
       if (widget.item == null) {
         // Insert via domain model directly
@@ -79,7 +89,9 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
           supplier: supplier,
           updatedAt: DateTime.now(),
         );
-        await ref.read(inventoryServiceProvider.notifier).updateItem(updatedItem);
+        await ref
+            .read(inventoryServiceProvider.notifier)
+            .updateItem(updatedItem);
       }
 
       if (mounted) Navigator.pop(context);
@@ -93,7 +105,10 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(isEditing ? 'RECALIBRATE SUPPLY' : 'SUMMON SUPPLY', style: const TextStyle(letterSpacing: 2)),
+        title: Text(
+          isEditing ? 'RECALIBRATE SUPPLY' : 'SUMMON SUPPLY',
+          style: const TextStyle(letterSpacing: 2),
+        ),
         backgroundColor: InfernalColors.surface,
         centerTitle: true,
       ),
@@ -103,21 +118,51 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
           key: _formKey,
           child: Column(
             children: [
-              _buildField('NAME OF ESSENCE', _nameController, Icons.inventory_2_outlined),
+              _buildField(
+                'NAME OF ESSENCE',
+                _nameController,
+                Icons.inventory_2_outlined,
+              ),
               const SizedBox(height: InfernalSpacing.md),
-              _buildField('CATEGORY (Inks, Needles, etc.)', _categoryController, Icons.category_outlined),
+              _buildField(
+                'CATEGORY (Inks, Needles, etc.)',
+                _categoryController,
+                Icons.category_outlined,
+              ),
               const SizedBox(height: InfernalSpacing.md),
               Row(
                 children: [
-                  Expanded(child: _buildField('STOCK LEVEL', _stockController, Icons.numbers, isNumber: true)),
+                  Expanded(
+                    child: _buildField(
+                      'STOCK LEVEL',
+                      _stockController,
+                      Icons.numbers,
+                      isNumber: true,
+                    ),
+                  ),
                   const SizedBox(width: InfernalSpacing.md),
-                  Expanded(child: _buildField('UNIT (oz, pcs, roll)', _unitController, Icons.straighten)),
+                  Expanded(
+                    child: _buildField(
+                      'UNIT (oz, pcs, roll)',
+                      _unitController,
+                      Icons.straighten,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: InfernalSpacing.md),
-              _buildField('MINIMUM LEVEL (Low Stock Warning)', _minStockController, Icons.warning_amber_rounded, isNumber: true),
+              _buildField(
+                'MINIMUM LEVEL (Low Stock Warning)',
+                _minStockController,
+                Icons.warning_amber_rounded,
+                isNumber: true,
+              ),
               const SizedBox(height: InfernalSpacing.md),
-              _buildField('SUPPLIER (Optional)', _supplierController, Icons.business_outlined),
+              _buildField(
+                'SUPPLIER (Optional)',
+                _supplierController,
+                Icons.business_outlined,
+              ),
               const SizedBox(height: InfernalSpacing.xl),
               SizedBox(
                 width: double.infinity,
@@ -127,9 +172,13 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: InfernalColors.blood,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(InfernalRadius.md)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(InfernalRadius.md),
+                    ),
                   ),
-                  child: Text(isEditing ? 'COMMIT RITUAL' : 'SUMMON TO ARSENAL'),
+                  child: Text(
+                    isEditing ? 'COMMIT RITUAL' : 'SUMMON TO ARSENAL',
+                  ),
                 ),
               ),
             ],
@@ -139,21 +188,35 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, IconData icon, {bool isNumber = false}) {
+  Widget _buildField(
+    String label,
+    TextEditingController controller,
+    IconData icon, {
+    bool isNumber = false,
+  }) {
     return NeonPlate(
       color: InfernalColors.arcane,
-      padding: const EdgeInsets.symmetric(horizontal: InfernalSpacing.md, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: InfernalSpacing.md,
+        vertical: 4,
+      ),
       child: TextFormField(
         controller: controller,
-        keyboardType: isNumber ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+        keyboardType: isNumber
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
         style: const TextStyle(color: InfernalColors.textPrimary),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: InfernalColors.textMuted, fontSize: 12),
+          labelStyle: const TextStyle(
+            color: InfernalColors.textMuted,
+            fontSize: 12,
+          ),
           icon: Icon(icon, color: InfernalColors.blood),
           border: InputBorder.none,
         ),
-        validator: (value) => (value == null || value.isEmpty) ? 'Field cannot be empty' : null,
+        validator: (value) =>
+            (value == null || value.isEmpty) ? 'Field cannot be empty' : null,
       ),
     );
   }

@@ -13,7 +13,9 @@ import '../../../app/router.dart';
 
 enum AppointmentsViewMode { list, calendar }
 
-final appointmentsViewModeProvider = StateProvider<AppointmentsViewMode>((ref) => AppointmentsViewMode.list);
+final appointmentsViewModeProvider = StateProvider<AppointmentsViewMode>(
+  (ref) => AppointmentsViewMode.list,
+);
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
 class AppointmentsListPage extends ConsumerWidget {
@@ -26,7 +28,7 @@ class AppointmentsListPage extends ConsumerWidget {
     final todaysAsync = ref.watch(todaysAppointmentsProvider);
     final allAsync = ref.watch(allAppointmentsProvider);
     final useInfernal = ref.watch(useInfernalLabelsProvider);
- 
+
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
@@ -35,12 +37,17 @@ class AppointmentsListPage extends ConsumerWidget {
         foregroundColor: InfernalColors.textPrimary,
         actions: [
           IconButton(
-            icon: Icon(viewMode == AppointmentsViewMode.list ? Icons.calendar_month : Icons.list),
+            icon: Icon(
+              viewMode == AppointmentsViewMode.list
+                  ? Icons.calendar_month
+                  : Icons.list,
+            ),
             onPressed: () {
-              ref.read(appointmentsViewModeProvider.notifier).state =
-                  viewMode == AppointmentsViewMode.list
-                      ? AppointmentsViewMode.calendar
-                      : AppointmentsViewMode.list;
+              ref
+                  .read(appointmentsViewModeProvider.notifier)
+                  .state = viewMode == AppointmentsViewMode.list
+                  ? AppointmentsViewMode.calendar
+                  : AppointmentsViewMode.list;
             },
           ),
         ],
@@ -65,9 +72,9 @@ class AppointmentsListPage extends ConsumerWidget {
 class _ListView extends ConsumerWidget {
   final AsyncValue<List<domain.Appointment>> todaysAsync;
   final AsyncValue<List<domain.Appointment>> upcomingAsync;
- 
+
   const _ListView({required this.todaysAsync, required this.upcomingAsync});
- 
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final useInfernal = ref.watch(useInfernalLabelsProvider);
@@ -76,31 +83,43 @@ class _ListView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(title: UiLabels.get('todays_appointments', useInfernal)),
+          _SectionHeader(
+            title: UiLabels.get('todays_appointments', useInfernal),
+          ),
           todaysAsync.when(
-            data: (data) =>
-                _AppointmentList(appointments: data, emptyText: UiLabels.get('empty_appointments', useInfernal)),
+            data: (data) => _AppointmentList(
+              appointments: data,
+              emptyText: UiLabels.get('empty_appointments', useInfernal),
+            ),
             loading: () => const Padding(
               padding: EdgeInsets.all(InfernalSpacing.md),
               child: Center(child: CircularProgressIndicator()),
             ),
             error: (e, s) => Padding(
               padding: const EdgeInsets.all(InfernalSpacing.md),
-              child: Text('Error: $e', style: const TextStyle(color: InfernalColors.error)),
+              child: Text(
+                'Error: $e',
+                style: const TextStyle(color: InfernalColors.error),
+              ),
             ),
           ),
           const SizedBox(height: InfernalSpacing.lg),
           _SectionHeader(title: UiLabels.get('upcoming_sessions', useInfernal)),
           upcomingAsync.when(
-            data: (data) =>
-                _AppointmentList(appointments: data, emptyText: UiLabels.get('no_future_visions', useInfernal)),
+            data: (data) => _AppointmentList(
+              appointments: data,
+              emptyText: UiLabels.get('no_future_visions', useInfernal),
+            ),
             loading: () => const Padding(
               padding: EdgeInsets.all(InfernalSpacing.md),
               child: Center(child: CircularProgressIndicator()),
             ),
             error: (e, s) => Padding(
               padding: const EdgeInsets.all(InfernalSpacing.md),
-              child: Text('Error: $e', style: const TextStyle(color: InfernalColors.error)),
+              child: Text(
+                'Error: $e',
+                style: const TextStyle(color: InfernalColors.error),
+              ),
             ),
           ),
           const SizedBox(height: InfernalSpacing.xl),
@@ -124,7 +143,9 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
   DateTime _focusedDay = DateTime.now();
 
   List<domain.Appointment> _getEventsForDay(DateTime day) {
-    return widget.appointments.where((apt) => isSameDay(apt.dateTime, day)).toList();
+    return widget.appointments
+        .where((apt) => isSameDay(apt.dateTime, day))
+        .toList();
   }
 
   @override
@@ -172,14 +193,25 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
           headerStyle: const HeaderStyle(
             formatButtonVisible: true,
             titleCentered: true,
-            titleTextStyle: TextStyle(color: InfernalColors.textPrimary, fontSize: 18),
+            titleTextStyle: TextStyle(
+              color: InfernalColors.textPrimary,
+              fontSize: 18,
+            ),
             formatButtonTextStyle: TextStyle(color: InfernalColors.textPrimary),
             formatButtonDecoration: BoxDecoration(
-              border: Border.fromBorderSide(BorderSide(color: InfernalColors.divider)),
+              border: Border.fromBorderSide(
+                BorderSide(color: InfernalColors.divider),
+              ),
               borderRadius: BorderRadius.all(Radius.circular(12.0)),
             ),
-            leftChevronIcon: Icon(Icons.chevron_left, color: InfernalColors.textPrimary),
-            rightChevronIcon: Icon(Icons.chevron_right, color: InfernalColors.textPrimary),
+            leftChevronIcon: Icon(
+              Icons.chevron_left,
+              color: InfernalColors.textPrimary,
+            ),
+            rightChevronIcon: Icon(
+              Icons.chevron_right,
+              color: InfernalColors.textPrimary,
+            ),
           ),
           daysOfWeekStyle: const DaysOfWeekStyle(
             weekdayStyle: TextStyle(color: InfernalColors.textSecondary),
@@ -190,7 +222,10 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
         Expanded(
           child: _AppointmentList(
             appointments: _getEventsForDay(selectedDay),
-            emptyText: UiLabels.get('no_events_day', ref.watch(useInfernalLabelsProvider)),
+            emptyText: UiLabels.get(
+              'no_events_day',
+              ref.watch(useInfernalLabelsProvider),
+            ),
           ),
         ),
       ],
@@ -214,10 +249,10 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title.toUpperCase(),
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: InfernalColors.textMuted,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-            ),
+          color: InfernalColors.textMuted,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0,
+        ),
       ),
     );
   }
@@ -236,7 +271,10 @@ class _AppointmentList extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: InfernalSpacing.md),
         child: Text(
           emptyText,
-          style: const TextStyle(color: InfernalColors.textSecondary, fontStyle: FontStyle.italic),
+          style: const TextStyle(
+            color: InfernalColors.textSecondary,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       );
     }
@@ -246,7 +284,8 @@ class _AppointmentList extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: InfernalSpacing.md),
       itemCount: appointments.length,
-      separatorBuilder: (_, index) => const SizedBox(height: InfernalSpacing.sm),
+      separatorBuilder: (_, index) =>
+          const SizedBox(height: InfernalSpacing.sm),
       itemBuilder: (ctx, idx) {
         final apt = appointments[idx];
         return Card(
@@ -293,7 +332,9 @@ class _AppointmentList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          apt.clientName.isEmpty ? 'Unknown Soul' : apt.clientName,
+                          apt.clientName.isEmpty
+                              ? 'Unknown Soul'
+                              : apt.clientName,
                           style: const TextStyle(
                             color: InfernalColors.textPrimary,
                             fontWeight: FontWeight.w600,
@@ -317,7 +358,10 @@ class _AppointmentList extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, color: InfernalColors.textMuted),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: InfernalColors.textMuted,
+                  ),
                 ],
               ),
             ),

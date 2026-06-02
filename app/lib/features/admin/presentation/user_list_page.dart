@@ -43,7 +43,8 @@ class UserListPage extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(InfernalSpacing.md),
             itemCount: users.length,
-            separatorBuilder: (_, _) => const SizedBox(height: InfernalSpacing.sm),
+            separatorBuilder: (_, _) =>
+                const SizedBox(height: InfernalSpacing.sm),
             itemBuilder: (ctx, idx) {
               final user = users[idx];
               final isAdminRole = user.role == UserRole.admin;
@@ -51,7 +52,9 @@ class UserListPage extends ConsumerWidget {
                 color: InfernalColors.surface,
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: isAdminRole ? InfernalColors.blood : InfernalColors.arcane,
+                    backgroundColor: isAdminRole
+                        ? InfernalColors.blood
+                        : InfernalColors.arcane,
                     child: Icon(
                       isAdminRole ? Icons.security : Icons.brush,
                       color: Colors.white,
@@ -60,11 +63,17 @@ class UserListPage extends ConsumerWidget {
                   ),
                   title: Text(
                     user.displayName.isEmpty ? user.username : user.displayName,
-                    style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: InfernalColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   subtitle: Text(
                     '${user.role.name.toUpperCase()} // ${user.username}',
-                    style: const TextStyle(color: InfernalColors.textMuted, fontSize: 12),
+                    style: const TextStyle(
+                      color: InfernalColors.textMuted,
+                      fontSize: 12,
+                    ),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -72,10 +81,16 @@ class UserListPage extends ConsumerWidget {
                       if (user.hourlyRate > 0)
                         Text(
                           '\$${user.hourlyRate.toInt()}/hr',
-                          style: const TextStyle(color: InfernalColors.gold, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: InfernalColors.gold,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       const SizedBox(width: InfernalSpacing.sm),
-                      const Icon(Icons.chevron_right, color: InfernalColors.textMuted),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: InfernalColors.textMuted,
+                      ),
                     ],
                   ),
                   onTap: () => context.go('${AppRoutes.adminUsers}/${user.id}'),
@@ -85,7 +100,12 @@ class UserListPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e', style: const TextStyle(color: InfernalColors.error))),
+        error: (e, s) => Center(
+          child: Text(
+            'Error: $e',
+            style: const TextStyle(color: InfernalColors.error),
+          ),
+        ),
       ),
     );
   }

@@ -109,7 +109,10 @@ class StatsOverviewPage extends ConsumerWidget {
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(InfernalSpacing.xl),
-                child: Text('Not enough data for trend analysis', style: TextStyle(color: InfernalColors.textMuted)),
+                child: Text(
+                  'Not enough data for trend analysis',
+                  style: TextStyle(color: InfernalColors.textMuted),
+                ),
               ),
             )
           else
@@ -118,7 +121,9 @@ class StatsOverviewPage extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: stats.revenueOverTime.takeLast(7).map((point) {
-                  final maxRev = stats.revenueOverTime.map((p) => p.amount).fold(0.0, (m, v) => v > m ? v : m);
+                  final maxRev = stats.revenueOverTime
+                      .map((p) => p.amount)
+                      .fold(0.0, (m, v) => v > m ? v : m);
                   final heightFactor = maxRev > 0 ? point.amount / maxRev : 0.0;
                   return Expanded(
                     child: Padding(
@@ -130,14 +135,21 @@ class StatsOverviewPage extends ConsumerWidget {
                             height: (heightFactor * 150) + 4,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [InfernalColors.gold, InfernalColors.ember],
+                                colors: [
+                                  InfernalColors.gold,
+                                  InfernalColors.ember,
+                                ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                               ),
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(4),
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: InfernalColors.gold.withValues(alpha: 0.3),
+                                  color: InfernalColors.gold.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 8,
                                   offset: const Offset(0, -2),
                                 ),
@@ -147,7 +159,10 @@ class StatsOverviewPage extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             DateFormat('MM/dd').format(point.date),
-                            style: const TextStyle(fontSize: 10, color: InfernalColors.textMuted),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: InfernalColors.textMuted,
+                            ),
                           ),
                         ],
                       ),
@@ -182,7 +197,10 @@ class StatsOverviewPage extends ConsumerWidget {
           ),
           const SizedBox(height: InfernalSpacing.md),
           ...stats.appointmentsByStatus.entries.map((e) {
-            final total = stats.appointmentsByStatus.values.fold(0, (a, b) => a + b);
+            final total = stats.appointmentsByStatus.values.fold(
+              0,
+              (a, b) => a + b,
+            );
             final percent = total > 0 ? e.value / total : 0.0;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: InfernalSpacing.xs),
@@ -191,8 +209,16 @@ class StatsOverviewPage extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(e.key.toUpperCase(), style: const TextStyle(color: InfernalColors.textPrimary)),
-                      Text('${e.value} (${(percent * 100).toInt()}%)', style: const TextStyle(color: InfernalColors.textMuted)),
+                      Text(
+                        e.key.toUpperCase(),
+                        style: const TextStyle(
+                          color: InfernalColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        '${e.value} (${(percent * 100).toInt()}%)',
+                        style: const TextStyle(color: InfernalColors.textMuted),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -216,11 +242,16 @@ class StatsOverviewPage extends ConsumerWidget {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'completed': return Colors.green;
-      case 'scheduled': return InfernalColors.arcane;
-      case 'cancelled': return InfernalColors.error;
-      case 'no show': return Colors.orange;
-      default: return InfernalColors.textMuted;
+      case 'completed':
+        return Colors.green;
+      case 'scheduled':
+        return InfernalColors.arcane;
+      case 'cancelled':
+        return InfernalColors.error;
+      case 'no show':
+        return Colors.orange;
+      default:
+        return InfernalColors.textMuted;
     }
   }
 }

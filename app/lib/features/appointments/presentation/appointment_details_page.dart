@@ -43,7 +43,9 @@ class AppointmentDetailsPage extends ConsumerWidget {
       body: aptAsync.when(
         data: (apt) {
           if (apt == null) {
-            return Center(child: Text(UiLabels.get('appointment_not_found', useInfernal)));
+            return Center(
+              child: Text(UiLabels.get('appointment_not_found', useInfernal)),
+            );
           }
           return SingleChildScrollView(
             padding: const EdgeInsets.all(InfernalSpacing.md),
@@ -60,30 +62,32 @@ class AppointmentDetailsPage extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                       Text(
-                         DateFormat('EEEE, MMMM d').format(apt.dateTime),
-                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                           color: InfernalColors.textPrimary,
-                         ),
-                       ),
-                       const SizedBox(height: InfernalSpacing.sm),
-                       Text(
-                         DateFormat('h:mm a').format(apt.dateTime),
-                         style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                           color: InfernalColors.blood,
-                           fontWeight: FontWeight.bold,
-                         ),
-                       ),
-                       const SizedBox(height: InfernalSpacing.md),
-                       AppointmentStatusChip(statusString: apt.status),
+                      Text(
+                        DateFormat('EEEE, MMMM d').format(apt.dateTime),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: InfernalColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: InfernalSpacing.sm),
+                      Text(
+                        DateFormat('h:mm a').format(apt.dateTime),
+                        style: Theme.of(context).textTheme.displayMedium
+                            ?.copyWith(
+                              color: InfernalColors.blood,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: InfernalSpacing.md),
+                      AppointmentStatusChip(statusString: apt.status),
                     ],
                   ),
                 ),
                 const SizedBox(height: InfernalSpacing.lg),
-                
+
                 // Client Link
                 InkWell(
-                  onTap: () => context.push('${AppRoutes.clients}/${apt.clientId}'),
+                  onTap: () =>
+                      context.push('${AppRoutes.clients}/${apt.clientId}'),
                   borderRadius: BorderRadius.circular(InfernalRadius.md),
                   child: Container(
                     padding: const EdgeInsets.all(InfernalSpacing.md),
@@ -96,7 +100,10 @@ class AppointmentDetailsPage extends ConsumerWidget {
                       children: [
                         const CircleAvatar(
                           backgroundColor: InfernalColors.surface,
-                          child: Icon(Icons.person, color: InfernalColors.textPrimary),
+                          child: Icon(
+                            Icons.person,
+                            color: InfernalColors.textPrimary,
+                          ),
                         ),
                         const SizedBox(width: InfernalSpacing.md),
                         Expanded(
@@ -105,7 +112,10 @@ class AppointmentDetailsPage extends ConsumerWidget {
                             children: [
                               Text(
                                 useInfernal ? 'Canvas' : 'Client',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: InfernalColors.textSecondary),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: InfernalColors.textSecondary,
+                                    ),
                               ),
                               Text(
                                 apt.clientName,
@@ -118,41 +128,58 @@ class AppointmentDetailsPage extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right, color: InfernalColors.textMuted),
+                        const Icon(
+                          Icons.chevron_right,
+                          color: InfernalColors.textMuted,
+                        ),
                       ],
                     ),
                   ),
                 ),
-                
-                const SizedBox(height: InfernalSpacing.lg),
-                
-                // Info Grid
-                _InfoRow(icon: Icons.flash_on, label: 'Service', value: apt.serviceType),
-                const Divider(color: InfernalColors.divider),
-                _InfoRow(icon: Icons.timer, label: 'Duration', value: '${apt.durationMinutes} min'),
-                const Divider(color: InfernalColors.divider),
-                _InfoRow(icon: Icons.category, label: 'Category', value: apt.serviceCategory),
 
                 const SizedBox(height: InfernalSpacing.lg),
-                
+
+                // Info Grid
+                _InfoRow(
+                  icon: Icons.flash_on,
+                  label: 'Service',
+                  value: apt.serviceType,
+                ),
+                const Divider(color: InfernalColors.divider),
+                _InfoRow(
+                  icon: Icons.timer,
+                  label: 'Duration',
+                  value: '${apt.durationMinutes} min',
+                ),
+                const Divider(color: InfernalColors.divider),
+                _InfoRow(
+                  icon: Icons.category,
+                  label: 'Category',
+                  value: apt.serviceCategory,
+                ),
+
+                const SizedBox(height: InfernalSpacing.lg),
+
                 if (apt.notes != null && apt.notes!.isNotEmpty) ...[
-                   Text(
-                     "NOTES",
-                     style: Theme.of(context).textTheme.labelSmall?.copyWith(color: InfernalColors.textSecondary),
-                   ),
-                   const SizedBox(height: InfernalSpacing.sm),
-                   Container(
-                     width: double.infinity,
-                     padding: const EdgeInsets.all(InfernalSpacing.md),
-                     decoration: BoxDecoration(
-                        color: InfernalColors.surface,
-                        borderRadius: BorderRadius.circular(InfernalRadius.sm),
-                     ),
-                     child: Text(
-                        apt.notes!,
-                        style: const TextStyle(color: InfernalColors.textPrimary),
-                     ),
-                   ),
+                  Text(
+                    "NOTES",
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: InfernalColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: InfernalSpacing.sm),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(InfernalSpacing.md),
+                    decoration: BoxDecoration(
+                      color: InfernalColors.surface,
+                      borderRadius: BorderRadius.circular(InfernalRadius.sm),
+                    ),
+                    child: Text(
+                      apt.notes!,
+                      style: const TextStyle(color: InfernalColors.textPrimary),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -164,12 +191,20 @@ class AppointmentDetailsPage extends ConsumerWidget {
     );
   }
 
-  void _deleteAppointment(BuildContext context, WidgetRef ref, int id, bool useInfernal) {
-     showDialog(
+  void _deleteAppointment(
+    BuildContext context,
+    WidgetRef ref,
+    int id,
+    bool useInfernal,
+  ) {
+    showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: Text(UiLabels.get('delete_appointment_title', useInfernal), style: const TextStyle(color: InfernalColors.textPrimary)),
+        title: Text(
+          UiLabels.get('delete_appointment_title', useInfernal),
+          style: const TextStyle(color: InfernalColors.textPrimary),
+        ),
         content: Text(
           UiLabels.get('delete_appointment_content', useInfernal),
           style: const TextStyle(color: InfernalColors.textSecondary),
@@ -185,7 +220,10 @@ class AppointmentDetailsPage extends ConsumerWidget {
               await ref.read(appointmentsServiceProvider).deleteAppointment(id);
               if (context.mounted) context.pop();
             },
-            child: const Text('Delete', style: TextStyle(color: InfernalColors.error)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: InfernalColors.error),
+            ),
           ),
         ],
       ),
@@ -197,8 +235,12 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  
-  const _InfoRow({required this.icon, required this.label, required this.value});
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -208,9 +250,18 @@ class _InfoRow extends StatelessWidget {
         children: [
           Icon(icon, color: InfernalColors.textSecondary, size: 20),
           const SizedBox(width: InfernalSpacing.md),
-          Text(label, style: const TextStyle(color: InfernalColors.textSecondary)),
+          Text(
+            label,
+            style: const TextStyle(color: InfernalColors.textSecondary),
+          ),
           const Spacer(),
-          Text(value, style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.w600)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: InfernalColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );

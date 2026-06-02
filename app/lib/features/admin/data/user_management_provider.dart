@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../shared/cache/id_mapper.dart';
 import '../../../../shared/domain/user.dart' as domain;
@@ -18,12 +17,12 @@ Stream<List<domain.User>> allUsers(Ref ref) {
       .where('isDeleted', isEqualTo: false)
       .snapshots()
       .asyncMap((snapshot) async {
-    final list = <domain.User>[];
-    for (final doc in snapshot.docs) {
-      list.add(await _mapDocToUser(doc, idMapper));
-    }
-    return list;
-  });
+        final list = <domain.User>[];
+        for (final doc in snapshot.docs) {
+          list.add(await _mapDocToUser(doc, idMapper));
+        }
+        return list;
+      });
 }
 
 @riverpod
@@ -37,8 +36,11 @@ class UserManagementService {
 
   IdMapper get _idMapper => _ref.read(idMapperProvider);
 
-  CollectionReference<Map<String, dynamic>> get _usersRef =>
-      FirebaseFirestore.instance.collection('organizations').doc('default-org').collection('users');
+  CollectionReference<Map<String, dynamic>> get _usersRef => FirebaseFirestore
+      .instance
+      .collection('organizations')
+      .doc('default-org')
+      .collection('users');
 
   Future<void> createUser({
     required String username,
@@ -86,7 +88,10 @@ class UserManagementService {
   }
 }
 
-Future<domain.User> _mapDocToUser(DocumentSnapshot<Map<String, dynamic>> doc, IdMapper idMapper) async {
+Future<domain.User> _mapDocToUser(
+  DocumentSnapshot<Map<String, dynamic>> doc,
+  IdMapper idMapper,
+) async {
   final uuid = doc.id;
   final id = await idMapper.registerUuid('user', uuid);
 

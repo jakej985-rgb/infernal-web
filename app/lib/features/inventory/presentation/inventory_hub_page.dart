@@ -18,15 +18,27 @@ class InventoryHubPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('ALCHEMICAL SUPPLIES', style: TextStyle(letterSpacing: 4)),
+        title: const Text(
+          'ALCHEMICAL SUPPLIES',
+          style: TextStyle(letterSpacing: 4),
+        ),
         centerTitle: true,
         backgroundColor: InfernalColors.surface,
         elevation: 0,
       ),
       body: inventoryItemsAsync.when(
-        data: (items) => items.isEmpty ? _buildEmptyState(context) : _buildSupplyGrid(context, items, ref),
-        loading: () => const Center(child: CircularProgressIndicator(color: InfernalColors.blood)),
-        error: (err, stack) => Center(child: Text('Ritual error: $err', style: const TextStyle(color: InfernalColors.error))),
+        data: (items) => items.isEmpty
+            ? _buildEmptyState(context)
+            : _buildSupplyGrid(context, items, ref),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: InfernalColors.blood),
+        ),
+        error: (err, stack) => Center(
+          child: Text(
+            'Ritual error: $err',
+            style: const TextStyle(color: InfernalColors.error),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
@@ -44,11 +56,19 @@ class InventoryHubPage extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.inventory_2_outlined, size: 64, color: InfernalColors.textMuted),
+          const Icon(
+            Icons.inventory_2_outlined,
+            size: 64,
+            color: InfernalColors.textMuted,
+          ),
           const SizedBox(height: InfernalSpacing.md),
           const Text(
             'THE ARSENAL IS EMPTY',
-            style: TextStyle(color: InfernalColors.textPrimary, letterSpacing: 2, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: InfernalColors.textPrimary,
+              letterSpacing: 2,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: InfernalSpacing.sm),
           const Text(
@@ -60,7 +80,11 @@ class InventoryHubPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSupplyGrid(BuildContext context, List<domain.InventoryItem> items, WidgetRef ref) {
+  Widget _buildSupplyGrid(
+    BuildContext context,
+    List<domain.InventoryItem> items,
+    WidgetRef ref,
+  ) {
     return GridView.builder(
       padding: const EdgeInsets.all(InfernalSpacing.lg),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -79,7 +103,9 @@ class InventoryHubPage extends ConsumerWidget {
           child: InkWell(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => InventoryFormPage(item: item)),
+              MaterialPageRoute(
+                builder: (context) => InventoryFormPage(item: item),
+              ),
             ),
             onLongPress: () => _confirmDeletion(context, item, ref),
             child: Padding(
@@ -88,7 +114,9 @@ class InventoryHubPage extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isLow ? Icons.warning_amber_rounded : Icons.inventory_2_outlined,
+                    isLow
+                        ? Icons.warning_amber_rounded
+                        : Icons.inventory_2_outlined,
                     color: isLow ? InfernalColors.error : InfernalColors.arcane,
                     size: 32,
                   ),
@@ -106,19 +134,29 @@ class InventoryHubPage extends ConsumerWidget {
                   ),
                   Text(
                     item.category,
-                    style: const TextStyle(color: InfernalColors.textMuted, fontSize: 10),
+                    style: const TextStyle(
+                      color: InfernalColors.textMuted,
+                      fontSize: 10,
+                    ),
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: (isLow ? InfernalColors.error : InfernalColors.arcane).withValues(alpha: 0.1),
+                      color:
+                          (isLow ? InfernalColors.error : InfernalColors.arcane)
+                              .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(InfernalRadius.pill),
                     ),
                     child: Text(
                       '${item.stockQuantity} ${item.unit}',
                       style: TextStyle(
-                        color: isLow ? InfernalColors.error : InfernalColors.arcane,
+                        color: isLow
+                            ? InfernalColors.error
+                            : InfernalColors.arcane,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -133,8 +171,11 @@ class InventoryHubPage extends ConsumerWidget {
     );
   }
 
-  void _confirmDeletion(BuildContext context, domain.InventoryItem item, WidgetRef ref) {
-
+  void _confirmDeletion(
+    BuildContext context,
+    domain.InventoryItem item,
+    WidgetRef ref,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -142,17 +183,24 @@ class InventoryHubPage extends ConsumerWidget {
         title: const Text('BANISH SUPPLY?'),
         content: Text('Shall we remove ${item.name} from the arsenal?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('STAY')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('STAY'),
+          ),
           TextButton(
             onPressed: () async {
-              await ref.read(inventoryServiceProvider.notifier).deleteItem(item.id);
+              await ref
+                  .read(inventoryServiceProvider.notifier)
+                  .deleteItem(item.id);
               if (context.mounted) Navigator.pop(ctx);
             },
-            child: const Text('BANISH', style: TextStyle(color: InfernalColors.error)),
+            child: const Text(
+              'BANISH',
+              style: TextStyle(color: InfernalColors.error),
+            ),
           ),
         ],
       ),
     );
   }
 }
-

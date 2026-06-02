@@ -12,7 +12,6 @@ import 'package:infernal_ink_steel/features/dashboard/domain/dashboard_stats.dar
 import 'package:infernal_ink_steel/shared/util/shared_prefs_provider.dart';
 import 'package:infernal_ink_steel/shared/util/websocket_client.dart';
 
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MockWebSocketClient extends WebSocketClient {
@@ -25,31 +24,32 @@ class MockWebSocketClient extends WebSocketClient {
 class MockAuthService extends AuthService {
   @override
   FutureOr<AuthState> build() {
-    return AuthState.authenticated(User(
-      id: 1,
-      username: 'admin',
-      displayName: 'Admin User',
-      role: UserRole.admin,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    ));
+    return AuthState.authenticated(
+      User(
+        id: 1,
+        username: 'admin',
+        displayName: 'Admin User',
+        role: UserRole.admin,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 }
 
 class MockDashboardStatsRepository extends DashboardStatsRepository {
   @override
   Stream<DashboardStats> build() {
-    return Stream.value(const DashboardStats(
-      todayRituals: 0,
-      boundSouls: 0,
-      openScrolls: 0,
-      pending: 0,
-    ));
+    return Stream.value(
+      const DashboardStats(
+        todayRituals: 0,
+        boundSouls: 0,
+        openScrolls: 0,
+        pending: 0,
+      ),
+    );
   }
 }
-
-
-
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
@@ -66,8 +66,12 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           authServiceProvider.overrideWith(() => MockAuthService()),
           webSocketClientProvider.overrideWith(() => MockWebSocketClient()),
-          dashboardStatsRepositoryProvider.overrideWith(() => MockDashboardStatsRepository()),
-          dashboardTodayAppointmentsProvider.overrideWith((ref) => const AsyncValue.data([])),
+          dashboardStatsRepositoryProvider.overrideWith(
+            () => MockDashboardStatsRepository(),
+          ),
+          dashboardTodayAppointmentsProvider.overrideWith(
+            (ref) => const AsyncValue.data([]),
+          ),
         ],
         child: const InfernalApp(),
       ),

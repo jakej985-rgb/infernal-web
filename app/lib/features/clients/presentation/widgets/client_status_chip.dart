@@ -41,31 +41,33 @@ class ClientStatusChip extends StatelessWidget {
     }
   }
 
-  ({Color background, Color border, Color text}) _getColors(ClientStatus status) {
+  ({Color background, Color border, Color text}) _getColors(
+    ClientStatus status,
+  ) {
     switch (status) {
       case ClientStatus.bound:
         return (
           background: InfernalColors.success.withValues(alpha: 0.1),
           border: InfernalColors.success.withValues(alpha: 0.5),
-          text: InfernalColors.success
+          text: InfernalColors.success,
         );
       case ClientStatus.freshSoul:
         return (
           background: InfernalColors.info.withValues(alpha: 0.1),
           border: InfernalColors.info.withValues(alpha: 0.5),
-          text: InfernalColors.info
+          text: InfernalColors.info,
         );
       case ClientStatus.highValue:
         return (
           background: InfernalColors.gold.withValues(alpha: 0.1),
           border: InfernalColors.gold.withValues(alpha: 0.5),
-          text: InfernalColors.gold
+          text: InfernalColors.gold,
         );
       case ClientStatus.void_:
         return (
           background: InfernalColors.voidColor.withValues(alpha: 0.2),
           border: InfernalColors.voidColor.withValues(alpha: 0.5),
-          text: InfernalColors.textMuted
+          text: InfernalColors.textMuted,
         );
     }
   }

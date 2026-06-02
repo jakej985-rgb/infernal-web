@@ -6,8 +6,11 @@ import '../../../../shared/domain/inventory.dart' as domain;
 
 part 'inventory_provider.g.dart';
 
-CollectionReference<Map<String, dynamic>> _inventoryRef() =>
-    FirebaseFirestore.instance.collection('organizations').doc('default-org').collection('inventory');
+CollectionReference<Map<String, dynamic>> _inventoryRef() => FirebaseFirestore
+    .instance
+    .collection('organizations')
+    .doc('default-org')
+    .collection('inventory');
 
 @riverpod
 Stream<List<domain.InventoryItem>> inventoryItems(Ref ref) {
@@ -16,12 +19,12 @@ Stream<List<domain.InventoryItem>> inventoryItems(Ref ref) {
       .where('isDeleted', isEqualTo: false)
       .snapshots()
       .asyncMap((snapshot) async {
-    final list = <domain.InventoryItem>[];
-    for (final doc in snapshot.docs) {
-      list.add(await _mapDocToDomain(doc, idMapper));
-    }
-    return list;
-  });
+        final list = <domain.InventoryItem>[];
+        for (final doc in snapshot.docs) {
+          list.add(await _mapDocToDomain(doc, idMapper));
+        }
+        return list;
+      });
 }
 
 @riverpod
@@ -42,7 +45,9 @@ class InventoryService extends _$InventoryService {
       'minimumQuantity': item.minimumQuantity,
       'unit': item.unit,
       'supplier': item.supplier ?? '',
-      'lastOrderedAt': item.lastOrderedAt != null ? Timestamp.fromDate(item.lastOrderedAt!) : null,
+      'lastOrderedAt': item.lastOrderedAt != null
+          ? Timestamp.fromDate(item.lastOrderedAt!)
+          : null,
       'isDeleted': false,
       'updatedAt': FieldValue.serverTimestamp(),
     });
@@ -61,7 +66,9 @@ class InventoryService extends _$InventoryService {
       'minimumQuantity': item.minimumQuantity,
       'unit': item.unit,
       'supplier': item.supplier ?? '',
-      'lastOrderedAt': item.lastOrderedAt != null ? Timestamp.fromDate(item.lastOrderedAt!) : null,
+      'lastOrderedAt': item.lastOrderedAt != null
+          ? Timestamp.fromDate(item.lastOrderedAt!)
+          : null,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -77,7 +84,10 @@ class InventoryService extends _$InventoryService {
   }
 }
 
-Future<domain.InventoryItem> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc, IdMapper idMapper) async {
+Future<domain.InventoryItem> _mapDocToDomain(
+  DocumentSnapshot<Map<String, dynamic>> doc,
+  IdMapper idMapper,
+) async {
   final uuid = doc.id;
   final id = await idMapper.registerUuid('inventory', uuid);
 
@@ -88,7 +98,7 @@ Future<domain.InventoryItem> _mapDocToDomain(DocumentSnapshot<Map<String, dynami
   final minimumQuantity = (data['minimumQuantity'] as num? ?? 5.0).toDouble();
   final unit = data['unit'] as String? ?? 'pcs';
   final supplier = data['supplier'] as String?;
-  
+
   final lastOrderedAtTimestamp = data['lastOrderedAt'] as Timestamp?;
   final lastOrderedAt = lastOrderedAtTimestamp?.toDate();
 

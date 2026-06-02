@@ -37,11 +37,7 @@ class NeonDivider extends StatelessWidget {
             ),
           ),
           // The Line
-          Divider(
-            color: color,
-            height: thickness,
-            thickness: thickness,
-          ),
+          Divider(color: color, height: thickness, thickness: thickness),
         ],
       ),
     );

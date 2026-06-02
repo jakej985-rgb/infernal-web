@@ -29,7 +29,9 @@ class ClientServiceFirebaseImpl implements ClientService {
   @override
   Future<List<domain.Client>> getClients() async {
     try {
-      final snapshot = await _clientsRef.where('isDeleted', isEqualTo: false).get();
+      final snapshot = await _clientsRef
+          .where('isDeleted', isEqualTo: false)
+          .get();
       final clients = <domain.Client>[];
       for (final doc in snapshot.docs) {
         clients.add(await _mapDocToDomain(doc));
@@ -113,12 +115,12 @@ class ClientServiceFirebaseImpl implements ClientService {
         .where('isDeleted', isEqualTo: false)
         .snapshots()
         .asyncMap((snapshot) async {
-      final clients = <domain.Client>[];
-      for (final doc in snapshot.docs) {
-        clients.add(await _mapDocToDomain(doc));
-      }
-      return clients;
-    });
+          final clients = <domain.Client>[];
+          for (final doc in snapshot.docs) {
+            clients.add(await _mapDocToDomain(doc));
+          }
+          return clients;
+        });
   }
 
   @override
@@ -138,7 +140,9 @@ class ClientServiceFirebaseImpl implements ClientService {
     return file.path;
   }
 
-  Future<domain.Client> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc) async {
+  Future<domain.Client> _mapDocToDomain(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
     final uuid = doc.id;
     final id = await _idMapper.registerUuid('client', uuid);
 

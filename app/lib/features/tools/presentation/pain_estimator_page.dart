@@ -32,7 +32,8 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
     PainZone(
       name: 'Skull',
       level: 7,
-      description: 'Thin skin over bone. Vibrations will echo through your very soul.',
+      description:
+          'Thin skin over bone. Vibrations will echo through your very soul.',
       position: Offset(0.42, 0.02),
       size: Size(0.16, 0.08),
     ),
@@ -46,7 +47,8 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
     PainZone(
       name: 'Ribs',
       level: 9,
-      description: 'The cage of life. Every breath becomes a ritual of endurance.',
+      description:
+          'The cage of life. Every breath becomes a ritual of endurance.',
       position: Offset(0.38, 0.2),
       size: Size(0.24, 0.15),
     ),
@@ -67,7 +69,8 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
     PainZone(
       name: 'Feet',
       level: 9,
-      description: 'The foundation. Nerve endings scream at every touch of the needle.',
+      description:
+          'The foundation. Nerve endings scream at every touch of the needle.',
       position: Offset(0.4, 0.9),
       size: Size(0.2, 0.08),
     ),
@@ -87,10 +90,7 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
       body: Column(
         children: [
           const NeonDivider(blurRadius: 10),
-          Expanded(
-            flex: 3,
-            child: _buildBodyMap(),
-          ),
+          Expanded(flex: 3, child: _buildBodyMap()),
           _buildReadout(),
         ],
       ),
@@ -104,7 +104,10 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
           child: AspectRatio(
             aspectRatio: 0.55,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: InfernalSpacing.lg, vertical: InfernalSpacing.md),
+              margin: const EdgeInsets.symmetric(
+                horizontal: InfernalSpacing.lg,
+                vertical: InfernalSpacing.md,
+              ),
               decoration: BoxDecoration(
                 color: InfernalColors.surface,
                 borderRadius: BorderRadius.circular(InfernalRadius.lg),
@@ -154,7 +157,7 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
   Widget _buildZoneMarker(PainZone zone, BoxConstraints constraints) {
     final isSelected = _selectedZone == zone;
     final color = zone.level > 7 ? InfernalColors.blood : InfernalColors.gold;
-    
+
     return Positioned(
       left: zone.position.dx * 300,
       top: zone.position.dy * 600,
@@ -165,19 +168,27 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: (isSelected ? color : Colors.transparent).withValues(alpha: 0.2),
+            color: (isSelected ? color : Colors.transparent).withValues(
+              alpha: 0.2,
+            ),
             border: Border.all(
               color: isSelected ? color : color.withValues(alpha: 0.1),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(InfernalRadius.sm),
-            boxShadow: isSelected ? [
-              BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: 2)
-            ] : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : null,
           ),
-          child: isSelected 
-            ? Center(child: Icon(Icons.gps_fixed, color: color, size: 20))
-            : null,
+          child: isSelected
+              ? Center(child: Icon(Icons.gps_fixed, color: color, size: 20))
+              : null,
         ),
       ),
     );
@@ -189,71 +200,92 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
       padding: const EdgeInsets.all(InfernalSpacing.lg),
       decoration: const BoxDecoration(
         color: InfernalColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(InfernalRadius.xl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(InfernalRadius.xl),
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black54, blurRadius: 20, offset: Offset(0, -5))
+          BoxShadow(
+            color: Colors.black54,
+            blurRadius: 20,
+            offset: Offset(0, -5),
+          ),
         ],
       ),
-      child: _selectedZone == null 
-        ? const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.touch_app, color: InfernalColors.textMuted, size: 48),
-                SizedBox(height: InfernalSpacing.md),
-                Text('Touch a site to gauge the suffering.', style: TextStyle(color: InfernalColors.textMuted)),
-              ],
-            ),
-          )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: _selectedZone == null
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    _selectedZone!.name.toUpperCase(),
-                    style: const TextStyle(
-                      color: InfernalColors.textPrimary,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 3,
-                    ),
+                  Icon(
+                    Icons.touch_app,
+                    color: InfernalColors.textMuted,
+                    size: 48,
                   ),
-                  _buildPainMeter(_selectedZone!.level),
+                  SizedBox(height: InfernalSpacing.md),
+                  Text(
+                    'Touch a site to gauge the suffering.',
+                    style: TextStyle(color: InfernalColors.textMuted),
+                  ),
                 ],
               ),
-              const SizedBox(height: InfernalSpacing.sm),
-              const NeonDivider(height: 20, thickness: 0.5),
-              const SizedBox(height: InfernalSpacing.sm),
-              Text(
-                _selectedZone!.description,
-                style: const TextStyle(
-                  color: InfernalColors.textSecondary,
-                  fontSize: 16,
-                  height: 1.4,
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _selectedZone!.name.toUpperCase(),
+                      style: const TextStyle(
+                        color: InfernalColors.textPrimary,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 3,
+                      ),
+                    ),
+                    _buildPainMeter(_selectedZone!.level),
+                  ],
                 ),
-              ),
-              const Spacer(),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: InfernalSpacing.sm),
-                decoration: BoxDecoration(
-                  color: (_selectedZone!.level > 7 ? InfernalColors.blood : InfernalColors.gold).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(InfernalRadius.sm),
-                ),
-                child: Text(
-                  'ESTIMATED COST: ${_selectedZone!.level}/10 RITUAL INTENSITY',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _selectedZone!.level > 7 ? InfernalColors.blood : InfernalColors.gold,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
+                const SizedBox(height: InfernalSpacing.sm),
+                const NeonDivider(height: 20, thickness: 0.5),
+                const SizedBox(height: InfernalSpacing.sm),
+                Text(
+                  _selectedZone!.description,
+                  style: const TextStyle(
+                    color: InfernalColors.textSecondary,
+                    fontSize: 16,
+                    height: 1.4,
                   ),
                 ),
-              ),
-            ],
-          ),
+                const Spacer(),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: InfernalSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color:
+                        (_selectedZone!.level > 7
+                                ? InfernalColors.blood
+                                : InfernalColors.gold)
+                            .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(InfernalRadius.sm),
+                  ),
+                  child: Text(
+                    'ESTIMATED COST: ${_selectedZone!.level}/10 RITUAL INTENSITY',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _selectedZone!.level > 7
+                          ? InfernalColors.blood
+                          : InfernalColors.gold,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 

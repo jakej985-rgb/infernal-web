@@ -22,7 +22,8 @@ class AppointmentServiceApiImpl implements AppointmentService {
   Dio get _dio => _ref.read(apiClientProvider);
 
   // Broadcast controllers for reactive real-time updates
-  final _apptsController = StreamController<List<domain.Appointment>>.broadcast();
+  final _apptsController =
+      StreamController<List<domain.Appointment>>.broadcast();
   final _apptDetailControllers = <int, StreamController<domain.Appointment?>>{};
 
   // Single-flight deduplication fields to prevent API refetch storms
@@ -88,7 +89,7 @@ class AppointmentServiceApiImpl implements AppointmentService {
     try {
       final response = await _dio.get('/appointments');
       final rawList = response.data as List;
-      
+
       final appointments = <domain.Appointment>[];
       for (final item in rawList) {
         final map = item as Map<String, dynamic>;
@@ -130,12 +131,15 @@ class AppointmentServiceApiImpl implements AppointmentService {
         'title': appointment.serviceType,
         'notes': appointment.notes ?? '',
         'start_time': appointment.dateTime.toUtc().toIso8601String(),
-        'end_time': appointment.dateTime.add(Duration(minutes: appointment.durationMinutes)).toUtc().toIso8601String(),
+        'end_time': appointment.dateTime
+            .add(Duration(minutes: appointment.durationMinutes))
+            .toUtc()
+            .toIso8601String(),
       };
 
       final response = await _dio.post('/appointments', data: payload);
       final uuid = (response.data as Map<String, dynamic>)['id'] as String;
-      
+
       // Warm up map cache
       await _idMapper.registerUuid('appointment', uuid);
 
@@ -166,7 +170,10 @@ class AppointmentServiceApiImpl implements AppointmentService {
         'title': appointment.serviceType,
         'notes': appointment.notes ?? '',
         'start_time': appointment.dateTime.toUtc().toIso8601String(),
-        'end_time': appointment.dateTime.add(Duration(minutes: appointment.durationMinutes)).toUtc().toIso8601String(),
+        'end_time': appointment.dateTime
+            .add(Duration(minutes: appointment.durationMinutes))
+            .toUtc()
+            .toIso8601String(),
       };
 
       await _dio.put('/appointments/$uuid', data: payload);
@@ -230,16 +237,19 @@ class AppointmentServiceApiImpl implements AppointmentService {
     final clientName = json['client_name'] as String? ?? '';
     final title = json['title'] as String? ?? '';
     final notes = json['notes'] as String? ?? '';
-    
+
     final startTimeStr = json['start_time'] as String;
     final endTimeStr = json['end_time'] as String;
-    
+
     final startTime = DateTime.parse(startTimeStr).toLocal();
     final endTime = DateTime.parse(endTimeStr).toLocal();
     final duration = endTime.difference(startTime).inMinutes;
 
-    final updatedAtStr = json['updated_at'] as String? ?? json['created_at'] as String?;
-    final updatedAt = updatedAtStr != null ? DateTime.parse(updatedAtStr).toLocal() : DateTime.now();
+    final updatedAtStr =
+        json['updated_at'] as String? ?? json['created_at'] as String?;
+    final updatedAt = updatedAtStr != null
+        ? DateTime.parse(updatedAtStr).toLocal()
+        : DateTime.now();
 
     return domain.Appointment(
       id: id,

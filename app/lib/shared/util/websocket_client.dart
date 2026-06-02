@@ -29,7 +29,9 @@ class WebSocketClient extends _$WebSocketClient {
   void _connect(StreamController<Map<String, dynamic>> controller) async {
     if (_isDisposed) return;
     if (kIsWeb) {
-      debugPrint('[WebSocket] WebSocket connections via dart:io are disabled on the Web.');
+      debugPrint(
+        '[WebSocket] WebSocket connections via dart:io are disabled on the Web.',
+      );
       return;
     }
 
@@ -38,9 +40,10 @@ class WebSocketClient extends _$WebSocketClient {
     final token = prefs.getString('auth_jwt_token') ?? '';
 
     // Determine scheme based on base URL
-    final isSecure = baseUrl.contains('https') || baseUrl.startsWith('infernal-api');
+    final isSecure =
+        baseUrl.contains('https') || baseUrl.startsWith('infernal-api');
     final wsScheme = isSecure ? 'wss' : 'ws';
-    
+
     // Clean host formatting
     var host = baseUrl
         .replaceAll('http://', '')
@@ -55,7 +58,9 @@ class WebSocketClient extends _$WebSocketClient {
 
     try {
       debugPrint('[WebSocket] Connecting to $uri...');
-      _socket = await WebSocket.connect(uri.toString()).timeout(const Duration(seconds: 5));
+      _socket = await WebSocket.connect(
+        uri.toString(),
+      ).timeout(const Duration(seconds: 5));
       debugPrint('[WebSocket] Connected successfully.');
 
       _socket!.listen(

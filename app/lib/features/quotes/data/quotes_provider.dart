@@ -13,8 +13,11 @@ class QuoteSearchQuery extends _$QuoteSearchQuery {
   void set(String query) => state = query;
 }
 
-CollectionReference<Map<String, dynamic>> _quotesRef() =>
-    FirebaseFirestore.instance.collection('organizations').doc('default-org').collection('quotes');
+CollectionReference<Map<String, dynamic>> _quotesRef() => FirebaseFirestore
+    .instance
+    .collection('organizations')
+    .doc('default-org')
+    .collection('quotes');
 
 @riverpod
 Stream<List<domain.Quote>> filteredQuotes(Ref ref) {
@@ -24,21 +27,22 @@ Stream<List<domain.Quote>> filteredQuotes(Ref ref) {
   return _quotesRef()
       .snapshots()
       .asyncMap((snapshot) async {
-    final list = <domain.Quote>[];
-    for (final doc in snapshot.docs) {
-      final q = await _mapDocToDomain(doc, idMapper);
-      list.add(q);
-    }
-    return list;
-  }).map((quotes) {
-     if (query.isEmpty) return quotes;
-     final lowerQ = query.toLowerCase();
-     return quotes.where((q) {
-        return q.placement.toLowerCase().contains(lowerQ) ||
-               q.style.toLowerCase().contains(lowerQ) ||
-               (q.notes ?? '').toLowerCase().contains(lowerQ);
-     }).toList();
-  });
+        final list = <domain.Quote>[];
+        for (final doc in snapshot.docs) {
+          final q = await _mapDocToDomain(doc, idMapper);
+          list.add(q);
+        }
+        return list;
+      })
+      .map((quotes) {
+        if (query.isEmpty) return quotes;
+        final lowerQ = query.toLowerCase();
+        return quotes.where((q) {
+          return q.placement.toLowerCase().contains(lowerQ) ||
+              q.style.toLowerCase().contains(lowerQ) ||
+              (q.notes ?? '').toLowerCase().contains(lowerQ);
+        }).toList();
+      });
 }
 
 @riverpod
@@ -151,7 +155,10 @@ class QuotesService {
   }
 }
 
-Future<domain.Quote> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc, IdMapper idMapper) async {
+Future<domain.Quote> _mapDocToDomain(
+  DocumentSnapshot<Map<String, dynamic>> doc,
+  IdMapper idMapper,
+) async {
   final uuid = doc.id;
   final id = await idMapper.registerUuid('quote', uuid);
 
@@ -163,8 +170,8 @@ Future<domain.Quote> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc,
   }
 
   final artistUuid = data['artist_id'] as String? ?? '';
-  final artistId = artistUuid.isNotEmpty 
-      ? await idMapper.registerUuid('user', artistUuid) 
+  final artistId = artistUuid.isNotEmpty
+      ? await idMapper.registerUuid('user', artistUuid)
       : 1;
 
   final createdAtTimestamp = data['createdAt'] as Timestamp?;

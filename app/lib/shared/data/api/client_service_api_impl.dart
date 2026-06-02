@@ -89,7 +89,7 @@ class ClientServiceApiImpl implements ClientService {
     try {
       final response = await _dio.get('/clients');
       final rawList = response.data as List;
-      
+
       final clients = <domain.Client>[];
       for (final item in rawList) {
         final map = item as Map<String, dynamic>;
@@ -129,7 +129,7 @@ class ClientServiceApiImpl implements ClientService {
 
       final response = await _dio.post('/clients', data: payload);
       final uuid = (response.data as Map<String, dynamic>)['id'] as String;
-      
+
       // Warm up map cache
       await _idMapper.registerUuid('client', uuid);
 
@@ -146,7 +146,9 @@ class ClientServiceApiImpl implements ClientService {
   Future<void> updateClient(domain.Client client) async {
     try {
       final uuid = await _resolveUuid(client.id);
-      if (uuid == null) throw ApiClientException('Cannot resolve backend ID for client.');
+      if (uuid == null) {
+        throw ApiClientException('Cannot resolve backend ID for client.');
+      }
 
       final payload = {
         'name': client.fullName,
@@ -170,7 +172,9 @@ class ClientServiceApiImpl implements ClientService {
   Future<void> deleteClient(int id) async {
     try {
       final uuid = await _resolveUuid(id);
-      if (uuid == null) throw ApiClientException('Cannot resolve backend ID for client.');
+      if (uuid == null) {
+        throw ApiClientException('Cannot resolve backend ID for client.');
+      }
 
       await _dio.delete('/clients/$uuid');
 
@@ -216,12 +220,15 @@ class ClientServiceApiImpl implements ClientService {
     final parts = fullName.trim().split(' ');
     final firstName = parts.isNotEmpty ? parts.first : '';
     final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
-    
+
     final email = json['email'] as String? ?? '';
     final phone = json['phone'] as String? ?? '';
-    
-    final updatedAtStr = json['updated_at'] as String? ?? json['created_at'] as String?;
-    final updatedAt = updatedAtStr != null ? DateTime.parse(updatedAtStr).toLocal() : DateTime.now();
+
+    final updatedAtStr =
+        json['updated_at'] as String? ?? json['created_at'] as String?;
+    final updatedAt = updatedAtStr != null
+        ? DateTime.parse(updatedAtStr).toLocal()
+        : DateTime.now();
 
     return domain.Client(
       id: id,

@@ -5,7 +5,6 @@ part 'inventory.g.dart';
 
 @freezed
 abstract class InventoryItem with _$InventoryItem {
-
   const factory InventoryItem({
     required int id,
     @Default('') String syncId,
@@ -21,5 +20,6 @@ abstract class InventoryItem with _$InventoryItem {
     @Default(false) bool isDeleted,
   }) = _InventoryItem;
 
-  factory InventoryItem.fromJson(Map<String, dynamic> json) => _$InventoryItemFromJson(json);
+  factory InventoryItem.fromJson(Map<String, dynamic> json) =>
+      _$InventoryItemFromJson(json);
 }

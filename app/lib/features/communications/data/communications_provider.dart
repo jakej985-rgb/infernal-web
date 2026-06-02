@@ -7,7 +7,10 @@ import '../../../../shared/domain/communication.dart';
 part 'communications_provider.g.dart';
 
 CollectionReference<Map<String, dynamic>> _communicationsRef() =>
-    FirebaseFirestore.instance.collection('organizations').doc('default-org').collection('communications');
+    FirebaseFirestore.instance
+        .collection('organizations')
+        .doc('default-org')
+        .collection('communications');
 
 @riverpod
 Stream<List<CommunicationRitual>> communications(Ref ref) {
@@ -16,12 +19,12 @@ Stream<List<CommunicationRitual>> communications(Ref ref) {
       .where('isDeleted', isEqualTo: false)
       .snapshots()
       .asyncMap((snapshot) async {
-    final list = <CommunicationRitual>[];
-    for (final doc in snapshot.docs) {
-      list.add(await _mapDocToDomain(doc, idMapper));
-    }
-    return list;
-  });
+        final list = <CommunicationRitual>[];
+        for (final doc in snapshot.docs) {
+          list.add(await _mapDocToDomain(doc, idMapper));
+        }
+        return list;
+      });
 }
 
 @riverpod
@@ -66,7 +69,10 @@ class CommunicationsService extends _$CommunicationsService {
   }
 }
 
-Future<CommunicationRitual> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic>> doc, IdMapper idMapper) async {
+Future<CommunicationRitual> _mapDocToDomain(
+  DocumentSnapshot<Map<String, dynamic>> doc,
+  IdMapper idMapper,
+) async {
   final uuid = doc.id;
   final id = await idMapper.registerUuid('communication', uuid);
 
@@ -81,7 +87,7 @@ Future<CommunicationRitual> _mapDocToDomain(DocumentSnapshot<Map<String, dynamic
   final type = data['type'] as String? ?? 'SMS';
   final direction = data['direction'] as String? ?? 'OUTBOUND';
   final content = data['content'] as String? ?? '';
-  
+
   final sentAtTimestamp = data['sentAt'] as Timestamp?;
   final sentAt = sentAtTimestamp?.toDate() ?? DateTime.now();
 

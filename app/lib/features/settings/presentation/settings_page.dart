@@ -63,9 +63,10 @@ class SettingsPage extends ConsumerWidget {
               icon: Icons.attach_money,
               onTap: () => _showPricingDialog(context, ref, settings),
             ),
-             _SettingsItem(
+            _SettingsItem(
               title: 'Deposits',
-              subtitle: '${settings?.depositType ?? 'percentage'}: ${settings?.depositAmount ?? 0}',
+              subtitle:
+                  '${settings?.depositType ?? 'percentage'}: ${settings?.depositAmount ?? 0}',
               icon: Icons.payments,
               onTap: () => _showDepositDialog(context, ref, settings),
             ),
@@ -135,7 +136,11 @@ class SettingsPage extends ConsumerWidget {
             ),
             _SettingsItem(
               title: 'API Connection',
-              subtitle: ref.watch(sharedPreferencesProvider).getString('api_base_url') ?? 'https://api.inkandsteel.xyz',
+              subtitle:
+                  ref
+                      .watch(sharedPreferencesProvider)
+                      .getString('api_base_url') ??
+                  'https://api.inkandsteel.xyz',
               icon: Icons.cloud_queue,
               onTap: () => _showApiEndpointDialog(context, ref),
             ),
@@ -152,13 +157,20 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showShopProfileDialog(BuildContext context, WidgetRef ref, ShopSettings? settings) {
+  void _showShopProfileDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ShopSettings? settings,
+  ) {
     final nameCtrl = TextEditingController(text: settings?.shopName);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text('SHOP PROFILE', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'SHOP PROFILE',
+          style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -170,10 +182,15 @@ class SettingsPage extends ConsumerWidget {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
           ElevatedButton(
             onPressed: () {
-              ref.read(settingsServiceProvider).updateShopProfile(shopName: nameCtrl.text);
+              ref
+                  .read(settingsServiceProvider)
+                  .updateShopProfile(shopName: nameCtrl.text);
               Navigator.pop(ctx);
             },
             child: const Text('SAVE'),
@@ -183,30 +200,56 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showPricingDialog(BuildContext context, WidgetRef ref, ShopSettings? settings) {
-    final tattooCtrl = TextEditingController(text: settings?.tattooPerHour.toString());
-    final minCtrl = TextEditingController(text: settings?.shopMinimumRate.toString());
+  void _showPricingDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ShopSettings? settings,
+  ) {
+    final tattooCtrl = TextEditingController(
+      text: settings?.tattooPerHour.toString(),
+    );
+    final minCtrl = TextEditingController(
+      text: settings?.shopMinimumRate.toString(),
+    );
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text('PRICING SETTINGS', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'PRICING SETTINGS',
+          style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: tattooCtrl, decoration: const InputDecoration(labelText: 'Tattoo Hourly Rate'), keyboardType: TextInputType.number),
+            TextField(
+              controller: tattooCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Tattoo Hourly Rate',
+              ),
+              keyboardType: TextInputType.number,
+            ),
             const SizedBox(height: InfernalSpacing.md),
-            TextField(controller: minCtrl, decoration: const InputDecoration(labelText: 'Shop Minimum'), keyboardType: TextInputType.number),
+            TextField(
+              controller: minCtrl,
+              decoration: const InputDecoration(labelText: 'Shop Minimum'),
+              keyboardType: TextInputType.number,
+            ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
           ElevatedButton(
             onPressed: () {
-              ref.read(settingsServiceProvider).updatePricing(
-                tattooPerHour: double.tryParse(tattooCtrl.text),
-                shopMinimumRate: double.tryParse(minCtrl.text),
-              );
+              ref
+                  .read(settingsServiceProvider)
+                  .updatePricing(
+                    tattooPerHour: double.tryParse(tattooCtrl.text),
+                    shopMinimumRate: double.tryParse(minCtrl.text),
+                  );
               Navigator.pop(ctx);
             },
             child: const Text('SAVE'),
@@ -216,37 +259,70 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showDepositDialog(BuildContext context, WidgetRef ref, ShopSettings? settings) {
-    final amountCtrl = TextEditingController(text: settings?.depositAmount.toString());
+  void _showDepositDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ShopSettings? settings,
+  ) {
+    final amountCtrl = TextEditingController(
+      text: settings?.depositAmount.toString(),
+    );
     String currentType = settings?.depositType ?? 'percentage';
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           backgroundColor: InfernalColors.surface,
-          title: const Text('DEPOSIT CONFIG', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
+          title: const Text(
+            'DEPOSIT CONFIG',
+            style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-               DropdownButtonFormField<String>(
+              DropdownButtonFormField<String>(
                 initialValue: currentType,
                 dropdownColor: InfernalColors.surface,
                 decoration: const InputDecoration(labelText: 'Deposit Type'),
                 items: const [
-                  DropdownMenuItem(value: 'percentage', child: Text('Percentage (%)', style: TextStyle(color: InfernalColors.textPrimary))),
-                  DropdownMenuItem(value: 'fixed', child: Text('Fixed Amount (\$)', style: TextStyle(color: InfernalColors.textPrimary))),
+                  DropdownMenuItem(
+                    value: 'percentage',
+                    child: Text(
+                      'Percentage (%)',
+                      style: TextStyle(color: InfernalColors.textPrimary),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'fixed',
+                    child: Text(
+                      'Fixed Amount (\$)',
+                      style: TextStyle(color: InfernalColors.textPrimary),
+                    ),
+                  ),
                 ],
                 onChanged: (val) => setState(() => currentType = val!),
               ),
               const SizedBox(height: InfernalSpacing.md),
-              TextField(controller: amountCtrl, decoration: const InputDecoration(labelText: 'Amount'), keyboardType: TextInputType.number),
+              TextField(
+                controller: amountCtrl,
+                decoration: const InputDecoration(labelText: 'Amount'),
+                keyboardType: TextInputType.number,
+              ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('CANCEL'),
+            ),
             ElevatedButton(
               onPressed: () {
-                ref.read(settingsServiceProvider).updateDepositConfig(depositType: currentType, depositAmount: double.tryParse(amountCtrl.text));
+                ref
+                    .read(settingsServiceProvider)
+                    .updateDepositConfig(
+                      depositType: currentType,
+                      depositAmount: double.tryParse(amountCtrl.text),
+                    );
                 Navigator.pop(ctx);
               },
               child: const Text('SAVE'),
@@ -259,21 +335,32 @@ class SettingsPage extends ConsumerWidget {
 
   void _showApiEndpointDialog(BuildContext context, WidgetRef ref) {
     final prefs = ref.read(sharedPreferencesProvider);
-    final currentUrl = prefs.getString('api_base_url') ?? 'https://api.inkandsteel.xyz';
+    final currentUrl =
+        prefs.getString('api_base_url') ?? 'https://api.inkandsteel.xyz';
     final urlCtrl = TextEditingController(text: currentUrl);
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text('API CONNECTION SETTINGS', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold, fontSize: 16)),
+        title: const Text(
+          'API CONNECTION SETTINGS',
+          style: TextStyle(
+            letterSpacing: 2,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Enter the central Go API server base URL:',
-              style: TextStyle(color: InfernalColors.textSecondary, fontSize: 13),
+              style: TextStyle(
+                color: InfernalColors.textSecondary,
+                fontSize: 13,
+              ),
             ),
             const SizedBox(height: InfernalSpacing.md),
             TextField(
@@ -287,13 +374,20 @@ class SettingsPage extends ConsumerWidget {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
           ElevatedButton(
             onPressed: () async {
               await prefs.setString('api_base_url', urlCtrl.text.trim());
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('API base URL updated. Restarting sync and connection...')),
+                  const SnackBar(
+                    content: Text(
+                      'API base URL updated. Restarting sync and connection...',
+                    ),
+                  ),
                 );
                 Navigator.pop(ctx);
               }
@@ -310,12 +404,25 @@ class SettingsPage extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text('RESET SETTINGS?', style: TextStyle(color: InfernalColors.error, fontWeight: FontWeight.bold)),
-        content: const Text('This will revert all shop configuration to factory defaults. This action cannot be undone.'),
+        title: const Text(
+          'RESET SETTINGS?',
+          style: TextStyle(
+            color: InfernalColors.error,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Text(
+          'This will revert all shop configuration to factory defaults. This action cannot be undone.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: InfernalColors.blood),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: InfernalColors.blood,
+            ),
             onPressed: () {
               ref.read(settingsServiceProvider).resetToDefaults();
               Navigator.pop(ctx);
@@ -393,9 +500,24 @@ class _SettingsItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: InfernalColors.textSecondary, size: 20),
-      title: Text(title, style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: const TextStyle(color: InfernalColors.textMuted, fontSize: 13)),
-      trailing: trailing ?? const Icon(Icons.chevron_right, color: InfernalColors.textMuted, size: 20),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: InfernalColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(color: InfernalColors.textMuted, fontSize: 13),
+      ),
+      trailing:
+          trailing ??
+          const Icon(
+            Icons.chevron_right,
+            color: InfernalColors.textMuted,
+            size: 20,
+          ),
       onTap: onTap,
     );
   }

@@ -36,8 +36,14 @@ class IdMapper {
             // New nested format: { "client": { "uuid": id, ... } }
             data.forEach((entityType, mappings) {
               if (mappings is Map<String, dynamic>) {
-                final typeUuidToId = _uuidToId.putIfAbsent(entityType, () => {});
-                final typeIdToUuid = _idToUuid.putIfAbsent(entityType, () => {});
+                final typeUuidToId = _uuidToId.putIfAbsent(
+                  entityType,
+                  () => {},
+                );
+                final typeIdToUuid = _idToUuid.putIfAbsent(
+                  entityType,
+                  () => {},
+                );
                 mappings.forEach((uuid, idVal) {
                   final id = idVal as int;
                   typeIdToUuid[id] = uuid;
@@ -58,7 +64,9 @@ class IdMapper {
                 typeUuidToId[uuid] = id;
               }
             });
-            debugPrint('[IdMapper] Migrated legacy flat mappings to "client" namespace.');
+            debugPrint(
+              '[IdMapper] Migrated legacy flat mappings to "client" namespace.',
+            );
             // Save in the new format immediately to persist migration
             _saveMappings();
           }

@@ -12,10 +12,15 @@ part 'stats_repository.g.dart';
 class DashboardStatsRepository extends _$DashboardStatsRepository {
   @override
   Stream<DashboardStats> build() {
-    final apptsStream = ref.watch(appointmentServiceProvider).watchAppointments();
+    final apptsStream = ref
+        .watch(appointmentServiceProvider)
+        .watchAppointments();
     final clientsStream = ref.watch(clientServiceProvider).watchClients();
 
-    return Rx.combineLatest2(apptsStream, clientsStream, (appointments, clients) {
+    return Rx.combineLatest2(apptsStream, clientsStream, (
+      appointments,
+      clients,
+    ) {
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
       final todayEnd = todayStart.add(const Duration(days: 1));
@@ -25,7 +30,8 @@ class DashboardStatsRepository extends _$DashboardStatsRepository {
 
       for (final appt in appointments) {
         if (appt.isDeleted) continue;
-        if ((appt.dateTime.isAfter(todayStart) || appt.dateTime.isAtSameMomentAs(todayStart)) &&
+        if ((appt.dateTime.isAfter(todayStart) ||
+                appt.dateTime.isAtSameMomentAs(todayStart)) &&
             appt.dateTime.isBefore(todayEnd)) {
           todayRituals++;
         } else if (appt.dateTime.isAfter(todayEnd)) {
@@ -43,6 +49,7 @@ class DashboardStatsRepository extends _$DashboardStatsRepository {
   }
 }
 
-final dashboardTodayAppointmentsProvider = Provider<AsyncValue<List<domain.Appointment>>>((ref) {
-  return ref.watch(todaysAppointmentsProvider);
-});
+final dashboardTodayAppointmentsProvider =
+    Provider<AsyncValue<List<domain.Appointment>>>((ref) {
+      return ref.watch(todaysAppointmentsProvider);
+    });

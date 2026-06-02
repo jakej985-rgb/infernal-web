@@ -23,7 +23,9 @@ class SystemStatusPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logsAsync = ref.watch(StreamProvider((ref) => Stream.value(<AuditLog>[])));
+    final logsAsync = ref.watch(
+      StreamProvider((ref) => Stream.value(<AuditLog>[])),
+    );
     final useInfernal = ref.watch(useInfernalLabelsProvider);
 
     return Scaffold(
@@ -50,7 +52,10 @@ class SystemStatusPage extends ConsumerWidget {
           logsAsync.when(
             data: (logs) => _buildLogsList(logs),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, s) => Text('${UiLabels.get('logs_error', useInfernal)}: $e', style: const TextStyle(color: InfernalColors.error)),
+            error: (e, s) => Text(
+              '${UiLabels.get('logs_error', useInfernal)}: $e',
+              style: const TextStyle(color: InfernalColors.error),
+            ),
           ),
         ],
       ),
@@ -70,13 +75,20 @@ class SystemStatusPage extends ConsumerWidget {
         children: [
           const Text(
             'SANCTUARY STANDING',
-            style: TextStyle(color: InfernalColors.gold, fontWeight: FontWeight.bold, letterSpacing: 1),
+            style: TextStyle(
+              color: InfernalColors.gold,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
           ),
           const SizedBox(height: InfernalSpacing.md),
           _InfoRow(label: 'Database Version', value: 'PostgreSQL (Cloud SQL)'),
           _InfoRow(label: 'Spirit Sync', value: 'Online (Central Go API)'),
           _InfoRow(label: 'Security Level', value: 'Inquisition Standard'),
-          _InfoRow(label: 'Persistence Path', value: 'https://api.inkandsteel.xyz'),
+          _InfoRow(
+            label: 'Persistence Path',
+            value: 'https://api.inkandsteel.xyz',
+          ),
         ],
       ),
     );
@@ -87,14 +99,15 @@ class SystemStatusPage extends ConsumerWidget {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(InfernalSpacing.xl),
-          child: Text('The chronicles are empty.', style: TextStyle(color: InfernalColors.textMuted)),
+          child: Text(
+            'The chronicles are empty.',
+            style: TextStyle(color: InfernalColors.textMuted),
+          ),
         ),
       );
     }
 
-    return Column(
-      children: logs.map((log) => _LogItem(log: log)).toList(),
-    );
+    return Column(children: logs.map((log) => _LogItem(log: log)).toList());
   }
 }
 
@@ -110,8 +123,17 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: InfernalColors.textSecondary)),
-          Text(value, style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(color: InfernalColors.textSecondary),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: InfernalColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -128,13 +150,18 @@ class _LogItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: InfernalSpacing.sm),
       decoration: BoxDecoration(
         color: InfernalColors.surface,
-        border: Border(left: BorderSide(color: _getActionColor(log.action), width: 4)),
+        border: Border(
+          left: BorderSide(color: _getActionColor(log.action), width: 4),
+        ),
       ),
       child: ListTile(
         dense: true,
         title: Text(
           '${log.action} // ${log.entityType ?? ''}',
-          style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: InfernalColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         subtitle: Text(
           '${log.details} • ${DateFormat('HH:mm:ss').format(log.timestamp)}',
@@ -150,11 +177,16 @@ class _LogItem extends StatelessWidget {
 
   Color _getActionColor(String action) {
     switch (action.toUpperCase()) {
-      case 'CREATE': return Colors.green;
-      case 'UPDATE': return Colors.blue;
-      case 'DELETE': return Colors.red;
-      case 'LOGIN': return Colors.purple;
-      default: return InfernalColors.textMuted;
+      case 'CREATE':
+        return Colors.green;
+      case 'UPDATE':
+        return Colors.blue;
+      case 'DELETE':
+        return Colors.red;
+      case 'LOGIN':
+        return Colors.purple;
+      default:
+        return InfernalColors.textMuted;
     }
   }
 }

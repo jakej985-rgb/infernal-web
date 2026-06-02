@@ -60,7 +60,10 @@ class ToolsHubPage extends ConsumerWidget {
                   Expanded(
                     child: _ToolCard(
                       title: UiLabels.get('tool_inventory_title', useInfernal),
-                      subtitle: UiLabels.get('tool_inventory_subtitle', useInfernal),
+                      subtitle: UiLabels.get(
+                        'tool_inventory_subtitle',
+                        useInfernal,
+                      ),
                       icon: Icons.inventory_2_outlined,
                       color: Colors.blue,
                       onTap: () => context.go(AppRoutes.inventory),
@@ -70,7 +73,10 @@ class ToolsHubPage extends ConsumerWidget {
                   Expanded(
                     child: _ToolCard(
                       title: UiLabels.get('tool_messages_title', useInfernal),
-                      subtitle: UiLabels.get('tool_messages_subtitle', useInfernal),
+                      subtitle: UiLabels.get(
+                        'tool_messages_subtitle',
+                        useInfernal,
+                      ),
                       icon: Icons.chat_bubble_outline,
                       color: Colors.purple,
                       onTap: () => context.go(AppRoutes.communications),

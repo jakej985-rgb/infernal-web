@@ -22,7 +22,8 @@ class ClientSyncDTO {
     required this.updatedAt,
   });
 
-  factory ClientSyncDTO.fromJson(Map<String, dynamic> json) => _$ClientSyncDTOFromJson(json);
+  factory ClientSyncDTO.fromJson(Map<String, dynamic> json) =>
+      _$ClientSyncDTOFromJson(json);
   Map<String, dynamic> toJson() => _$ClientSyncDTOToJson(this);
 }
 
@@ -53,7 +54,8 @@ class ApptSyncDTO {
     required this.updatedAt,
   });
 
-  factory ApptSyncDTO.fromJson(Map<String, dynamic> json) => _$ApptSyncDTOFromJson(json);
+  factory ApptSyncDTO.fromJson(Map<String, dynamic> json) =>
+      _$ApptSyncDTOFromJson(json);
   Map<String, dynamic> toJson() => _$ApptSyncDTOToJson(this);
 }
 
@@ -89,7 +91,8 @@ class InvSyncDTO {
     required this.updatedAt,
   });
 
-  factory InvSyncDTO.fromJson(Map<String, dynamic> json) => _$InvSyncDTOFromJson(json);
+  factory InvSyncDTO.fromJson(Map<String, dynamic> json) =>
+      _$InvSyncDTOFromJson(json);
   Map<String, dynamic> toJson() => _$InvSyncDTOToJson(this);
 }
 
@@ -118,7 +121,8 @@ class DocSyncDTO {
     required this.updatedAt,
   });
 
-  factory DocSyncDTO.fromJson(Map<String, dynamic> json) => _$DocSyncDTOFromJson(json);
+  factory DocSyncDTO.fromJson(Map<String, dynamic> json) =>
+      _$DocSyncDTOFromJson(json);
   Map<String, dynamic> toJson() => _$DocSyncDTOToJson(this);
 }
 
@@ -143,7 +147,8 @@ class CommSyncDTO {
     required this.updatedAt,
   });
 
-  factory CommSyncDTO.fromJson(Map<String, dynamic> json) => _$CommSyncDTOFromJson(json);
+  factory CommSyncDTO.fromJson(Map<String, dynamic> json) =>
+      _$CommSyncDTOFromJson(json);
   Map<String, dynamic> toJson() => _$CommSyncDTOToJson(this);
 }
 
@@ -166,7 +171,8 @@ class SyncRequestPayload {
     required this.communications,
   });
 
-  factory SyncRequestPayload.fromJson(Map<String, dynamic> json) => _$SyncRequestPayloadFromJson(json);
+  factory SyncRequestPayload.fromJson(Map<String, dynamic> json) =>
+      _$SyncRequestPayloadFromJson(json);
   Map<String, dynamic> toJson() => _$SyncRequestPayloadToJson(this);
 }
 
@@ -189,6 +195,7 @@ class SyncResponsePayload {
     required this.communications,
   });
 
-  factory SyncResponsePayload.fromJson(Map<String, dynamic> json) => _$SyncResponsePayloadFromJson(json);
+  factory SyncResponsePayload.fromJson(Map<String, dynamic> json) =>
+      _$SyncResponsePayloadFromJson(json);
   Map<String, dynamic> toJson() => _$SyncResponsePayloadToJson(this);
 }

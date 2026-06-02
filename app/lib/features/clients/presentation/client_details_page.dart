@@ -132,7 +132,6 @@ class ClientDetailsPage extends ConsumerWidget {
     );
   }
 
-
   void _deleteClient(BuildContext context, WidgetRef ref, int id) {
     final useInfernal = ref.read(useInfernalLabelsProvider);
 

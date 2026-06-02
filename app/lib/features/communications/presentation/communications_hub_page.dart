@@ -12,7 +12,8 @@ class CommunicationsHubPage extends ConsumerStatefulWidget {
   const CommunicationsHubPage({super.key});
 
   @override
-  ConsumerState<CommunicationsHubPage> createState() => _CommunicationsHubPageState();
+  ConsumerState<CommunicationsHubPage> createState() =>
+      _CommunicationsHubPageState();
 }
 
 class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
@@ -29,10 +30,10 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
     if (_messageController.text.isEmpty) return;
 
     final content = _messageController.text;
-    final clientName = _selectedClient != null 
-        ? '${_selectedClient!.firstName} ${_selectedClient!.lastName}' 
+    final clientName = _selectedClient != null
+        ? '${_selectedClient!.firstName} ${_selectedClient!.lastName}'
         : 'Unknown Soul';
-    
+
     final ritual = CommunicationRitual(
       id: 0,
       clientId: _selectedClient?.id,
@@ -44,7 +45,9 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
       status: 'SENT',
     );
 
-    await ref.read(communicationsServiceProvider.notifier).sendCommunication(ritual);
+    await ref
+        .read(communicationsServiceProvider.notifier)
+        .sendCommunication(ritual);
     _messageController.clear();
     setState(() {
       _selectedClient = null;
@@ -58,7 +61,10 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('RITUAL INVOCATIONS', style: TextStyle(letterSpacing: 4)),
+        title: const Text(
+          'RITUAL INVOCATIONS',
+          style: TextStyle(letterSpacing: 4),
+        ),
         centerTitle: true,
         backgroundColor: InfernalColors.surface,
         elevation: 0,
@@ -68,11 +74,18 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
           const NeonDivider(blurRadius: 8),
           Expanded(
             child: communicationsAsync.when(
-              data: (rituals) => rituals.isEmpty 
-                  ? _buildEmptyState() 
+              data: (rituals) => rituals.isEmpty
+                  ? _buildEmptyState()
                   : _buildRitualList(rituals),
-              loading: () => const Center(child: CircularProgressIndicator(color: InfernalColors.blood)),
-              error: (err, stack) => Center(child: Text('Ritual error: $err', style: const TextStyle(color: InfernalColors.error))),
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: InfernalColors.blood),
+              ),
+              error: (err, stack) => Center(
+                child: Text(
+                  'Ritual error: $err',
+                  style: const TextStyle(color: InfernalColors.error),
+                ),
+              ),
             ),
           ),
           if (_selectedClient != null) _buildRecipientIndicator(),
@@ -87,7 +100,11 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.auto_fix_high, size: 64, color: InfernalColors.textMuted.withValues(alpha: 0.3)),
+          Icon(
+            Icons.auto_fix_high,
+            size: 64,
+            color: InfernalColors.textMuted.withValues(alpha: 0.3),
+          ),
           const SizedBox(height: InfernalSpacing.md),
           const Text(
             'NO RECENT INVOCATIONS',
@@ -110,7 +127,9 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
         return Padding(
           padding: const EdgeInsets.only(bottom: InfernalSpacing.md),
           child: Row(
-            mainAxisAlignment: !isOut ? MainAxisAlignment.start : MainAxisAlignment.end,
+            mainAxisAlignment: !isOut
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.end,
             children: [
               if (!isOut) _buildAvatar(ritual.clientName),
               const SizedBox(width: InfernalSpacing.sm),
@@ -126,19 +145,28 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
                         children: [
                           Text(
                             !isOut ? ritual.clientName : 'ME',
-                            style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 10),
+                            style: const TextStyle(
+                              color: InfernalColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             _formatTime(ritual.sentAt),
-                            style: const TextStyle(color: InfernalColors.textMuted, fontSize: 9),
+                            style: const TextStyle(
+                              color: InfernalColors.textMuted,
+                              fontSize: 9,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         ritual.content,
-                        style: const TextStyle(color: InfernalColors.textPrimary),
+                        style: const TextStyle(
+                          color: InfernalColors.textPrimary,
+                        ),
                       ),
                     ],
                   ),
@@ -168,7 +196,10 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
       backgroundColor: InfernalColors.surfaceElevated,
       child: Text(
         name.isEmpty ? '?' : name[0].toUpperCase(),
-        style: const TextStyle(color: InfernalColors.blood, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          color: InfernalColors.blood,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -182,12 +213,21 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
           const Icon(Icons.person_pin, color: InfernalColors.arcane, size: 16),
           const SizedBox(width: 8),
           Text(
-            'TO: ${_selectedClient!.firstName} ${_selectedClient!.lastName}'.toUpperCase(),
-            style: const TextStyle(color: InfernalColors.arcane, fontSize: 10, fontWeight: FontWeight.bold),
+            'TO: ${_selectedClient!.firstName} ${_selectedClient!.lastName}'
+                .toUpperCase(),
+            style: const TextStyle(
+              color: InfernalColors.arcane,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const Spacer(),
           IconButton(
-            icon: const Icon(Icons.close, size: 16, color: InfernalColors.textMuted),
+            icon: const Icon(
+              Icons.close,
+              size: 16,
+              color: InfernalColors.textMuted,
+            ),
             onPressed: () => setState(() => _selectedClient = null),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -207,7 +247,10 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.person_add_outlined, color: InfernalColors.blood),
+            icon: const Icon(
+              Icons.person_add_outlined,
+              color: InfernalColors.blood,
+            ),
             onPressed: _showClientPicker,
           ),
           Expanded(
@@ -218,7 +261,10 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
                 hintStyle: const TextStyle(color: InfernalColors.textMuted),
                 filled: true,
                 fillColor: InfernalColors.background,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(InfernalRadius.pill), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(InfernalRadius.pill),
+                  borderSide: BorderSide.none,
+                ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
               style: const TextStyle(color: InfernalColors.textPrimary),
@@ -239,7 +285,9 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
       context: context,
       backgroundColor: InfernalColors.background,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(InfernalRadius.lg)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(InfernalRadius.lg),
+        ),
       ),
       builder: (context) {
         return Consumer(
@@ -252,9 +300,13 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
                   child: TextField(
                     decoration: const InputDecoration(
                       hintText: 'Search for a soul...',
-                      prefixIcon: Icon(Icons.search, color: InfernalColors.blood),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: InfernalColors.blood,
+                      ),
                     ),
-                    onChanged: (val) => ref.read(clientSearchQueryProvider.notifier).set(val),
+                    onChanged: (val) =>
+                        ref.read(clientSearchQueryProvider.notifier).set(val),
                   ),
                 ),
                 Expanded(
@@ -264,8 +316,18 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
                       itemBuilder: (context, index) {
                         final client = clients[index];
                         return ListTile(
-                          title: Text('${client.firstName} ${client.lastName}', style: const TextStyle(color: InfernalColors.textPrimary)),
-                          subtitle: Text(client.phone, style: const TextStyle(color: InfernalColors.textMuted)),
+                          title: Text(
+                            '${client.firstName} ${client.lastName}',
+                            style: const TextStyle(
+                              color: InfernalColors.textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
+                            client.phone,
+                            style: const TextStyle(
+                              color: InfernalColors.textMuted,
+                            ),
+                          ),
                           onTap: () {
                             setState(() => _selectedClient = client);
                             Navigator.pop(context);
@@ -273,7 +335,11 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
                         );
                       },
                     ),
-                    loading: () => const Center(child: CircularProgressIndicator(color: InfernalColors.blood)),
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: InfernalColors.blood,
+                      ),
+                    ),
                     error: (err, _) => Center(child: Text('Error: $err')),
                   ),
                 ),

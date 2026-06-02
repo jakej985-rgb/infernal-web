@@ -18,11 +18,15 @@ Stream<List<domain.Appointment>> todaysAppointments(Ref ref) {
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
-    return appts.where((a) =>
-        !a.isDeleted &&
-        (a.dateTime.isAfter(startOfDay) || a.dateTime.isAtSameMomentAs(startOfDay)) &&
-        a.dateTime.isBefore(endOfDay)
-    ).toList();
+    return appts
+        .where(
+          (a) =>
+              !a.isDeleted &&
+              (a.dateTime.isAfter(startOfDay) ||
+                  a.dateTime.isAtSameMomentAs(startOfDay)) &&
+              a.dateTime.isBefore(endOfDay),
+        )
+        .toList();
   });
 }
 
@@ -38,7 +42,12 @@ Stream<List<domain.Appointment>> upcomingAppointments(Ref ref) {
   return service.watchAppointments().map((appts) {
     final now = DateTime.now();
     return appts
-        .where((a) => !a.isDeleted && a.dateTime.isAfter(now) && a.status == 'Scheduled')
+        .where(
+          (a) =>
+              !a.isDeleted &&
+              a.dateTime.isAfter(now) &&
+              a.status == 'Scheduled',
+        )
         .take(10)
         .toList();
   });

@@ -178,7 +178,7 @@ ThemeData createInfernalTheme() {
 TextTheme _createTextTheme() {
   // Using Inter as a modern, clean font
   final baseTextTheme = GoogleFonts.interTextTheme();
-  
+
   // Using Cinzel for headlines for an atmospheric 'Infernal' feel
   final headlineFont = GoogleFonts.cinzel();
 
@@ -223,7 +223,7 @@ TextTheme _createTextTheme() {
     titleSmall: baseTextTheme.titleSmall?.copyWith(
       color: InfernalColors.textSecondary,
     ),
-// ... same rest of textTheme ...
+    // ... same rest of textTheme ...
     bodyLarge: baseTextTheme.bodyLarge?.copyWith(
       color: InfernalColors.textPrimary,
     ),

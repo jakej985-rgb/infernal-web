@@ -15,9 +15,10 @@ class UseInfernalLabelsNotifier extends Notifier<bool> {
   }
 }
 
-final useInfernalLabelsProvider = NotifierProvider<UseInfernalLabelsNotifier, bool>(() {
-  return UseInfernalLabelsNotifier();
-});
+final useInfernalLabelsProvider =
+    NotifierProvider<UseInfernalLabelsNotifier, bool>(() {
+      return UseInfernalLabelsNotifier();
+    });
 
 class UiLabels {
   static const standardLabels = {
@@ -67,7 +68,8 @@ class UiLabels {
     'tool_messages_subtitle': 'Client communications hub',
     'appointment_details': 'Appointment Details',
     'delete_appointment_title': 'Cancel Appointment?',
-    'delete_appointment_content': 'This will permanently remove the appointment. Are you sure?',
+    'delete_appointment_content':
+        'This will permanently remove the appointment. Are you sure?',
     'appointment_not_found': 'Appointment not found',
     'quote_details': 'Estimate Details',
     'delete_quote_title': 'Delete Estimate?',
@@ -102,7 +104,8 @@ class UiLabels {
     'search_placeholder': 'Search canvases...',
     'no_clients_found': 'No canvases found.',
     'delete_client_title': 'Archive Canvas?',
-    'delete_client_content': 'This canvas record will be soft deleted. Continue?',
+    'delete_client_content':
+        'This canvas record will be soft deleted. Continue?',
     'delete_client_action': 'Archive',
     'timeline_title': 'SESSION SCHEDULE',
     'stats_title': 'SHOP LEDGER // Stats',
@@ -122,7 +125,8 @@ class UiLabels {
     'tool_messages_subtitle': 'Canvas communications hub',
     'appointment_details': 'Session Details',
     'delete_appointment_title': 'Cancel Session?',
-    'delete_appointment_content': 'This will permanently cancel the session. Are you sure?',
+    'delete_appointment_content':
+        'This will permanently cancel the session. Are you sure?',
     'appointment_not_found': 'Session not found',
     'quote_details': 'Stencil Details',
     'delete_quote_title': 'Delete Stencil?',

@@ -11,7 +11,7 @@ import '../data/clients_provider.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
 
 class ClientFormPage extends ConsumerStatefulWidget {
-  final String? clientId; 
+  final String? clientId;
 
   const ClientFormPage({super.key, this.clientId});
 
@@ -27,7 +27,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
   final _phoneCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   ClientStatus _status = ClientStatus.bound;
-  
+
   XFile? _avatarFile;
   String? _existingPhotoPath;
 
@@ -100,9 +100,11 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(_isEdit
-            ? UiLabels.get('edit_client', useInfernal)
-            : UiLabels.get('add_client', useInfernal)),
+        title: Text(
+          _isEdit
+              ? UiLabels.get('edit_client', useInfernal)
+              : UiLabels.get('add_client', useInfernal),
+        ),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -137,23 +139,36 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
                         decoration: BoxDecoration(
                           color: InfernalColors.surface,
                           shape: BoxShape.circle,
-                          border: Border.all(color: InfernalColors.blood, width: 2),
+                          border: Border.all(
+                            color: InfernalColors.blood,
+                            width: 2,
+                          ),
                           image: _avatarFile != null
                               ? DecorationImage(
-                                  image: kIsWeb 
+                                  image: kIsWeb
                                       ? NetworkImage(_avatarFile!.path)
-                                      : FileImage(io.File(_avatarFile!.path)), 
-                                  fit: BoxFit.cover)
-                              : (_existingPhotoPath != null && _existingPhotoPath!.isNotEmpty)
-                                  ? DecorationImage(
-                                      image: kIsWeb 
-                                          ? NetworkImage(_existingPhotoPath!)
-                                          : FileImage(io.File(_existingPhotoPath!)), 
-                                      fit: BoxFit.cover)
-                                  : null,
+                                      : FileImage(io.File(_avatarFile!.path)),
+                                  fit: BoxFit.cover,
+                                )
+                              : (_existingPhotoPath != null &&
+                                    _existingPhotoPath!.isNotEmpty)
+                              ? DecorationImage(
+                                  image: kIsWeb
+                                      ? NetworkImage(_existingPhotoPath!)
+                                      : FileImage(io.File(_existingPhotoPath!)),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
-                        child: (_avatarFile == null && (_existingPhotoPath == null || _existingPhotoPath!.isEmpty))
-                            ? const Icon(Icons.person_outline, size: 50, color: InfernalColors.textMuted)
+                        child:
+                            (_avatarFile == null &&
+                                (_existingPhotoPath == null ||
+                                    _existingPhotoPath!.isEmpty))
+                            ? const Icon(
+                                Icons.person_outline,
+                                size: 50,
+                                color: InfernalColors.textMuted,
+                              )
                             : null,
                       ),
                       Positioned(
@@ -161,8 +176,15 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
                         right: 0,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: InfernalColors.blood, shape: BoxShape.circle),
-                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                          decoration: const BoxDecoration(
+                            color: InfernalColors.blood,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -195,7 +217,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
                     .map(
                       (s) => DropdownMenuItem(
                         value: s,
-                        child: Text(s.name.toUpperCase()),
+                        child: Text(s.displayName.toUpperCase()),
                       ),
                     )
                     .toList(),
@@ -284,8 +306,8 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
       } else {
         // Create
         final newClient = Client(
-          id: 0, 
-          syncId: '', 
+          id: 0,
+          syncId: '',
           firstName: _firstNameCtrl.text,
           lastName: _lastNameCtrl.text,
           email: _emailCtrl.text,

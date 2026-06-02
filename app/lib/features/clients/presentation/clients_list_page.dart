@@ -115,7 +115,8 @@ class ClientsListPage extends ConsumerWidget {
                           Icons.chevron_right,
                           color: InfernalColors.textMuted,
                         ),
-                        onTap: () => context.go('${AppRoutes.clients}/${client.id}'),
+                        onTap: () =>
+                            context.go('${AppRoutes.clients}/${client.id}'),
                       ),
                     );
                   },

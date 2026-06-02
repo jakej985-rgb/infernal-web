@@ -9,7 +9,8 @@ class ClientSelectionModal extends ConsumerStatefulWidget {
   const ClientSelectionModal({super.key});
 
   @override
-  ConsumerState<ClientSelectionModal> createState() => _ClientSelectionModalState();
+  ConsumerState<ClientSelectionModal> createState() =>
+      _ClientSelectionModalState();
 }
 
 class _ClientSelectionModalState extends ConsumerState<ClientSelectionModal> {
@@ -41,7 +42,9 @@ class _ClientSelectionModalState extends ConsumerState<ClientSelectionModal> {
     return Container(
       decoration: const BoxDecoration(
         color: InfernalColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(InfernalRadius.lg)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(InfernalRadius.lg),
+        ),
       ),
       padding: const EdgeInsets.all(InfernalSpacing.md),
       child: Column(
@@ -57,9 +60,9 @@ class _ClientSelectionModalState extends ConsumerState<ClientSelectionModal> {
           ),
           Text(
             'Summon Soul',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: InfernalColors.textPrimary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: InfernalColors.textPrimary),
           ),
           const SizedBox(height: InfernalSpacing.md),
           TextField(
@@ -68,7 +71,10 @@ class _ClientSelectionModalState extends ConsumerState<ClientSelectionModal> {
             decoration: InputDecoration(
               hintText: 'Search by name, email, or phone...',
               hintStyle: const TextStyle(color: InfernalColors.textMuted),
-              prefixIcon: const Icon(Icons.search, color: InfernalColors.textMuted),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: InfernalColors.textMuted,
+              ),
               filled: true,
               fillColor: InfernalColors.surface,
               border: OutlineInputBorder(
@@ -76,7 +82,8 @@ class _ClientSelectionModalState extends ConsumerState<ClientSelectionModal> {
                 borderSide: BorderSide.none,
               ),
             ),
-            onChanged: (val) => ref.read(clientSearchQueryProvider.notifier).set(val),
+            onChanged: (val) =>
+                ref.read(clientSearchQueryProvider.notifier).set(val),
           ),
           const SizedBox(height: InfernalSpacing.md),
           Expanded(
@@ -92,24 +99,33 @@ class _ClientSelectionModalState extends ConsumerState<ClientSelectionModal> {
                 }
                 return ListView.separated(
                   itemCount: clients.length,
-                  separatorBuilder: (_, _) => const Divider(color: InfernalColors.divider),
+                  separatorBuilder: (_, _) =>
+                      const Divider(color: InfernalColors.divider),
                   itemBuilder: (ctx, idx) {
                     final client = clients[idx];
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: InfernalColors.surfaceElevated,
                         child: Text(
-                          client.firstName.isNotEmpty ? client.firstName[0] : '?',
-                          style: const TextStyle(color: InfernalColors.textPrimary),
+                          client.firstName.isNotEmpty
+                              ? client.firstName[0]
+                              : '?',
+                          style: const TextStyle(
+                            color: InfernalColors.textPrimary,
+                          ),
                         ),
                       ),
                       title: Text(
                         client.fullName,
-                        style: const TextStyle(color: InfernalColors.textPrimary),
+                        style: const TextStyle(
+                          color: InfernalColors.textPrimary,
+                        ),
                       ),
                       subtitle: Text(
                         client.phone,
-                        style: const TextStyle(color: InfernalColors.textSecondary),
+                        style: const TextStyle(
+                          color: InfernalColors.textSecondary,
+                        ),
                       ),
                       onTap: () => context.pop(client),
                     );

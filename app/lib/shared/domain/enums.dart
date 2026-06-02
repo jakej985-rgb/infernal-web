@@ -14,7 +14,21 @@ enum ClientStatus {
   highValue,
 
   /// Archived/Inactive client
-  void_,
+  void_;
+
+  /// Returns the human-readable display name of the status
+  String get displayName {
+    switch (this) {
+      case ClientStatus.bound:
+        return 'Bound';
+      case ClientStatus.freshSoul:
+        return 'Fresh Soul';
+      case ClientStatus.highValue:
+        return 'High Value';
+      case ClientStatus.void_:
+        return 'Void';
+    }
+  }
 }
 
 /// User role for authorization

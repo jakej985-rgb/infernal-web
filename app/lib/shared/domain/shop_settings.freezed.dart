@@ -428,8 +428,7 @@ mixin _$ShopDaySetting {
 /// Day of week (1=Monday, 7=Sunday for DateTime convention)
  int get dayOfWeek;/// Whether shop is open this day
  bool get isOpen;/// Opening time (minutes from midnight)
- int get startTimeMinutes;// 9:00 AM
-/// Closing time (minutes from midnight)
+ int get startTimeMinutes;/// Closing time (minutes from midnight)
  int get endTimeMinutes;
 /// Create a copy of ShopDaySetting
 /// with the given fields replaced by the non-null parameter values.
@@ -636,7 +635,6 @@ class _ShopDaySetting extends ShopDaySetting {
 @override@JsonKey() final  bool isOpen;
 /// Opening time (minutes from midnight)
 @override@JsonKey() final  int startTimeMinutes;
-// 9:00 AM
 /// Closing time (minutes from midnight)
 @override@JsonKey() final  int endTimeMinutes;
 

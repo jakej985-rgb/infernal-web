@@ -9,7 +9,8 @@ class FlashRoulettePage extends StatefulWidget {
   State<FlashRoulettePage> createState() => _FlashRoulettePageState();
 }
 
-class _FlashRoulettePageState extends State<FlashRoulettePage> with SingleTickerProviderStateMixin {
+class _FlashRoulettePageState extends State<FlashRoulettePage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   String _selectedDesign = "?";
@@ -33,8 +34,11 @@ class _FlashRoulettePageState extends State<FlashRoulettePage> with SingleTicker
       vsync: this,
       duration: const Duration(seconds: 3),
     );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
-    
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         setState(() {
@@ -161,7 +165,10 @@ class _FlashRoulettePageState extends State<FlashRoulettePage> with SingleTicker
         padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
         disabledBackgroundColor: InfernalColors.border,
       ),
-      child: const Text('PULL THE LEVER', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2)),
+      child: const Text(
+        'PULL THE LEVER',
+        style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2),
+      ),
     );
   }
 }

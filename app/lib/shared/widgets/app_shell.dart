@@ -138,7 +138,9 @@ class _NavigationRail extends ConsumerWidget {
                 onDestinationSelected: (index) => _navigate(context, index),
                 labelType: NavigationRailLabelType.all,
                 leading: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: InfernalSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: InfernalSpacing.lg,
+                  ),
                   child: Column(
                     children: [
                       Container(
@@ -146,8 +148,13 @@ class _NavigationRail extends ConsumerWidget {
                         height: 48,
                         decoration: BoxDecoration(
                           color: InfernalColors.blood.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(InfernalRadius.md),
-                          border: Border.all(color: InfernalColors.blood, width: 2),
+                          borderRadius: BorderRadius.circular(
+                            InfernalRadius.md,
+                          ),
+                          border: Border.all(
+                            color: InfernalColors.blood,
+                            width: 2,
+                          ),
                         ),
                         child: const Icon(
                           Icons.colorize,

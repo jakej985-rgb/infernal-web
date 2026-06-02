@@ -13,51 +13,62 @@ Dio apiClient(Ref ref) {
   final secureStorage = ref.watch(secureStorageProvider);
 
   // Dynamic Base URL fallback
-  final apiBaseUrl = prefs.getString('api_base_url') ?? 'https://api.inkandsteel.xyz';
+  final apiBaseUrl =
+      prefs.getString('api_base_url') ?? 'https://api.inkandsteel.xyz';
 
-  final dio = Dio(BaseOptions(
-    baseUrl: apiBaseUrl.startsWith('http') ? apiBaseUrl : 'http://$apiBaseUrl',
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  ));
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: apiBaseUrl.startsWith('http')
+          ? apiBaseUrl
+          : 'http://$apiBaseUrl',
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  );
 
   // 1. Auth Interceptor for adding JWT header
-  dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) async {
-      final token = await secureStorage.readToken();
-      if (token != null && token.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $token';
-      }
-      return handler.next(options);
-    },
-    onError: (e, handler) {
-      if (e.response?.statusCode == 401) {
-        debugPrint('[ApiClient] Unauthorized error (401). Invalid token.');
-        // Session could be cleared here if needed
-      }
-      return handler.next(e);
-    },
-  ));
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await secureStorage.readToken();
+        if (token != null && token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        return handler.next(options);
+      },
+      onError: (e, handler) {
+        if (e.response?.statusCode == 401) {
+          debugPrint('[ApiClient] Unauthorized error (401). Invalid token.');
+          // Session could be cleared here if needed
+        }
+        return handler.next(e);
+      },
+    ),
+  );
 
   // 2. Custom retry interceptor for network/timeout errors
-  dio.interceptors.add(RetryInterceptor(
-    dio: dio,
-    maxRetries: 3,
-    delay: const Duration(seconds: 2),
-  ));
+  dio.interceptors.add(
+    RetryInterceptor(
+      dio: dio,
+      maxRetries: 3,
+      delay: const Duration(seconds: 2),
+    ),
+  );
 
   // 3. Logger Interceptor for development
   if (kDebugMode) {
-    dio.interceptors.add(LogInterceptor(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
-      error: true,
-    ));
+    dio.interceptors.add(
+      LogInterceptor(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        error: true,
+      ),
+    );
   }
 
   return dio;
@@ -75,11 +86,15 @@ class RetryInterceptor extends Interceptor {
   });
 
   @override
-  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     final requestOptions = err.requestOptions;
 
     // Check if error is a connection error and request should be retried
-    final isConnectionError = err.type == DioExceptionType.connectionTimeout ||
+    final isConnectionError =
+        err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.sendTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.connectionError ||
@@ -91,7 +106,9 @@ class RetryInterceptor extends Interceptor {
     if (isConnectionError && retryCount < maxRetries) {
       retryCount++;
       requestOptions.extra['retry_count'] = retryCount;
-      debugPrint('[ApiClient] Network error. Retrying request ($retryCount/$maxRetries) in ${delay.inSeconds}s...');
+      debugPrint(
+        '[ApiClient] Network error. Retrying request ($retryCount/$maxRetries) in ${delay.inSeconds}s...',
+      );
 
       await Future.delayed(delay);
 
@@ -117,7 +134,9 @@ class RetryInterceptor extends Interceptor {
         if (e is DioException) {
           return super.onError(e, handler);
         }
-        return handler.next(DioException(requestOptions: requestOptions, error: e));
+        return handler.next(
+          DioException(requestOptions: requestOptions, error: e),
+        );
       }
     }
 
@@ -139,23 +158,32 @@ class ApiClientException implements Exception {
     if (error.response != null) {
       final data = error.response?.data;
       if (data is Map && data.containsKey('error')) {
-        return ApiClientException(data['error'].toString(), statusCode: error.response?.statusCode);
+        return ApiClientException(
+          data['error'].toString(),
+          statusCode: error.response?.statusCode,
+        );
       }
       return ApiClientException(
         'Server returned error: ${error.response?.statusMessage}',
         statusCode: error.response?.statusCode,
       );
     }
-    
+
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return ApiClientException('Connection timeout. Please check your network.');
+        return ApiClientException(
+          'Connection timeout. Please check your network.',
+        );
       case DioExceptionType.connectionError:
-        return ApiClientException('Cannot connect to the server. Please ensure the server is running.');
+        return ApiClientException(
+          'Cannot connect to the server. Please ensure the server is running.',
+        );
       default:
-        return ApiClientException('An unexpected error occurred. Please try again.');
+        return ApiClientException(
+          'An unexpected error occurred. Please try again.',
+        );
     }
   }
 }

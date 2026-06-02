@@ -132,13 +132,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: ':id',
-                builder: (context, state) =>
-                    AppointmentDetailsPage(appointmentId: state.pathParameters['id']!),
+                builder: (context, state) => AppointmentDetailsPage(
+                  appointmentId: state.pathParameters['id']!,
+                ),
                 routes: [
                   GoRoute(
                     path: 'edit',
-                    builder: (context, state) =>
-                        AppointmentFormPage(appointmentId: state.pathParameters['id']),
+                    builder: (context, state) => AppointmentFormPage(
+                      appointmentId: state.pathParameters['id'],
+                    ),
                   ),
                 ],
               ),
@@ -205,13 +207,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: ':id',
-                builder: (context, state) =>
-                    DocumentDetailsPage(documentId: state.pathParameters['id']!),
+                builder: (context, state) => DocumentDetailsPage(
+                  documentId: state.pathParameters['id']!,
+                ),
                 routes: [
                   GoRoute(
                     path: 'edit',
-                    builder: (context, state) =>
-                        DocumentFormPage(documentId: state.pathParameters['id']),
+                    builder: (context, state) => DocumentFormPage(
+                      documentId: state.pathParameters['id'],
+                    ),
                   ),
                 ],
               ),

@@ -34,37 +34,37 @@ class AppointmentStatusChip extends StatelessWidget {
       return (
         background: InfernalColors.arcane.withValues(alpha: 0.1),
         border: InfernalColors.arcane,
-        text: InfernalColors.arcane
+        text: InfernalColors.arcane,
       );
     } else if (status.contains('progress')) {
       return (
         background: InfernalColors.ember.withValues(alpha: 0.1),
         border: InfernalColors.ember,
-        text: InfernalColors.ember
+        text: InfernalColors.ember,
       );
     } else if (status.contains('completed')) {
       return (
         background: InfernalColors.success.withValues(alpha: 0.1),
         border: InfernalColors.success,
-        text: InfernalColors.success
+        text: InfernalColors.success,
       );
     } else if (status.contains('cancel')) {
       return (
         background: InfernalColors.error.withValues(alpha: 0.1),
         border: InfernalColors.error,
-        text: InfernalColors.error
+        text: InfernalColors.error,
       );
     } else if (status.contains('show') || status.contains('warning')) {
       return (
         background: InfernalColors.warning.withValues(alpha: 0.1),
         border: InfernalColors.warning,
-        text: InfernalColors.warning
+        text: InfernalColors.warning,
       );
     } else {
       return (
         background: InfernalColors.voidColor.withValues(alpha: 0.1),
         border: InfernalColors.voidColor,
-        text: InfernalColors.textMuted
+        text: InfernalColors.textMuted,
       );
     }
   }
