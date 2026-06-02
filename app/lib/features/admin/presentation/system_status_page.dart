@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
+import '../../../shared/util/app_version_helper.dart';
 
 class AuditLog {
   final String action;
@@ -88,6 +89,23 @@ class SystemStatusPage extends ConsumerWidget {
           _InfoRow(
             label: 'Persistence Path',
             value: 'https://api.inkandsteel.xyz',
+          ),
+          const SizedBox(height: InfernalSpacing.lg),
+          Center(
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: InfernalColors.blood,
+                  foregroundColor: InfernalColors.textPrimary,
+                ),
+                onPressed: () async {
+                  await resetApp();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('HARD RESET APP'),
+              ),
+            ),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +7,7 @@ import '../../../app/router.dart';
 import '../../../app/theme/tokens.dart';
 import '../../../shared/presentation/widgets/neon_plate.dart';
 import '../../../shared/presentation/widgets/neon_divider.dart';
+import '../../../shared/util/app_version_helper.dart';
 import '../domain/auth_service.dart';
 import '../domain/auth_state.dart';
 
@@ -22,9 +24,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  final _focusNode = FocusNode();
+  int _tapCount = 0;
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -49,6 +54,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
       }
     });
+  }
+
+  void _handleKeyPress(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      final isControlPressed = HardwareKeyboard.instance.isControlPressed;
+      final isShiftPressed = HardwareKeyboard.instance.isShiftPressed;
+      if (isControlPressed && isShiftPressed && event.logicalKey == LogicalKeyboardKey.keyR) {
+        resetApp();
+      }
+    }
   }
 
   @override
@@ -87,124 +102,138 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
     });
 
-    return Scaffold(
-      backgroundColor: InfernalColors.background,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(InfernalSpacing.xl),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo with Glow
-                NeonPlate(
-                  color: InfernalColors.blood,
-                  padding: const EdgeInsets.all(InfernalSpacing.lg),
-                  child: const Icon(
-                    Icons.local_fire_department,
-                    color: InfernalColors.blood,
-                    size: 64,
-                  ),
-                ),
-                const SizedBox(height: InfernalSpacing.xl),
-
-                // Title
-                Text(
-                  'INFERNAL INK',
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    letterSpacing: 8,
-                    color: InfernalColors.blood,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  '& STEEL SUITE',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    letterSpacing: 4,
-                    color: InfernalColors.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: InfernalSpacing.md),
-                const NeonDivider(blurRadius: 20, thickness: 0.5),
-                const SizedBox(height: InfernalSpacing.md),
-                Text(
-                  'ENTER THE SANCTUM',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: InfernalColors.textMuted,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: InfernalSpacing.xxl),
-
-                // Login form
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _usernameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Username',
-                          prefixIcon: Icon(Icons.person_outline),
-                        ),
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Username required'
-                            : null,
-                        onFieldSubmitted: (_) => _login(),
+    return KeyboardListener(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyPress,
+      child: Scaffold(
+        backgroundColor: InfernalColors.background,
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(InfernalSpacing.xl),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo with Glow (with 5-tap hidden reset)
+                  GestureDetector(
+                    onTap: () {
+                      _tapCount++;
+                      if (_tapCount >= 5) {
+                        _tapCount = 0;
+                        resetApp();
+                      }
+                    },
+                    child: NeonPlate(
+                      color: InfernalColors.blood,
+                      padding: const EdgeInsets.all(InfernalSpacing.lg),
+                      child: const Icon(
+                        Icons.local_fire_department,
+                        color: InfernalColors.blood,
+                        size: 64,
                       ),
-                      const SizedBox(height: InfernalSpacing.md),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock_outline),
+                    ),
+                  ),
+                  const SizedBox(height: InfernalSpacing.xl),
+
+                  // Title
+                  Text(
+                    'INFERNAL INK',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      letterSpacing: 8,
+                      color: InfernalColors.blood,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    '& STEEL SUITE',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      letterSpacing: 4,
+                      color: InfernalColors.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: InfernalSpacing.md),
+                  const NeonDivider(blurRadius: 20, thickness: 0.5),
+                  const SizedBox(height: InfernalSpacing.md),
+                  Text(
+                    'ENTER THE SANCTUM',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: InfernalColors.textMuted,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: InfernalSpacing.xxl),
+
+                  // Login form
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _usernameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Username',
+                            prefixIcon: Icon(Icons.person_outline),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Username required'
+                              : null,
+                          onFieldSubmitted: (_) => _login(),
                         ),
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Password required'
-                            : null,
-                        onFieldSubmitted: (_) => _login(),
-                      ),
-                      const SizedBox(height: InfernalSpacing.xl),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _login,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: InfernalSpacing.sm,
+                        const SizedBox(height: InfernalSpacing.md),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: Icon(Icons.lock_outline),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Password required'
+                              : null,
+                          onFieldSubmitted: (_) => _login(),
+                        ),
+                        const SizedBox(height: InfernalSpacing.xl),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _login,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: InfernalSpacing.sm,
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: InfernalColors.textPrimary,
+                                      ),
+                                    )
+                                  : const Text('ENTER'),
                             ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: InfernalColors.textPrimary,
-                                    ),
-                                  )
-                                : const Text('ENTER'),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: InfernalSpacing.xxl),
+                  const SizedBox(height: InfernalSpacing.xxl),
 
-                // Dev / Seed tools
-                TextButton.icon(
-                  onPressed: _isLoading ? null : _seedAdmin,
-                  icon: const Icon(Icons.build, size: 16),
-                  label: const Text('Initialize Demo Admin'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: InfernalColors.textMuted,
+                  // Dev / Seed tools
+                  TextButton.icon(
+                    onPressed: _isLoading ? null : _seedAdmin,
+                    icon: const Icon(Icons.build, size: 16),
+                    label: const Text('Initialize Demo Admin'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: InfernalColors.textMuted,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
