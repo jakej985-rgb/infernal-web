@@ -8,6 +8,7 @@ import '../../../app/theme/tokens.dart';
 import '../../../shared/domain/client.dart';
 import '../../../shared/domain/enums.dart';
 import '../data/clients_provider.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class ClientFormPage extends ConsumerStatefulWidget {
   final String? clientId; 
@@ -94,10 +95,14 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
   }
 
   Widget _buildScaffold(BuildContext context) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
+
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(_isEdit ? 'Edit Soul' : 'Summon Type'),
+        title: Text(_isEdit
+            ? UiLabels.get('edit_client', useInfernal)
+            : UiLabels.get('add_client', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [

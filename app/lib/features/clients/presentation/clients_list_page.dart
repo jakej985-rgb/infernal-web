@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/clients_provider.dart';
 import 'widgets/client_status_chip.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class ClientsListPage extends ConsumerWidget {
   const ClientsListPage({super.key});
@@ -11,11 +12,12 @@ class ClientsListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final clientsAsync = ref.watch(filteredClientsProvider);
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('Bound Souls'),
+        title: Text(UiLabels.get('contacts', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),
@@ -32,7 +34,7 @@ class ClientsListPage extends ConsumerWidget {
             child: TextField(
               style: const TextStyle(color: InfernalColors.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Search souls...',
+                hintText: UiLabels.get('search_placeholder', useInfernal),
                 hintStyle: const TextStyle(color: InfernalColors.textMuted),
                 prefixIcon: const Icon(
                   Icons.search,
@@ -53,10 +55,10 @@ class ClientsListPage extends ConsumerWidget {
             child: clientsAsync.when(
               data: (clients) {
                 if (clients.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
-                      'No souls found.',
-                      style: TextStyle(color: InfernalColors.textMuted),
+                      UiLabels.get('no_clients_found', useInfernal),
+                      style: const TextStyle(color: InfernalColors.textMuted),
                     ),
                   );
                 }

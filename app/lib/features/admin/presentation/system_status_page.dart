@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class AuditLog {
   final String action;
@@ -23,11 +24,12 @@ class SystemStatusPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final logsAsync = ref.watch(StreamProvider((ref) => Stream.value(<AuditLog>[])));
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('MACHINE SPIRIT // Status'),
+        title: Text(UiLabels.get('admin_status_title', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),
@@ -36,9 +38,9 @@ class SystemStatusPage extends ConsumerWidget {
         children: [
           _buildSystemInfo(context, ref),
           const SizedBox(height: InfernalSpacing.xl),
-          const Text(
-            'RECENT INCANTATIONS (LOGS)',
-            style: TextStyle(
+          Text(
+            UiLabels.get('recent_logs', useInfernal).toUpperCase(),
+            style: const TextStyle(
               color: InfernalColors.textMuted,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
@@ -48,7 +50,7 @@ class SystemStatusPage extends ConsumerWidget {
           logsAsync.when(
             data: (logs) => _buildLogsList(logs),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, s) => Text('Error loading sanctuary logs: $e', style: const TextStyle(color: InfernalColors.error)),
+            error: (e, s) => Text('${UiLabels.get('logs_error', useInfernal)}: $e', style: const TextStyle(color: InfernalColors.error)),
           ),
         ],
       ),

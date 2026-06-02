@@ -9,6 +9,7 @@ import '../../../shared/presentation/widgets/neon_divider.dart';
 import '../data/settings_provider.dart';
 import '../../../shared/util/shared_prefs_provider.dart';
 import '../../../shared/data/use_api_provider.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -21,7 +22,7 @@ class SettingsPage extends ConsumerWidget {
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
         title: Text(
-          'MACHINE SPIRIT',
+          UiLabels.get('settings_title', ref.watch(useInfernalLabelsProvider)),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: InfernalColors.blood,
             letterSpacing: 4,
@@ -96,6 +97,23 @@ class SettingsPage extends ConsumerWidget {
           icon: Icons.settings,
           color: InfernalColors.voidColor,
           items: [
+            _SettingsItem(
+              title: 'Infernal UI Overlay',
+              subtitle: ref.watch(useInfernalLabelsProvider)
+                  ? 'Thematic terminology active (Altar, Rituals, Souls)'
+                  : 'Standard terminology active (Home, Calendar, Contacts)',
+              icon: Icons.auto_awesome,
+              trailing: Switch(
+                value: ref.watch(useInfernalLabelsProvider),
+                onChanged: (val) {
+                  ref.read(useInfernalLabelsProvider.notifier).toggle(val);
+                },
+              ),
+              onTap: () {
+                final current = ref.read(useInfernalLabelsProvider);
+                ref.read(useInfernalLabelsProvider.notifier).toggle(!current);
+              },
+            ),
             _SettingsItem(
               title: 'API Mode',
               subtitle: ref.watch(useApiProvider)
@@ -354,12 +372,14 @@ class _SettingsItem extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.onTap,
+    this.trailing,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -367,7 +387,7 @@ class _SettingsItem extends StatelessWidget {
       leading: Icon(icon, color: InfernalColors.textSecondary, size: 20),
       title: Text(title, style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle, style: const TextStyle(color: InfernalColors.textMuted, fontSize: 13)),
-      trailing: const Icon(Icons.chevron_right, color: InfernalColors.textMuted, size: 20),
+      trailing: trailing ?? const Icon(Icons.chevron_right, color: InfernalColors.textMuted, size: 20),
       onTap: onTap,
     );
   }

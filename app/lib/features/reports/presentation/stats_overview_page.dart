@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/stats_provider.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class StatsOverviewPage extends ConsumerWidget {
   const StatsOverviewPage({super.key});
@@ -10,11 +11,12 @@ class StatsOverviewPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(shopOverviewStatsProvider);
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('VOX MECANICUS // Stats'),
+        title: Text(UiLabels.get('stats_title', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),

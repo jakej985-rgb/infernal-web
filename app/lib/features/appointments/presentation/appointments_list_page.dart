@@ -8,6 +8,7 @@ import '../../../app/theme/tokens.dart';
 import '../../../../shared/domain/appointment.dart' as domain;
 import '../data/appointments_provider.dart';
 import 'widgets/appointment_status_chip.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 enum AppointmentsViewMode { list, calendar }
 
@@ -23,11 +24,12 @@ class AppointmentsListPage extends ConsumerWidget {
     final upcomingAsync = ref.watch(upcomingAppointmentsProvider);
     final todaysAsync = ref.watch(todaysAppointmentsProvider);
     final allAsync = ref.watch(allAppointmentsProvider);
-
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
+ 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('Rituals'),
+        title: Text(UiLabels.get('calendar', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -59,22 +61,24 @@ class AppointmentsListPage extends ConsumerWidget {
   }
 }
 
-class _ListView extends StatelessWidget {
+class _ListView extends ConsumerWidget {
   final AsyncValue<List<domain.Appointment>> todaysAsync;
   final AsyncValue<List<domain.Appointment>> upcomingAsync;
-
+ 
   const _ListView({required this.todaysAsync, required this.upcomingAsync});
-
+ 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeader(title: "Today's Rituals"),
+          _SectionHeader(title: UiLabels.get('todays_appointments', useInfernal)),
           todaysAsync.when(
             data: (data) =>
-                _AppointmentList(appointments: data, emptyText: "The altar is empty today."),
+                _AppointmentList(appointments: data, emptyText: UiLabels.get('empty_appointments', useInfernal)),
             loading: () => const Padding(
               padding: EdgeInsets.all(InfernalSpacing.md),
               child: Center(child: CircularProgressIndicator()),
@@ -85,10 +89,10 @@ class _ListView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: InfernalSpacing.lg),
-          const _SectionHeader(title: "Upcoming Sessions"),
+          _SectionHeader(title: UiLabels.get('upcoming_sessions', useInfernal)),
           upcomingAsync.when(
             data: (data) =>
-                _AppointmentList(appointments: data, emptyText: "No future visions revealed."),
+                _AppointmentList(appointments: data, emptyText: UiLabels.get('no_future_visions', useInfernal)),
             loading: () => const Padding(
               padding: EdgeInsets.all(InfernalSpacing.md),
               child: Center(child: CircularProgressIndicator()),
@@ -185,7 +189,7 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
         Expanded(
           child: _AppointmentList(
             appointments: _getEventsForDay(selectedDay),
-            emptyText: "No rituals for this day.",
+            emptyText: UiLabels.get('no_events_day', ref.watch(useInfernalLabelsProvider)),
           ),
         ),
       ],

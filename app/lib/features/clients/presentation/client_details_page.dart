@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/clients_provider.dart';
 import 'widgets/client_status_chip.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class ClientDetailsPage extends ConsumerWidget {
   final String clientId;
@@ -18,11 +19,12 @@ class ClientDetailsPage extends ConsumerWidget {
     }
 
     final clientAsync = ref.watch(clientDetailProvider(id));
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('Soul Details'),
+        title: Text(UiLabels.get('client_details', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -131,17 +133,19 @@ class ClientDetailsPage extends ConsumerWidget {
 
 
   void _deleteClient(BuildContext context, WidgetRef ref, int id) {
+    final useInfernal = ref.read(useInfernalLabelsProvider);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text(
-          'Void Soul?',
-          style: TextStyle(color: InfernalColors.textPrimary),
+        title: Text(
+          UiLabels.get('delete_client_title', useInfernal),
+          style: const TextStyle(color: InfernalColors.textPrimary),
         ),
-        content: const Text(
-          'This soul will be cast into the void (soft deleted). Continue?',
-          style: TextStyle(color: InfernalColors.textSecondary),
+        content: Text(
+          UiLabels.get('delete_client_content', useInfernal),
+          style: const TextStyle(color: InfernalColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -154,9 +158,9 @@ class ClientDetailsPage extends ConsumerWidget {
               await ref.read(clientServiceProvider).deleteClient(id);
               if (context.mounted) context.pop();
             },
-            child: const Text(
-              'Void',
-              style: TextStyle(color: InfernalColors.error),
+            child: Text(
+              UiLabels.get('delete_client_action', useInfernal),
+              style: const TextStyle(color: InfernalColors.error),
             ),
           ),
         ],

@@ -36,9 +36,9 @@ import '../shared/widgets/app_shell.dart';
 /// Route paths as constants
 abstract final class AppRoutes {
   static const String login = '/login';
-  static const String dashboard = '/dashboard';
-  static const String appointments = '/appointments';
-  static const String clients = '/clients';
+  static const String dashboard = '/home';
+  static const String appointments = '/calendar';
+  static const String clients = '/contacts';
   static const String quotes = '/quotes';
   static const String documents = '/documents';
   static const String settings = '/settings';
@@ -64,6 +64,32 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.dashboard,
     debugLogDiagnostics: true,
     routes: [
+      // Redirects for legacy and thematic URLs
+      GoRoute(
+        path: '/dashboard',
+        redirect: (context, state) => AppRoutes.dashboard,
+      ),
+      GoRoute(
+        path: '/appointments',
+        redirect: (context, state) => AppRoutes.appointments,
+      ),
+      GoRoute(
+        path: '/clients',
+        redirect: (context, state) => AppRoutes.clients,
+      ),
+      GoRoute(
+        path: '/altar',
+        redirect: (context, state) => AppRoutes.dashboard,
+      ),
+      GoRoute(
+        path: '/rituals',
+        redirect: (context, state) => AppRoutes.appointments,
+      ),
+      GoRoute(
+        path: '/souls',
+        redirect: (context, state) => AppRoutes.clients,
+      ),
+
       // Login route (outside shell)
       GoRoute(
         path: AppRoutes.login,

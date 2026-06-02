@@ -2,10 +2,73 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../app/theme/tokens.dart';
+import '../data/infernal_labels_provider.dart';
+
+/// Navigation item configuration
+class NavItem {
+  final String id;
+  final IconData icon;
+  final IconData selectedIcon;
+  final String route;
+
+  const NavItem({
+    required this.id,
+    required this.icon,
+    required this.selectedIcon,
+    required this.route,
+  });
+}
+
+/// Dynamic list of navigation items
+const navItems = [
+  NavItem(
+    id: 'home',
+    icon: Icons.dashboard_outlined,
+    selectedIcon: Icons.dashboard,
+    route: AppRoutes.dashboard,
+  ),
+  NavItem(
+    id: 'calendar',
+    icon: Icons.calendar_month_outlined,
+    selectedIcon: Icons.calendar_month,
+    route: AppRoutes.appointments,
+  ),
+  NavItem(
+    id: 'contacts',
+    icon: Icons.people_outline,
+    selectedIcon: Icons.people,
+    route: AppRoutes.clients,
+  ),
+  NavItem(
+    id: 'quotes',
+    icon: Icons.request_quote_outlined,
+    selectedIcon: Icons.request_quote,
+    route: AppRoutes.quotes,
+  ),
+  NavItem(
+    id: 'settings',
+    icon: Icons.settings_outlined,
+    selectedIcon: Icons.settings,
+    route: AppRoutes.settings,
+  ),
+  NavItem(
+    id: 'stats',
+    icon: Icons.analytics_outlined,
+    selectedIcon: Icons.analytics,
+    route: AppRoutes.stats,
+  ),
+  NavItem(
+    id: 'tools',
+    icon: Icons.build_outlined,
+    selectedIcon: Icons.build,
+    route: AppRoutes.tools,
+  ),
+];
 
 /// Main app shell that provides consistent navigation
 class AppShell extends StatelessWidget {
@@ -38,36 +101,31 @@ class AppShell extends StatelessWidget {
   }
 }
 
-class _NavigationRail extends StatelessWidget {
+class _NavigationRail extends ConsumerWidget {
   const _NavigationRail({required this.currentPath});
 
   final String currentPath;
 
-  int get _selectedIndex {
-    switch (currentPath) {
-      case AppRoutes.dashboard:
-        return 0;
-      case AppRoutes.appointments:
-        return 1;
-      case AppRoutes.clients:
-        return 2;
-      case AppRoutes.quotes:
-        return 3;
-      case AppRoutes.settings:
-        return 4;
-      case AppRoutes.stats:
-        return 5;
-      case AppRoutes.tools:
-      case AppRoutes.inventory:
-      case AppRoutes.communications:
-        return 6;
-      default:
-        return 0;
+  int _selectedIndex() {
+    for (int i = 0; i < navItems.length; i++) {
+      final route = navItems[i].route;
+      if (currentPath == route || currentPath.startsWith('$route/')) {
+        return i;
+      }
     }
+    // Map inventory and communications to Tools (index 6)
+    if (currentPath.startsWith(AppRoutes.inventory) ||
+        currentPath.startsWith(AppRoutes.communications)) {
+      return 6;
+    }
+    return 0;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final appTitle = UiLabels.get('app_title', useInfernal);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -76,7 +134,7 @@ class _NavigationRail extends StatelessWidget {
             child: IntrinsicHeight(
               child: NavigationRail(
                 backgroundColor: InfernalColors.surface,
-                selectedIndex: _selectedIndex,
+                selectedIndex: _selectedIndex(),
                 onDestinationSelected: (index) => _navigate(context, index),
                 labelType: NavigationRailLabelType.all,
                 leading: Padding(
@@ -99,7 +157,7 @@ class _NavigationRail extends StatelessWidget {
                       ),
                       const SizedBox(height: InfernalSpacing.sm),
                       Text(
-                        'INFERNAL',
+                        appTitle,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: InfernalColors.textMuted,
                           letterSpacing: 2,
@@ -108,43 +166,13 @@ class _NavigationRail extends StatelessWidget {
                     ],
                   ),
                 ),
-                destinations: const [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.dashboard_outlined),
-                    selectedIcon: Icon(Icons.dashboard),
-                    label: Text('Altar'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.calendar_month_outlined),
-                    selectedIcon: Icon(Icons.calendar_month),
-                    label: Text('Rituals'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.people_outline),
-                    selectedIcon: Icon(Icons.people),
-                    label: Text('Souls'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.request_quote_outlined),
-                    selectedIcon: Icon(Icons.request_quote),
-                    label: Text('Quotes'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.settings_outlined),
-                    selectedIcon: Icon(Icons.settings),
-                    label: Text('Config'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.analytics_outlined),
-                    selectedIcon: Icon(Icons.analytics),
-                    label: Text('Omens'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.build_outlined),
-                    selectedIcon: Icon(Icons.build),
-                    label: Text('Arsenal'),
-                  ),
-                ],
+                destinations: navItems.map((item) {
+                  return NavigationRailDestination(
+                    icon: Icon(item.icon),
+                    selectedIcon: Icon(item.selectedIcon),
+                    label: Text(UiLabels.get(item.id, useInfernal)),
+                  );
+                }).toList(),
               ),
             ),
           ),
@@ -154,103 +182,48 @@ class _NavigationRail extends StatelessWidget {
   }
 
   void _navigate(BuildContext context, int index) {
-    final routes = [
-      AppRoutes.dashboard,
-      AppRoutes.appointments,
-      AppRoutes.clients,
-      AppRoutes.quotes,
-      AppRoutes.settings,
-      AppRoutes.stats,
-      AppRoutes.tools,
-    ];
-    context.go(routes[index]);
+    context.go(navItems[index].route);
   }
 }
 
-class _BottomNavBar extends StatelessWidget {
+class _BottomNavBar extends ConsumerWidget {
   const _BottomNavBar({required this.currentPath});
 
   final String currentPath;
 
-  int get _selectedIndex {
-    switch (currentPath) {
-      case AppRoutes.dashboard:
-        return 0;
-      case AppRoutes.appointments:
-        return 1;
-      case AppRoutes.clients:
-        return 2;
-      case AppRoutes.quotes:
-        return 3;
-      case AppRoutes.settings:
-        return 4;
-      case AppRoutes.stats:
-        return 5;
-      case AppRoutes.tools:
-      case AppRoutes.inventory:
-      case AppRoutes.communications:
-        return 6;
-      default:
-        return 0;
+  int _selectedIndex() {
+    for (int i = 0; i < navItems.length; i++) {
+      final route = navItems[i].route;
+      if (currentPath == route || currentPath.startsWith('$route/')) {
+        return i;
+      }
     }
+    if (currentPath.startsWith(AppRoutes.inventory) ||
+        currentPath.startsWith(AppRoutes.communications)) {
+      return 6;
+    }
+    return 0;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
+
     return BottomNavigationBar(
-      currentIndex: _selectedIndex,
+      currentIndex: _selectedIndex(),
       onTap: (index) => _navigate(context, index),
       type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard_outlined),
-          activeIcon: Icon(Icons.dashboard),
-          label: 'Altar',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          activeIcon: Icon(Icons.calendar_month),
-          label: 'Rituals',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          activeIcon: Icon(Icons.people),
-          label: 'Souls',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.request_quote_outlined),
-          activeIcon: Icon(Icons.request_quote),
-          label: 'Quotes',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          activeIcon: Icon(Icons.settings),
-          label: 'Config',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.analytics_outlined),
-          activeIcon: Icon(Icons.analytics),
-          label: 'Omens',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.build_outlined),
-          activeIcon: Icon(Icons.build),
-          label: 'Arsenal',
-        ),
-      ],
+      items: navItems.map((item) {
+        return BottomNavigationBarItem(
+          icon: Icon(item.icon),
+          activeIcon: Icon(item.selectedIcon),
+          label: UiLabels.get(item.id, useInfernal),
+        );
+      }).toList(),
     );
   }
 
   void _navigate(BuildContext context, int index) {
-    final routes = [
-      AppRoutes.dashboard,
-      AppRoutes.appointments,
-      AppRoutes.clients,
-      AppRoutes.quotes,
-      AppRoutes.settings,
-      AppRoutes.stats,
-      AppRoutes.tools,
-    ];
-    context.go(routes[index]);
+    context.go(navItems[index].route);
   }
 }
