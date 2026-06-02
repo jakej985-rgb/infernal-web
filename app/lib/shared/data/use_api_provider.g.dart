@@ -100,7 +100,7 @@ final class GlobalClientServiceProvider
 }
 
 String _$globalClientServiceHash() =>
-    r'dc601f4cb8463359cc96d147da5c803ce0b1c652';
+    r'63c28e511fdee2d9bce459af327a74bc5f32c306';
 
 @ProviderFor(globalAppointmentService)
 final globalAppointmentServiceProvider = GlobalAppointmentServiceProvider._();
@@ -148,4 +148,4 @@ final class GlobalAppointmentServiceProvider
 }
 
 String _$globalAppointmentServiceHash() =>
-    r'f51c6cdbdae493b00c60d47a65c8f4b23b3f40c1';
+    r'9202ede33fddc3a84ee16b9cc0bea9895b8e3f57';
