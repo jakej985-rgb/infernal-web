@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/user_management_provider.dart';
-import '../../../shared/persistence/database.dart';
+import '../../../../shared/domain/user.dart';
+import '../../../../shared/domain/enums.dart';
 
 class UserFormPage extends ConsumerStatefulWidget {
   final String? userId;
@@ -32,7 +33,7 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
     if (_isInit) {
        _loadData();
        _isInit = false;
-    }
+     }
   }
   
   @override
@@ -55,7 +56,7 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
               _usernameCtrl.text = user.username;
               _displayNameCtrl.text = user.displayName;
               _rateCtrl.text = user.hourlyRate.toString();
-              _selectedRole = user.role;
+              _selectedRole = user.role.name;
            });
         }
      }
@@ -73,7 +74,7 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
           _existingUser!.copyWith(
             username: _usernameCtrl.text,
             displayName: _displayNameCtrl.text,
-            role: _selectedRole,
+            role: UserRole.values.firstWhere((e) => e.name == _selectedRole, orElse: () => UserRole.artist),
             hourlyRate: double.tryParse(_rateCtrl.text) ?? 150.0,
           ),
           newPassword: _passwordCtrl.text.isNotEmpty ? _passwordCtrl.text : null,

@@ -2,14 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
-import '../../../shared/persistence/database.dart';
+
+class AuditLog {
+  final String action;
+  final String? entityType;
+  final String details;
+  final DateTime timestamp;
+
+  const AuditLog({
+    required this.action,
+    this.entityType,
+    required this.details,
+    required this.timestamp,
+  });
+}
 
 class SystemStatusPage extends ConsumerWidget {
   const SystemStatusPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logsAsync = ref.watch(StreamProvider((ref) => ref.watch(databaseProvider).auditLogsDao.watchRecentLogs()));
+    final logsAsync = ref.watch(StreamProvider((ref) => Stream.value(<AuditLog>[])));
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
@@ -58,10 +71,10 @@ class SystemStatusPage extends ConsumerWidget {
             style: TextStyle(color: InfernalColors.gold, fontWeight: FontWeight.bold, letterSpacing: 1),
           ),
           const SizedBox(height: InfernalSpacing.md),
-          _InfoRow(label: 'Database Version', value: 'v1.0.0 (Drift)'),
-          _InfoRow(label: 'Spirit Sync', value: 'Offline (Local Only)'),
+          _InfoRow(label: 'Database Version', value: 'PostgreSQL (Cloud SQL)'),
+          _InfoRow(label: 'Spirit Sync', value: 'Online (Central Go API)'),
           _InfoRow(label: 'Security Level', value: 'Inquisition Standard'),
-          _InfoRow(label: 'Persistence Path', value: 'app_data/infernal_suite.sqlite'),
+          _InfoRow(label: 'Persistence Path', value: 'https://api.inkandsteel.xyz'),
         ],
       ),
     );

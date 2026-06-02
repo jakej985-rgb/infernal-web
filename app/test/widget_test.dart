@@ -67,7 +67,7 @@ void main() {
           authServiceProvider.overrideWith(() => MockAuthService()),
           webSocketClientProvider.overrideWith(() => MockWebSocketClient()),
           dashboardStatsRepositoryProvider.overrideWith(() => MockDashboardStatsRepository()),
-          dashboardTodayAppointmentsProvider.overrideWith((ref) => Stream.value([])),
+          dashboardTodayAppointmentsProvider.overrideWith((ref) => const AsyncValue.data([])),
         ],
         child: const InfernalApp(),
       ),

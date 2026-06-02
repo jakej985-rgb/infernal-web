@@ -34,7 +34,7 @@ final class DashboardStatsRepositoryProvider
 }
 
 String _$dashboardStatsRepositoryHash() =>
-    r'63291d56f0682a87d0be5a0bb7822e91204fa33f';
+    r'b05268a8617b09ff6dfdc8c71bc6b6f88bf062b1';
 
 abstract class _$DashboardStatsRepository
     extends $StreamNotifier<DashboardStats> {

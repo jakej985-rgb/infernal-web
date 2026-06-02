@@ -33,7 +33,7 @@ final class WebSocketClientProvider
   WebSocketClient create() => WebSocketClient();
 }
 
-String _$webSocketClientHash() => r'4f089930c36a7fff0d7414dbc3018c7211b10068';
+String _$webSocketClientHash() => r'ccc9f0dc86da0a8851ce4e6156fc84b0a40deaef';
 
 abstract class _$WebSocketClient extends $StreamNotifier<Map<String, dynamic>> {
   Stream<Map<String, dynamic>> build();

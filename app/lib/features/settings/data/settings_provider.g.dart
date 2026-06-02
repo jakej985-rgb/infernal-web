@@ -9,6 +9,59 @@ part of 'settings_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(ShopSettingsNotifier)
+final shopSettingsProvider = ShopSettingsNotifierProvider._();
+
+final class ShopSettingsNotifierProvider
+    extends $NotifierProvider<ShopSettingsNotifier, ShopSettings> {
+  ShopSettingsNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shopSettingsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$shopSettingsNotifierHash();
+
+  @$internal
+  @override
+  ShopSettingsNotifier create() => ShopSettingsNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ShopSettings value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ShopSettings>(value),
+    );
+  }
+}
+
+String _$shopSettingsNotifierHash() =>
+    r'3285bf96503cabbd80702d4d12525457d79df459';
+
+abstract class _$ShopSettingsNotifier extends $Notifier<ShopSettings> {
+  ShopSettings build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<ShopSettings, ShopSettings>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ShopSettings, ShopSettings>,
+              ShopSettings,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(settingsService)
 final settingsServiceProvider = SettingsServiceProvider._();
 

@@ -9,53 +9,6 @@ part of 'communications_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(communicationsDao)
-final communicationsDaoProvider = CommunicationsDaoProvider._();
-
-final class CommunicationsDaoProvider
-    extends
-        $FunctionalProvider<
-          CommunicationsDao,
-          CommunicationsDao,
-          CommunicationsDao
-        >
-    with $Provider<CommunicationsDao> {
-  CommunicationsDaoProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'communicationsDaoProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$communicationsDaoHash();
-
-  @$internal
-  @override
-  $ProviderElement<CommunicationsDao> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  CommunicationsDao create(Ref ref) {
-    return communicationsDao(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(CommunicationsDao value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<CommunicationsDao>(value),
-    );
-  }
-}
-
-String _$communicationsDaoHash() => r'2d20fa55095e0d3783f961b7785602b4a832a71b';
-
 @ProviderFor(communications)
 final communicationsProvider = CommunicationsProvider._();
 
@@ -95,7 +48,7 @@ final class CommunicationsProvider
   }
 }
 
-String _$communicationsHash() => r'e952627952b77be45488378ca41eff58d201bea8';
+String _$communicationsHash() => r'69fb1b73d8d7b6b565c42bf5e3e6e9f67c120e8a';
 
 @ProviderFor(CommunicationsService)
 final communicationsServiceProvider = CommunicationsServiceProvider._();
@@ -122,7 +75,7 @@ final class CommunicationsServiceProvider
 }
 
 String _$communicationsServiceHash() =>
-    r'0edf918abc089cfd769d4d5ea24113e29fc2ebbb';
+    r'4575b4924e2e0af54a64faab4f712abf6417ce84';
 
 abstract class _$CommunicationsService extends $AsyncNotifier<void> {
   FutureOr<void> build();

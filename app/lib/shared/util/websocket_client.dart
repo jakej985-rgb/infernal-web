@@ -28,6 +28,10 @@ class WebSocketClient extends _$WebSocketClient {
 
   void _connect(StreamController<Map<String, dynamic>> controller) async {
     if (_isDisposed) return;
+    if (kIsWeb) {
+      debugPrint('[WebSocket] WebSocket connections via dart:io are disabled on the Web.');
+      return;
+    }
 
     final prefs = ref.read(sharedPreferencesProvider);
     final baseUrl = prefs.getString('api_base_url') ?? 'api.inkandsteel.xyz';

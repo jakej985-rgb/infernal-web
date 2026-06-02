@@ -7,7 +7,6 @@ import '../../../app/theme/tokens.dart';
 import '../../../shared/presentation/widgets/neon_plate.dart';
 import '../../../shared/presentation/widgets/neon_divider.dart';
 import '../data/settings_provider.dart';
-import '../../../shared/persistence/database.dart';
 import '../../../shared/util/shared_prefs_provider.dart';
 import '../../../shared/data/use_api_provider.dart';
 
@@ -16,7 +15,7 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsAsync = ref.watch(shopSettingsProvider);
+    final settings = ref.watch(shopSettingsProvider);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
@@ -32,18 +31,14 @@ class SettingsPage extends ConsumerWidget {
         backgroundColor: InfernalColors.surface,
         elevation: 0,
       ),
-      body: settingsAsync.when(
-        data: (settings) => _buildSettingsList(context, ref, settings),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-      ),
+      body: _buildSettingsList(context, ref, settings),
     );
   }
 
   Widget _buildSettingsList(
     BuildContext context,
     WidgetRef ref,
-    ShopSettingsTableData? settings,
+    ShopSettings? settings,
   ) {
     return ListView(
       padding: const EdgeInsets.all(InfernalSpacing.lg),
@@ -131,7 +126,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showShopProfileDialog(BuildContext context, WidgetRef ref, ShopSettingsTableData? settings) {
+  void _showShopProfileDialog(BuildContext context, WidgetRef ref, ShopSettings? settings) {
     final nameCtrl = TextEditingController(text: settings?.shopName);
     showDialog(
       context: context,
@@ -162,7 +157,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showPricingDialog(BuildContext context, WidgetRef ref, ShopSettingsTableData? settings) {
+  void _showPricingDialog(BuildContext context, WidgetRef ref, ShopSettings? settings) {
     final tattooCtrl = TextEditingController(text: settings?.tattooPerHour.toString());
     final minCtrl = TextEditingController(text: settings?.shopMinimumRate.toString());
     showDialog(
@@ -195,7 +190,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  void _showDepositDialog(BuildContext context, WidgetRef ref, ShopSettingsTableData? settings) {
+  void _showDepositDialog(BuildContext context, WidgetRef ref, ShopSettings? settings) {
     final amountCtrl = TextEditingController(text: settings?.depositAmount.toString());
     String currentType = settings?.depositType ?? 'percentage';
     showDialog(

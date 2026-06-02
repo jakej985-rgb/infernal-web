@@ -48,4 +48,4 @@ final class ShopOverviewStatsProvider
   }
 }
 
-String _$shopOverviewStatsHash() => r'3821c280d2d02cfca7f55704e22b2fed7898a44a';
+String _$shopOverviewStatsHash() => r'27f00121631c4d840439748f29c40a4b7d3b5fa6';

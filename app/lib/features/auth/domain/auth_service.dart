@@ -1,31 +1,37 @@
-import 'package:bcrypt/bcrypt.dart';
-import 'package:drift/drift.dart' show Value;
+import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../shared/persistence/database.dart';
+import '../../../shared/cache/id_mapper.dart';
+import '../../../shared/domain/enums.dart';
+import '../../../shared/domain/user.dart';
+import '../../../shared/util/api_client.dart';
+import '../../../shared/util/secure_storage.dart';
 import '../../../shared/util/shared_prefs_provider.dart';
-import '../data/user_repository.dart';
 import 'auth_state.dart';
 
 part 'auth_service.g.dart';
 
 @Riverpod(keepAlive: true)
 class AuthService extends _$AuthService {
-  static const _userSessionKey = 'user_session_id';
-
   @override
   FutureOr<AuthState> build() async {
-    // Attempt to restore session
-    final prefs = ref.watch(sharedPreferencesProvider);
-    final userId = prefs.getInt(_userSessionKey);
+    final secureStorage = ref.watch(secureStorageProvider);
+    final token = await secureStorage.readToken();
 
-    if (userId != null) {
-      final repo = ref.watch(userRepositoryProvider);
-      final user = await repo.getUserById(userId);
-      if (user != null) {
+    if (token != null && token.isNotEmpty) {
+      try {
+        final dio = ref.watch(apiClientProvider);
+        final response = await dio.get('/auth/me');
+        final data = response.data as Map<String, dynamic>;
+        final user = _mapProfileToUser(data);
         return AuthState.authenticated(user);
+      } catch (e) {
+        // Clean up invalid/expired session
+        await secureStorage.deleteToken();
+        final prefs = ref.watch(sharedPreferencesProvider);
+        await prefs.remove('auth_jwt_token');
+        return const AuthState.unauthenticated();
       }
     }
-
     return const AuthState.unauthenticated();
   }
 
@@ -33,37 +39,50 @@ class AuthService extends _$AuthService {
     state = const AsyncValue.data(AuthState.loading());
 
     try {
-      final repo = ref.read(userRepositoryProvider);
-      final user = await repo.getUserByUsername(username);
+      final dio = ref.read(apiClientProvider);
+      final payload = {
+        'email': username,
+        'password': password,
+      };
 
-      if (user == null) {
-        state = const AsyncValue.data(AuthState.error('User not found'));
-        return;
-      }
+      final response = await dio.post('/auth/login', data: payload);
+      final token = (response.data as Map<String, dynamic>)['token'] as String;
 
-      // Check password using BCrypt
-      final isValid = BCrypt.checkpw(password, user.passwordHash);
+      // Save token to secure storage and shared preferences
+      final secureStorage = ref.read(secureStorageProvider);
+      await secureStorage.writeToken(token);
       
-      if (!isValid) {
-        state = const AsyncValue.data(AuthState.error('Invalid credentials'));
-        return;
-      }
-
-      // Login successful
       final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setInt(_userSessionKey, user.id);
+      await prefs.setString('auth_jwt_token', token);
+
+      // Fetch user profile info
+      final meResponse = await dio.get('/auth/me', options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+      ));
+      final userData = meResponse.data as Map<String, dynamic>;
+      final user = _mapProfileToUser(userData);
 
       state = AsyncValue.data(AuthState.authenticated(user));
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } on DioException catch (e) {
+      String msg = 'Login failed. Please check your credentials.';
+      final responseData = e.response?.data;
+      if (responseData is Map && responseData.containsKey('error')) {
+        msg = responseData['error'].toString();
+      }
+      state = AsyncValue.data(AuthState.error(msg));
+    } catch (e) {
+      state = AsyncValue.data(AuthState.error(e.toString()));
     }
   }
 
   Future<void> logout() async {
     state = const AsyncValue.data(AuthState.loading());
     try {
+      final secureStorage = ref.read(secureStorageProvider);
+      await secureStorage.deleteToken();
+      
       final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.remove(_userSessionKey);
+      await prefs.remove('auth_jwt_token');
       state = const AsyncValue.data(AuthState.unauthenticated());
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -71,26 +90,33 @@ class AuthService extends _$AuthService {
   }
 
   Future<void> seedAdmin() async {
-    final repo = ref.read(userRepositoryProvider);
-    // double check if admin exists
-    final admin = await repo.getUserByUsername('admin');
-    if (admin != null) return;
+    // Admin is seeded in Cloud SQL directly via migrations or console, no local seed needed.
+    return;
+  }
 
-    // Hash the password 'admin'
-    final hashedPassword = BCrypt.hashpw('admin', BCrypt.gensalt());
+  User _mapProfileToUser(Map<String, dynamic> data) {
+    final email = data['email'] as String? ?? '';
+    final roleStr = data['role'] as String? ?? 'artist';
+    final userIdStr = data['user_id'] as String? ?? '';
 
-    // Create admin user
-    await repo.createUser(
-      UsersCompanion.insert(
-        username: 'admin',
-        passwordHash: Value(hashedPassword),
-        displayName: const Value('Admin User'),
-        role: const Value('admin'),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        hourlyRate: const Value(150.0),
-        isActive: const Value(true),
+    // Convert string UUID to stable int for local app UI compatibility
+    var id = userIdStr.hashCode & 0x7FFFFFFF;
+    if (id == 0) id = 1;
+
+    // Trigger asynchronous mapping cache update
+    ref.read(idMapperProvider).registerUuid('user', userIdStr);
+
+    return User(
+      id: id,
+      username: email,
+      displayName: email.split('@').first,
+      passwordHash: '',
+      role: UserRole.values.firstWhere(
+        (e) => e.name.toLowerCase() == roleStr.toLowerCase(),
+        orElse: () => UserRole.artist,
       ),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
   }
 }

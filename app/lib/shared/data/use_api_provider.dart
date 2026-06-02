@@ -1,35 +1,30 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../persistence/drift_client_service.dart';
-import '../util/shared_prefs_provider.dart';
 import 'api/client_service_api_impl.dart';
+import 'api/appointment_service_api_impl.dart';
 import 'interfaces/client_service.dart';
+import 'interfaces/appointment_service.dart';
 
 part 'use_api_provider.g.dart';
 
 @riverpod
 class UseApi extends _$UseApi {
-  static const _storageKey = 'use_api_client';
-
   @override
   bool build() {
-    final prefs = ref.watch(sharedPreferencesProvider);
-    // Default to true (Direct central cloud database API mode)
-    return prefs.getBool(_storageKey) ?? true;
+    // Hardcoded to true as Drift SQLite is fully removed and central Go API/Cloud SQL is the sole database
+    return true;
   }
 
   Future<void> toggle(bool value) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool(_storageKey, value);
-    state = value;
+    // No-op: Toggle disabled since local DB mode is deleted
   }
 }
 
 @riverpod
 ClientService globalClientService(Ref ref) {
-  final useApi = ref.watch(useApiProvider);
-  if (useApi) {
-    return ref.watch(clientServiceApiImplProvider);
-  } else {
-    return ref.watch(driftClientServiceProvider);
-  }
+  return ref.watch(clientServiceApiImplProvider);
+}
+
+@riverpod
+AppointmentService globalAppointmentService(Ref ref) {
+  return ref.watch(appointmentServiceApiImplProvider);
 }

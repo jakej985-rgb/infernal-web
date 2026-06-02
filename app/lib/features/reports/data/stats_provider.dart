@@ -1,7 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../shared/persistence/database.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:rxdart/rxdart.dart';
+
+import '../../appointments/data/appointments_provider.dart';
+import '../../clients/data/clients_provider.dart';
 
 part 'stats_provider.freezed.dart';
 part 'stats_provider.g.dart';
@@ -30,11 +32,8 @@ class RevenueDataPoint {
 
 @riverpod
 Stream<ShopOverviewStats> shopOverviewStats(Ref ref) {
-  final db = ref.watch(databaseProvider);
-  
-  // Watch all relevant tables to trigger updates
-  final appointmentsStream = db.appointmentsDao.watchAllAppointments();
-  final clientsStream = db.clientsDao.watchAllClients();
+  final appointmentsStream = ref.watch(appointmentServiceProvider).watchAppointments();
+  final clientsStream = ref.watch(clientServiceProvider).watchClients();
   
   return Rx.combineLatest2(appointmentsStream, clientsStream, (appointments, clients) {
     double revenue = 0;
@@ -54,9 +53,9 @@ Stream<ShopOverviewStats> shopOverviewStats(Ref ref) {
         final price = appt.finalPrice ?? appt.priceCharged;
         revenue += price;
         
-        final date = DateTime(appt.startTime.year, appt.startTime.month, appt.startTime.day);
+        final date = DateTime(appt.dateTime.year, appt.dateTime.month, appt.dateTime.day);
         revenueMap[date] = (revenueMap[date] ?? 0) + price;
-      } else if (appt.startTime.isAfter(now) && status != 'cancelled') {
+      } else if (appt.dateTime.isAfter(now) && status != 'cancelled') {
         upcoming++;
       }
     }

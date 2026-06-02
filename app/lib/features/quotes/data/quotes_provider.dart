@@ -1,7 +1,6 @@
-import 'package:drift/drift.dart' show Value;
+import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../shared/domain/quote.dart' as domain;
-import '../../../../shared/persistence/database.dart';
 
 part 'quotes_provider.g.dart';
 
@@ -12,15 +11,18 @@ class QuoteSearchQuery extends _$QuoteSearchQuery {
   void set(String query) => state = query;
 }
 
+final _quotesList = <domain.Quote>[];
+final _quotesStreamController = StreamController<List<domain.Quote>>.broadcast();
+
 @riverpod
 Stream<List<domain.Quote>> filteredQuotes(Ref ref) {
   final query = ref.watch(quoteSearchQueryProvider);
-  final dao = ref.watch(databaseProvider).quotesDao;
+  if (!_quotesStreamController.isClosed) {
+    _quotesStreamController.add(_quotesList);
+  }
 
-  return dao.watchAllQuotes().map((rows) {
-     final quotes = rows.map((row) => _mapToDomain(row)).toList();
+  return _quotesStreamController.stream.map((quotes) {
      if (query.isEmpty) return quotes;
-     
      final lowerQ = query.toLowerCase();
      return quotes.where((q) {
         return q.placement.toLowerCase().contains(lowerQ) ||
@@ -32,112 +34,39 @@ Stream<List<domain.Quote>> filteredQuotes(Ref ref) {
 
 @riverpod
 Stream<domain.Quote?> quoteDetail(Ref ref, int id) {
-  final dao = ref.watch(databaseProvider).quotesDao;
-  return dao.watchQuoteById(id).map((row) => row == null ? null : _mapToDomain(row));
+  if (!_quotesStreamController.isClosed) {
+    _quotesStreamController.add(_quotesList);
+  }
+  return _quotesStreamController.stream.map((quotes) {
+    final match = quotes.where((q) => q.id == id);
+    return match.isEmpty ? null : match.first;
+  });
 }
 
 @riverpod
 QuotesService quotesService(Ref ref) {
-  return QuotesService(ref);
+  return QuotesService();
 }
 
 class QuotesService {
-  final Ref _ref;
-  QuotesService(this._ref);
+  QuotesService();
 
   Future<void> createQuote(domain.Quote quote) async {
-    final dao = _ref.read(databaseProvider).quotesDao;
-    await dao.insertQuote(
-       QuotesCompanion(
-          clientId: Value(quote.clientId),
-          artistId: Value(quote.artistId),
-          placement: Value(quote.placement),
-          style: Value(quote.style),
-          isCoverUp: Value(quote.isCoverUp),
-          width: Value(quote.width),
-          height: Value(quote.height),
-          coverageLevel: Value(quote.coverageLevel),
-          lineComplexity: Value(quote.lineComplexity),
-          shadingComplexity: Value(quote.shadingComplexity),
-          colorComplexity: Value(quote.colorComplexity),
-          difficulty: Value(quote.difficulty),
-          estimatedHoursLow: Value(quote.estimatedHoursLow),
-          estimatedHoursHigh: Value(quote.estimatedHoursHigh),
-          priceLow: Value(quote.priceLow),
-          priceHigh: Value(quote.priceHigh),
-          shopMinimum: Value(quote.shopMinimum),
-          recommendedDeposit: Value(quote.recommendedDeposit),
-          confidenceScore: Value(quote.confidenceScore),
-          similarJobsCount: Value(quote.similarJobsCount),
-          notes: Value(quote.notes),
-          photoPath: Value(quote.photoPath),
-          createdAt: Value(DateTime.now()),
-       ),
-    );
+    final newQuote = quote.copyWith(id: _quotesList.length + 1, createdAt: DateTime.now());
+    _quotesList.add(newQuote);
+    _quotesStreamController.add(_quotesList);
   }
 
   Future<void> updateQuote(domain.Quote quote) async {
-    final dao = _ref.read(databaseProvider).quotesDao;
-    final row = Quote(
-          id: quote.id,
-          clientId: quote.clientId,
-          artistId: quote.artistId,
-          placement: quote.placement,
-          style: quote.style,
-          isCoverUp: quote.isCoverUp,
-          width: quote.width,
-          height: quote.height,
-          coverageLevel: quote.coverageLevel,
-          lineComplexity: quote.lineComplexity,
-          shadingComplexity: quote.shadingComplexity,
-          colorComplexity: quote.colorComplexity,
-          difficulty: quote.difficulty,
-          estimatedHoursLow: quote.estimatedHoursLow,
-          estimatedHoursHigh: quote.estimatedHoursHigh,
-          priceLow: quote.priceLow,
-          priceHigh: quote.priceHigh,
-          shopMinimum: quote.shopMinimum,
-          recommendedDeposit: quote.recommendedDeposit,
-          confidenceScore: quote.confidenceScore,
-          similarJobsCount: quote.similarJobsCount,
-          notes: quote.notes,
-          photoPath: quote.photoPath,
-          createdAt: quote.createdAt, 
-    );
-    await dao.updateQuote(row);
+    final idx = _quotesList.indexWhere((q) => q.id == quote.id);
+    if (idx != -1) {
+      _quotesList[idx] = quote;
+      _quotesStreamController.add(_quotesList);
+    }
   }
 
   Future<void> deleteQuote(int id) async {
-    final dao = _ref.read(databaseProvider).quotesDao;
-    await dao.deleteQuote(id);
+    _quotesList.removeWhere((q) => q.id == id);
+    _quotesStreamController.add(_quotesList);
   }
-}
-
-domain.Quote _mapToDomain(Quote row) {
-  return domain.Quote(
-    id: row.id,
-    clientId: row.clientId,
-    artistId: row.artistId,
-    placement: row.placement,
-    style: row.style,
-    isCoverUp: row.isCoverUp,
-    width: row.width,
-    height: row.height,
-    coverageLevel: row.coverageLevel,
-    lineComplexity: row.lineComplexity,
-    shadingComplexity: row.shadingComplexity,
-    colorComplexity: row.colorComplexity,
-    difficulty: row.difficulty,
-    estimatedHoursLow: row.estimatedHoursLow,
-    estimatedHoursHigh: row.estimatedHoursHigh,
-    priceLow: row.priceLow,
-    priceHigh: row.priceHigh,
-    shopMinimum: row.shopMinimum,
-    recommendedDeposit: row.recommendedDeposit,
-    confidenceScore: row.confidenceScore,
-    similarJobsCount: row.similarJobsCount,
-    notes: row.notes,
-    photoPath: row.photoPath,
-    createdAt: row.createdAt,
-  );
 }

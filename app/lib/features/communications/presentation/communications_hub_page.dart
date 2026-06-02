@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' as drift;
 import '../../../app/theme/tokens.dart';
-import '../../../shared/persistence/database.dart';
 import '../../../shared/presentation/widgets/neon_divider.dart';
 import '../../../shared/presentation/widgets/neon_plate.dart';
 import '../data/communications_provider.dart';
 import '../../clients/data/clients_provider.dart';
 import '../../../../shared/domain/client.dart' as domain;
-import '../../../../shared/domain/communication.dart'; // Add this import
+import '../../../../shared/domain/communication.dart';
 
 class CommunicationsHubPage extends ConsumerStatefulWidget {
   const CommunicationsHubPage({super.key});
@@ -35,17 +33,18 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
         ? '${_selectedClient!.firstName} ${_selectedClient!.lastName}' 
         : 'Unknown Soul';
     
-    final companion = CommunicationsTableCompanion.insert(
-      clientId: drift.Value(_selectedClient?.id),
+    final ritual = CommunicationRitual(
+      id: 0,
+      clientId: _selectedClient?.id,
       clientName: clientName,
       type: 'SMS', // Default for now
       direction: 'OUTBOUND',
       content: content,
-      sentAt: drift.Value(DateTime.now()),
-      status: const drift.Value('SENT'),
+      sentAt: DateTime.now(),
+      status: 'SENT',
     );
 
-    await ref.read(communicationsServiceProvider.notifier).sendCommunication(companion);
+    await ref.read(communicationsServiceProvider.notifier).sendCommunication(ritual);
     _messageController.clear();
     setState(() {
       _selectedClient = null;
@@ -105,9 +104,6 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
       reverse: true, // Show latest at bottom
       itemCount: rituals.length,
       itemBuilder: (context, index) {
-        // Reverse indexing because we are using 'reverse: true' and want latest messages at bottom
-        // Wait, if reverse: true, index 0 is at the bottom.
-        // Usually rituals are sorted by date.
         final ritual = rituals[rituals.length - 1 - index];
         final isOut = ritual.direction == 'OUTBOUND';
 
@@ -223,7 +219,6 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
                 filled: true,
                 fillColor: InfernalColors.background,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(InfernalRadius.pill), borderSide: BorderSide.none),
-
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
               style: const TextStyle(color: InfernalColors.textPrimary),
@@ -290,4 +285,3 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
     );
   }
 }
-

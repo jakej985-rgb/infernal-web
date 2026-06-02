@@ -9,47 +9,6 @@ part of 'inventory_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(inventoryDao)
-final inventoryDaoProvider = InventoryDaoProvider._();
-
-final class InventoryDaoProvider
-    extends $FunctionalProvider<InventoryDao, InventoryDao, InventoryDao>
-    with $Provider<InventoryDao> {
-  InventoryDaoProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'inventoryDaoProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$inventoryDaoHash();
-
-  @$internal
-  @override
-  $ProviderElement<InventoryDao> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  InventoryDao create(Ref ref) {
-    return inventoryDao(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(InventoryDao value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<InventoryDao>(value),
-    );
-  }
-}
-
-String _$inventoryDaoHash() => r'380c4fce9b724ec65d21271a80441d26f9fb562e';
-
 @ProviderFor(inventoryItems)
 final inventoryItemsProvider = InventoryItemsProvider._();
 
@@ -89,7 +48,7 @@ final class InventoryItemsProvider
   }
 }
 
-String _$inventoryItemsHash() => r'a18d213cdbe9f2785d14ba1d9efae4a707beb579';
+String _$inventoryItemsHash() => r'5c14741aba4dc21aa556c2a612cb7e75d933ea84';
 
 @ProviderFor(InventoryService)
 final inventoryServiceProvider = InventoryServiceProvider._();
@@ -115,7 +74,7 @@ final class InventoryServiceProvider
   InventoryService create() => InventoryService();
 }
 
-String _$inventoryServiceHash() => r'0f4e7be5a731a54dc10516175541428713d88de3';
+String _$inventoryServiceHash() => r'08ee1670402c94f1bcbe64d727fc5756add79ad7';
 
 abstract class _$InventoryService extends $AsyncNotifier<void> {
   FutureOr<void> build();

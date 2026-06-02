@@ -1,12 +1,7 @@
 import 'dart:async';
-import 'dart:io' as io;
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../cache/id_mapper.dart';
 import '../../domain/client.dart' as domain;
@@ -210,22 +205,7 @@ class ClientServiceApiImpl implements ClientService {
 
   @override
   Future<String> saveAvatar(XFile file) async {
-    if (kIsWeb) {
-      return file.path;
-    }
-
-    final appDir = await getApplicationDocumentsDirectory();
-    final avatarsDir = io.Directory(p.join(appDir.path, 'avatars'));
-    if (!await avatarsDir.exists()) {
-      await avatarsDir.create(recursive: true);
-    }
-
-    final fileName = '${const Uuid().v4()}${p.extension(file.path)}';
-    final bytes = await file.readAsBytes();
-    final localFile = io.File(p.join(avatarsDir.path, fileName));
-    await localFile.writeAsBytes(bytes);
-
-    return localFile.path;
+    return file.path;
   }
 
   Future<domain.Client> _mapToDomain(Map<String, dynamic> json) async {

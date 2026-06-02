@@ -1,25 +1,38 @@
-import 'package:bcrypt/bcrypt.dart';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../shared/persistence/database.dart';
-import 'package:drift/drift.dart' show Value;
+import '../../../../shared/domain/user.dart' as domain;
+import '../../../../shared/domain/enums.dart';
 
 part 'user_management_provider.g.dart';
 
-/// Provider for all users - using raw StreamProvider to avoid generator issues with Drift types
-final allUsersProvider = StreamProvider<List<User>>((ref) {
-  final dao = ref.watch(databaseProvider).usersDao;
-  return dao.watchAllUsers();
+final _usersList = <domain.User>[
+  domain.User(
+    id: 1,
+    username: 'admin@inkandsteel.xyz',
+    displayName: 'Admin User',
+    passwordHash: '',
+    role: UserRole.admin,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  ),
+];
+final _usersStreamController = StreamController<List<domain.User>>.broadcast();
+
+final allUsersProvider = StreamProvider<List<domain.User>>((ref) {
+  if (!_usersStreamController.isClosed) {
+    _usersStreamController.add(_usersList);
+  }
+  return _usersStreamController.stream;
 });
 
 @riverpod
 UserManagementService userManagementService(Ref ref) {
-  return UserManagementService(ref);
+  return UserManagementService();
 }
 
 class UserManagementService {
-  final Ref _ref;
-  UserManagementService(this._ref);
+  UserManagementService();
 
   Future<void> createUser({
     required String username,
@@ -28,39 +41,29 @@ class UserManagementService {
     required String role,
     double? hourlyRate,
   }) async {
-    final dao = _ref.read(databaseProvider).usersDao;
-    
-    // Hash password
-    final hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-    
-    await dao.insertUser(
-      UsersCompanion.insert(
-        username: username,
-        passwordHash: Value(hashedPassword),
-        displayName: Value(displayName),
-        role: Value(role),
-        hourlyRate: Value(hourlyRate ?? 150.0),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
+    final newUser = domain.User(
+      id: _usersList.length + 1,
+      username: username,
+      displayName: displayName,
+      role: UserRole.values.firstWhere((e) => e.name.toLowerCase() == role.toLowerCase(), orElse: () => UserRole.artist),
+      hourlyRate: hourlyRate ?? 150.0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
+    _usersList.add(newUser);
+    _usersStreamController.add(_usersList);
   }
 
-  Future<void> updateUser(User user, {String? newPassword}) async {
-    final dao = _ref.read(databaseProvider).usersDao;
-    
-    User updatedUser = user.copyWith(updatedAt: DateTime.now());
-    if (newPassword != null && newPassword.isNotEmpty) {
-      final hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-      updatedUser = updatedUser.copyWith(passwordHash: hashedPassword);
+  Future<void> updateUser(domain.User user, {String? newPassword}) async {
+    final idx = _usersList.indexWhere((u) => u.id == user.id);
+    if (idx != -1) {
+      _usersList[idx] = user.copyWith(updatedAt: DateTime.now());
+      _usersStreamController.add(_usersList);
     }
-    
-    await dao.updateUser(updatedUser);
   }
 
   Future<void> deleteUser(int id) async {
-    final dao = _ref.read(databaseProvider).usersDao;
-    await dao.softDeleteUser(id);
+    _usersList.removeWhere((u) => u.id == id);
+    _usersStreamController.add(_usersList);
   }
 }
-

@@ -1,8 +1,9 @@
-import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
-import '../../../../shared/persistence/database.dart';
+import '../../appointments/data/appointments_provider.dart';
+import '../../clients/data/clients_provider.dart';
+import '../../../../shared/domain/appointment.dart' as domain;
 import '../domain/dashboard_stats.dart';
 
 part 'stats_repository.g.dart';
@@ -11,64 +12,37 @@ part 'stats_repository.g.dart';
 class DashboardStatsRepository extends _$DashboardStatsRepository {
   @override
   Stream<DashboardStats> build() {
-    final db = ref.watch(databaseProvider);
+    final apptsStream = ref.watch(appointmentServiceProvider).watchAppointments();
+    final clientsStream = ref.watch(clientServiceProvider).watchClients();
 
-    // Today's Rituals (Appointments started today)
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = startOfDay.add(const Duration(days: 1));
+    return Rx.combineLatest2(apptsStream, clientsStream, (appointments, clients) {
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final todayEnd = todayStart.add(const Duration(days: 1));
 
-    final todayRitualsStream =
-        (db.select(db.appointments)
-              ..where((t) => t.startTime.isBetweenValues(startOfDay, endOfDay)))
-            .watch()
-            .map((rows) => rows.length);
+      int todayRituals = 0;
+      int pending = 0;
 
-    // Bound Souls (Total Clients)
-    final boundSoulsStream = db
-        .select(db.clients)
-        .watch()
-        .map((rows) => rows.length);
+      for (final appt in appointments) {
+        if (appt.isDeleted) continue;
+        if ((appt.dateTime.isAfter(todayStart) || appt.dateTime.isAtSameMomentAs(todayStart)) &&
+            appt.dateTime.isBefore(todayEnd)) {
+          todayRituals++;
+        } else if (appt.dateTime.isAfter(todayEnd)) {
+          pending++;
+        }
+      }
 
-    // Open Scrolls (Total Quotes)
-    final openScrollsStream = db
-        .select(db.quotes)
-        .watch()
-        .map((rows) => rows.length);
-
-    // Pending (Appointments in future)
-    final pendingStream =
-        (db.select(db.appointments)
-              ..where((t) => t.startTime.isBiggerThanValue(endOfDay)))
-            .watch()
-            .map((rows) => rows.length);
-
-    return CombineLatestStream.list([
-      todayRitualsStream,
-      boundSoulsStream,
-      openScrollsStream,
-      pendingStream,
-    ]).map((counts) {
       return DashboardStats(
-        todayRituals: counts[0],
-        boundSouls: counts[1],
-        openScrolls: counts[2],
-        pending: counts[3],
+        todayRituals: todayRituals,
+        boundSouls: clients.length,
+        openScrolls: 0, // Quotes is fully deprecated/stubbed
+        pending: pending,
       );
     });
   }
 }
 
-/// Provider for today's appointments - using raw StreamProvider to avoid generator issues with Drift types
-final dashboardTodayAppointmentsProvider = StreamProvider<List<Appointment>>((ref) {
-  final db = ref.watch(databaseProvider);
-  final now = DateTime.now();
-  final startOfDay = DateTime(now.year, now.month, now.day);
-  final endOfDay = startOfDay.add(const Duration(days: 1));
-
-  return (db.select(db.appointments)
-        ..where((t) => t.startTime.isBetweenValues(startOfDay, endOfDay))
-        ..orderBy([(t) => OrderingTerm(expression: t.startTime)]))
-      .watch();
+final dashboardTodayAppointmentsProvider = Provider<AsyncValue<List<domain.Appointment>>>((ref) {
+  return ref.watch(todaysAppointmentsProvider);
 });
-

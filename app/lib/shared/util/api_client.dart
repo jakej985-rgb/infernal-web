@@ -91,7 +91,7 @@ class RetryInterceptor extends Interceptor {
     if (isConnectionError && retryCount < maxRetries) {
       retryCount++;
       requestOptions.extra['retry_count'] = retryCount;
-      debugPrint('[ApiClient] Network error. Retrying request (${retryCount}/${maxRetries}) in ${delay.inSeconds}s...');
+      debugPrint('[ApiClient] Network error. Retrying request ($retryCount/$maxRetries) in ${delay.inSeconds}s...');
 
       await Future.delayed(delay);
 

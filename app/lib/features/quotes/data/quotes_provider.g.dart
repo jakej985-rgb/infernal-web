@@ -100,7 +100,7 @@ final class FilteredQuotesProvider
   }
 }
 
-String _$filteredQuotesHash() => r'4a25a0529eff4289a74e0c2aa5e3a79234b93b82';
+String _$filteredQuotesHash() => r'95497c6a2ef1d5191660806cd91cdae16e5b69a4';
 
 @ProviderFor(quoteDetail)
 final quoteDetailProvider = QuoteDetailFamily._();
@@ -157,7 +157,7 @@ final class QuoteDetailProvider
   }
 }
 
-String _$quoteDetailHash() => r'7ff550a4362a94b438a1408eaf866c09bd5b4c6d';
+String _$quoteDetailHash() => r'6948e4ace73092297d909e44dc41276e096e033f';
 
 final class QuoteDetailFamily extends $Family
     with $FunctionalFamilyOverride<Stream<domain.Quote?>, int> {
@@ -216,4 +216,4 @@ final class QuotesServiceProvider
   }
 }
 
-String _$quotesServiceHash() => r'ce2ca63d4b3f33db543151d5544641d720c1267b';
+String _$quotesServiceHash() => r'9b055a41638aad2b3bb3e9a8dce988915040170b';

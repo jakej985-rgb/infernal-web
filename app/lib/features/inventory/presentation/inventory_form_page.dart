@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' as drift;
 import '../../../app/theme/tokens.dart';
-import '../../../shared/persistence/database.dart';
 import '../../../shared/presentation/widgets/neon_plate.dart';
 import '../data/inventory_provider.dart';
 import '../../../../shared/domain/inventory.dart' as domain;
@@ -57,17 +55,19 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
       final supplier = _supplierController.text.isEmpty ? null : _supplierController.text;
 
       if (widget.item == null) {
-        // Insert (Drift Companion)
-        final companion = InventoryItemsCompanion.insert(
+        // Insert via domain model directly
+        final item = domain.InventoryItem(
+          id: 0,
           name: name,
           category: category,
-          stockQuantity: drift.Value(stock),
-          minimumQuantity: drift.Value(minStock),
+          stockQuantity: stock,
+          minimumQuantity: minStock,
           unit: unit,
-          supplier: drift.Value(supplier),
-          updatedAt: drift.Value(DateTime.now()),
+          supplier: supplier,
+          lastOrderedAt: null,
+          updatedAt: DateTime.now(),
         );
-        await ref.read(inventoryServiceProvider.notifier).addItem(companion);
+        await ref.read(inventoryServiceProvider.notifier).addItem(item);
       } else {
         // Update (Domain Object)
         final updatedItem = widget.item!.copyWith(

@@ -9,6 +9,54 @@ part of 'appointments_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(appointmentService)
+final appointmentServiceProvider = AppointmentServiceProvider._();
+
+final class AppointmentServiceProvider
+    extends
+        $FunctionalProvider<
+          AppointmentService,
+          AppointmentService,
+          AppointmentService
+        >
+    with $Provider<AppointmentService> {
+  AppointmentServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appointmentServiceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appointmentServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<AppointmentService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AppointmentService create(Ref ref) {
+    return appointmentService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AppointmentService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AppointmentService>(value),
+    );
+  }
+}
+
+String _$appointmentServiceHash() =>
+    r'32ce089de0e342822aad2e6238457cf7a815e140';
+
 @ProviderFor(todaysAppointments)
 final todaysAppointmentsProvider = TodaysAppointmentsProvider._();
 
@@ -49,7 +97,7 @@ final class TodaysAppointmentsProvider
 }
 
 String _$todaysAppointmentsHash() =>
-    r'6f46c1a83780c5dd016d947a0a71c0c8117caaf6';
+    r'951c2ee490c352b8a49dd372df258b923dc37e62';
 
 @ProviderFor(allAppointments)
 final allAppointmentsProvider = AllAppointmentsProvider._();
@@ -90,7 +138,7 @@ final class AllAppointmentsProvider
   }
 }
 
-String _$allAppointmentsHash() => r'6a2644fa07882508aa2b4c09b7613641a5a9dee4';
+String _$allAppointmentsHash() => r'6c9c35d823db54107f329f898f3af46e4af54ef1';
 
 @ProviderFor(upcomingAppointments)
 final upcomingAppointmentsProvider = UpcomingAppointmentsProvider._();
@@ -132,7 +180,7 @@ final class UpcomingAppointmentsProvider
 }
 
 String _$upcomingAppointmentsHash() =>
-    r'296970352db6b9a01d2862b99041a173bedf5746';
+    r'39d775b821e5f93d903273472fb1776eeb838c56';
 
 @ProviderFor(appointmentDetail)
 final appointmentDetailProvider = AppointmentDetailFamily._();
@@ -191,7 +239,7 @@ final class AppointmentDetailProvider
   }
 }
 
-String _$appointmentDetailHash() => r'2fe130df28fb7a0067dc36e7ddd76a76e72c543c';
+String _$appointmentDetailHash() => r'332d6e1884fba87fa59bdd68de3a8262020ce2af';
 
 final class AppointmentDetailFamily extends $Family
     with $FunctionalFamilyOverride<Stream<domain.Appointment?>, int> {

@@ -9,9 +9,7 @@ SecureStorage secureStorage(Ref ref) {
 }
 
 class SecureStorage {
-  final _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  final _storage = const FlutterSecureStorage();
 
   static const _tokenKey = 'auth_jwt_token';
 

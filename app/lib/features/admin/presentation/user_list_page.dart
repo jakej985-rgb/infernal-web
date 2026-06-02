@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/user_management_provider.dart';
+import '../../../../shared/domain/enums.dart';
 
 class UserListPage extends ConsumerWidget {
   const UserListPage({super.key});
@@ -41,13 +42,14 @@ class UserListPage extends ConsumerWidget {
             separatorBuilder: (_, _) => const SizedBox(height: InfernalSpacing.sm),
             itemBuilder: (ctx, idx) {
               final user = users[idx];
+              final isAdminRole = user.role == UserRole.admin;
               return Card(
                 color: InfernalColors.surface,
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: user.role == 'admin' ? InfernalColors.blood : InfernalColors.arcane,
+                    backgroundColor: isAdminRole ? InfernalColors.blood : InfernalColors.arcane,
                     child: Icon(
-                      user.role == 'admin' ? Icons.security : Icons.brush,
+                      isAdminRole ? Icons.security : Icons.brush,
                       color: Colors.white,
                       size: 20,
                     ),
@@ -57,7 +59,7 @@ class UserListPage extends ConsumerWidget {
                     style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    '${user.role.toUpperCase()} // ${user.username}',
+                    '${user.role.name.toUpperCase()} // ${user.username}',
                     style: const TextStyle(color: InfernalColors.textMuted, fontSize: 12),
                   ),
                   trailing: Row(

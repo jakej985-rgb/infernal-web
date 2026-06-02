@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router.dart';
 import 'theme/theme.dart';
-import '../shared/util/sync_worker.dart';
 import '../shared/util/websocket_client.dart';
 
 /// Root application widget
@@ -17,8 +16,7 @@ class InfernalApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
 
-    // Initialize background sync worker and real-time WebSockets
-    ref.watch(syncWorkerProvider);
+    // Initialize real-time WebSockets
     ref.watch(webSocketClientProvider);
 
     return MaterialApp.router(

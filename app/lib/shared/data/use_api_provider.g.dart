@@ -40,7 +40,7 @@ final class UseApiProvider extends $NotifierProvider<UseApi, bool> {
   }
 }
 
-String _$useApiHash() => r'afd377c09cf25da6f4e25e97c756240bef15f5f7';
+String _$useApiHash() => r'6646087f1df2f7ffea9ad8d032c6c8ff42aca493';
 
 abstract class _$UseApi extends $Notifier<bool> {
   bool build();
@@ -100,4 +100,52 @@ final class GlobalClientServiceProvider
 }
 
 String _$globalClientServiceHash() =>
-    r'07a25204f7575c6d00d293ccee86241330e5ce87';
+    r'dc601f4cb8463359cc96d147da5c803ce0b1c652';
+
+@ProviderFor(globalAppointmentService)
+final globalAppointmentServiceProvider = GlobalAppointmentServiceProvider._();
+
+final class GlobalAppointmentServiceProvider
+    extends
+        $FunctionalProvider<
+          AppointmentService,
+          AppointmentService,
+          AppointmentService
+        >
+    with $Provider<AppointmentService> {
+  GlobalAppointmentServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'globalAppointmentServiceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$globalAppointmentServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<AppointmentService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  AppointmentService create(Ref ref) {
+    return globalAppointmentService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AppointmentService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AppointmentService>(value),
+    );
+  }
+}
+
+String _$globalAppointmentServiceHash() =>
+    r'f51c6cdbdae493b00c60d47a65c8f4b23b3f40c1';
