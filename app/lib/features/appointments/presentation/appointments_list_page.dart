@@ -9,6 +9,7 @@ import '../../../../shared/domain/appointment.dart' as domain;
 import '../data/appointments_provider.dart';
 import 'widgets/appointment_status_chip.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
+import '../../../app/router.dart';
 
 enum AppointmentsViewMode { list, calendar }
 
@@ -48,7 +49,7 @@ class AppointmentsListPage extends ConsumerWidget {
         backgroundColor: InfernalColors.blood,
         foregroundColor: InfernalColors.textPrimary,
         child: const Icon(Icons.add),
-        onPressed: () => context.go('/appointments/new'),
+        onPressed: () => context.go('${AppRoutes.appointments}/new'),
       ),
       body: viewMode == AppointmentsViewMode.list
           ? _ListView(todaysAsync: todaysAsync, upcomingAsync: upcomingAsync)
@@ -252,7 +253,7 @@ class _AppointmentList extends StatelessWidget {
           color: InfernalColors.surface,
           margin: EdgeInsets.zero,
           child: InkWell(
-            onTap: () => context.go('/appointments/${apt.id}'),
+            onTap: () => context.go('${AppRoutes.appointments}/${apt.id}'),
             borderRadius: BorderRadius.circular(InfernalRadius.md),
             child: Padding(
               padding: const EdgeInsets.all(InfernalSpacing.md),

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/quotes_provider.dart';
+import '../../../app/router.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class QuoteDetailsPage extends ConsumerWidget {
   final String quoteId;
@@ -12,6 +14,7 @@ class QuoteDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
     final id = int.tryParse(quoteId);
     if (id == null) return const Scaffold(body: Center(child: Text('Invalid ID')));
 
@@ -20,23 +23,23 @@ class QuoteDetailsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('Estimate Details'),
+        title: Text(UiLabels.get('quote_details', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
            IconButton(
              icon: const Icon(Icons.edit),
-             onPressed: () => context.go('/quotes/$id/edit'),
+             onPressed: () => context.go('${AppRoutes.quotes}/$id/edit'),
            ),
            IconButton(
              icon: const Icon(Icons.delete, color: InfernalColors.error),
-             onPressed: () => _deleteQuote(context, ref, id),
+             onPressed: () => _deleteQuote(context, ref, id, useInfernal),
            ),
         ],
       ),
       body: quoteAsync.when(
         data: (quote) {
-           if (quote == null) return const Center(child: Text('Estimate not found'));
+           if (quote == null) return Center(child: Text(UiLabels.get('quote_not_found', useInfernal)));
            return ListView(
               padding: const EdgeInsets.all(InfernalSpacing.md),
               children: [
@@ -158,15 +161,15 @@ class QuoteDetailsPage extends ConsumerWidget {
     );
   }
   
-  void _deleteQuote(BuildContext context, WidgetRef ref, int id) {
+  void _deleteQuote(BuildContext context, WidgetRef ref, int id, bool useInfernal) {
      showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text('Delete Estimate?', style: TextStyle(color: InfernalColors.textPrimary)),
-        content: const Text(
-          'This action cannot be undone.',
-          style: TextStyle(color: InfernalColors.textSecondary),
+        title: Text(UiLabels.get('delete_quote_title', useInfernal), style: const TextStyle(color: InfernalColors.textPrimary)),
+        content: Text(
+          UiLabels.get('delete_quote_content', useInfernal),
+          style: const TextStyle(color: InfernalColors.textSecondary),
         ),
         actions: [
           TextButton(

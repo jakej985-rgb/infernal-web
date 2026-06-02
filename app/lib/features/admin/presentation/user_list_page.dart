@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/user_management_provider.dart';
 import '../../../../shared/domain/enums.dart';
+import '../../../app/router.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class UserListPage extends ConsumerWidget {
   const UserListPage({super.key});
@@ -12,10 +14,12 @@ class UserListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usersAsync = ref.watch(allUsersProvider);
 
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
+
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('MACHINE SPIRITS // Users'),
+        title: Text(UiLabels.get('admin_users_title', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),
@@ -23,7 +27,7 @@ class UserListPage extends ConsumerWidget {
         backgroundColor: InfernalColors.gold,
         foregroundColor: InfernalColors.textPrimary,
         child: const Icon(Icons.person_add),
-        onPressed: () => context.go('/admin/users/new'),
+        onPressed: () => context.go('${AppRoutes.adminUsers}/new'),
       ),
       body: usersAsync.when(
         data: (users) {
@@ -74,7 +78,7 @@ class UserListPage extends ConsumerWidget {
                       const Icon(Icons.chevron_right, color: InfernalColors.textMuted),
                     ],
                   ),
-                  onTap: () => context.go('/admin/users/${user.id}'),
+                  onTap: () => context.go('${AppRoutes.adminUsers}/${user.id}'),
                 ),
               );
             },

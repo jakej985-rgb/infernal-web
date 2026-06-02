@@ -19,11 +19,9 @@ final _usersList = <domain.User>[
 ];
 final _usersStreamController = StreamController<List<domain.User>>.broadcast();
 
-final allUsersProvider = StreamProvider<List<domain.User>>((ref) {
-  if (!_usersStreamController.isClosed) {
-    _usersStreamController.add(_usersList);
-  }
-  return _usersStreamController.stream;
+final allUsersProvider = StreamProvider<List<domain.User>>((ref) async* {
+  yield List<domain.User>.from(_usersList);
+  yield* _usersStreamController.stream;
 });
 
 @riverpod

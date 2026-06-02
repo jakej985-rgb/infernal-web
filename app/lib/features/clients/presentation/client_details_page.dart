@@ -5,6 +5,7 @@ import '../../../app/theme/tokens.dart';
 import '../data/clients_provider.dart';
 import 'widgets/client_status_chip.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
+import '../../../app/router.dart';
 
 class ClientDetailsPage extends ConsumerWidget {
   final String clientId;
@@ -30,7 +31,7 @@ class ClientDetailsPage extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => context.go('/clients/$id/edit'),
+            onPressed: () => context.go('${AppRoutes.clients}/$id/edit'),
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: InfernalColors.error),

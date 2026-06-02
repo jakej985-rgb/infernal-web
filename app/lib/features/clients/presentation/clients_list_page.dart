@@ -5,6 +5,7 @@ import '../../../app/theme/tokens.dart';
 import '../data/clients_provider.dart';
 import 'widgets/client_status_chip.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
+import '../../../app/router.dart';
 
 class ClientsListPage extends ConsumerWidget {
   const ClientsListPage({super.key});
@@ -25,7 +26,7 @@ class ClientsListPage extends ConsumerWidget {
         backgroundColor: InfernalColors.blood,
         foregroundColor: InfernalColors.textPrimary,
         child: const Icon(Icons.person_add),
-        onPressed: () => context.go('/clients/new'),
+        onPressed: () => context.go('${AppRoutes.clients}/new'),
       ),
       body: Column(
         children: [
@@ -114,7 +115,7 @@ class ClientsListPage extends ConsumerWidget {
                           Icons.chevron_right,
                           color: InfernalColors.textMuted,
                         ),
-                        onTap: () => context.go('/clients/${client.id}'),
+                        onTap: () => context.go('${AppRoutes.clients}/${client.id}'),
                       ),
                     );
                   },

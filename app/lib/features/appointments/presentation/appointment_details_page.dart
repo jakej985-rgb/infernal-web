@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/appointments_provider.dart';
 import 'widgets/appointment_status_chip.dart';
+import '../../../app/router.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class AppointmentDetailsPage extends ConsumerWidget {
   final String appointmentId;
@@ -13,6 +15,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
     final id = int.tryParse(appointmentId);
     if (id == null) {
       return const Scaffold(body: Center(child: Text("Invalid ID")));
@@ -23,24 +26,24 @@ class AppointmentDetailsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('Ritual Details'),
+        title: Text(UiLabels.get('appointment_details', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => context.go('/appointments/$id/edit'),
+            onPressed: () => context.go('${AppRoutes.appointments}/$id/edit'),
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: InfernalColors.error),
-            onPressed: () => _deleteAppointment(context, ref, id),
+            onPressed: () => _deleteAppointment(context, ref, id, useInfernal),
           ),
         ],
       ),
       body: aptAsync.when(
         data: (apt) {
           if (apt == null) {
-            return const Center(child: Text("Ritual not found"));
+            return Center(child: Text(UiLabels.get('appointment_not_found', useInfernal)));
           }
           return SingleChildScrollView(
             padding: const EdgeInsets.all(InfernalSpacing.md),
@@ -80,7 +83,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
                 
                 // Client Link
                 InkWell(
-                  onTap: () => context.push('/clients/${apt.clientId}'),
+                  onTap: () => context.push('${AppRoutes.clients}/${apt.clientId}'),
                   borderRadius: BorderRadius.circular(InfernalRadius.md),
                   child: Container(
                     padding: const EdgeInsets.all(InfernalSpacing.md),
@@ -101,7 +104,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Client (Soul)",
+                                useInfernal ? 'Canvas' : 'Client',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: InfernalColors.textSecondary),
                               ),
                               Text(
@@ -161,15 +164,15 @@ class AppointmentDetailsPage extends ConsumerWidget {
     );
   }
 
-  void _deleteAppointment(BuildContext context, WidgetRef ref, int id) {
+  void _deleteAppointment(BuildContext context, WidgetRef ref, int id, bool useInfernal) {
      showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text('Cancel Ritual?', style: TextStyle(color: InfernalColors.textPrimary)),
-        content: const Text(
-          'This will permanently remove the appointment. Are you sure?',
-          style: TextStyle(color: InfernalColors.textSecondary),
+        title: Text(UiLabels.get('delete_appointment_title', useInfernal), style: const TextStyle(color: InfernalColors.textPrimary)),
+        content: Text(
+          UiLabels.get('delete_appointment_content', useInfernal),
+          style: const TextStyle(color: InfernalColors.textSecondary),
         ),
         actions: [
           TextButton(

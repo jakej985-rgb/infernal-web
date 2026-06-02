@@ -93,14 +93,14 @@ class SettingsPage extends ConsumerWidget {
         ),
         const SizedBox(height: InfernalSpacing.lg),
         _SettingsSection(
-          title: 'System',
-          icon: Icons.settings,
-          color: InfernalColors.voidColor,
+          title: 'Theme',
+          icon: Icons.palette,
+          color: InfernalColors.ember,
           items: [
             _SettingsItem(
-              title: 'Infernal UI Overlay',
+              title: 'Studio Terminology',
               subtitle: ref.watch(useInfernalLabelsProvider)
-                  ? 'Thematic terminology active (Altar, Rituals, Souls)'
+                  ? 'Studio terminology active (Studio, Sessions, Canvases)'
                   : 'Standard terminology active (Home, Calendar, Contacts)',
               icon: Icons.auto_awesome,
               trailing: Switch(
@@ -114,6 +114,14 @@ class SettingsPage extends ConsumerWidget {
                 ref.read(useInfernalLabelsProvider.notifier).toggle(!current);
               },
             ),
+          ],
+        ),
+        const SizedBox(height: InfernalSpacing.lg),
+        _SettingsSection(
+          title: 'System',
+          icon: Icons.settings,
+          color: InfernalColors.voidColor,
+          items: [
             _SettingsItem(
               title: 'API Mode',
               subtitle: ref.watch(useApiProvider)

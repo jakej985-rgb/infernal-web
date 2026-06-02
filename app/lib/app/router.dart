@@ -71,11 +71,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/appointments',
-        redirect: (context, state) => AppRoutes.appointments,
+        redirect: (context, state) {
+          final subPath = state.uri.path.substring('/appointments'.length);
+          return '${AppRoutes.appointments}$subPath';
+        },
       ),
       GoRoute(
         path: '/clients',
-        redirect: (context, state) => AppRoutes.clients,
+        redirect: (context, state) {
+          final subPath = state.uri.path.substring('/clients'.length);
+          return '${AppRoutes.clients}$subPath';
+        },
       ),
       GoRoute(
         path: '/altar',
@@ -83,11 +89,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/rituals',
-        redirect: (context, state) => AppRoutes.appointments,
+        redirect: (context, state) {
+          final subPath = state.uri.path.substring('/rituals'.length);
+          return '${AppRoutes.appointments}$subPath';
+        },
       ),
       GoRoute(
         path: '/souls',
-        redirect: (context, state) => AppRoutes.clients,
+        redirect: (context, state) {
+          final subPath = state.uri.path.substring('/souls'.length);
+          return '${AppRoutes.clients}$subPath';
+        },
       ),
 
       // Login route (outside shell)

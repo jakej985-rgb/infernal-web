@@ -5,44 +5,44 @@ library;
 
 import 'package:flutter/material.dart';
 
-/// Core color palette matching the legacy "infernal" dark theme
+/// Core color palette representing a premium dark-industrial tattoo and piercing studio
 abstract final class InfernalColors {
   // Base colors
-  static const Color background = Color(0xFF0D0D0D);
-  static const Color surface = Color(0xFF1A1A1A);
-  static const Color surfaceVariant = Color(0xFF252525);
-  static const Color surfaceElevated = Color(0xFF2D2D2D);
-
+  static const Color background = Color(0xFF0F0F11); // Dark charcoal background
+  static const Color surface = Color(0xFF1B1B1E); // Sleek matte black surface
+  static const Color surfaceVariant = Color(0xFF26262B);
+  static const Color surfaceElevated = Color(0xFF303036);
+ 
   // Text colors
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFB0B0B0);
-  static const Color textMuted = Color(0xFF808080);
-  static const Color textAccent = Color(0xFFFF6B35);
-
-  // Accent colors (rune colors from legacy)
-  static const Color blood = Color(0xFFDC143C); // Blood red - primary accent
-  static const Color arcane = Color(0xFF9B59B6); // Arcane purple
-  static const Color gold = Color(0xFFFFD700); // Gold/amber
-  static const Color voidColor = Color(0xFF4A4A6A); // Void/dark blue-grey
-  static const Color ember = Color(0xFFFF6B35); // Ember orange
-
+  static const Color textPrimary = Color(0xFFF1F1F3);
+  static const Color textSecondary = Color(0xFFADB5BD);
+  static const Color textMuted = Color(0xFF6C757D);
+  static const Color textAccent = Color(0xFFFF922B); // Tangerine/ember accent
+ 
+  // Accent colors (Tattoo & Piercing studio theme)
+  static const Color blood = Color(0xFFC92A2A); // Crimson Red - Ink primary accent
+  static const Color arcane = Color(0xFF8E9AAF); // Cool Metallic Steel Grey/Silver
+  static const Color gold = Color(0xFFC5A059); // Warm Brass/Bronze
+  static const Color voidColor = Color(0xFF343A40); // Dark Slate Charcoal
+  static const Color ember = Color(0xFFD9480F); // Warm Copper / Rust Orange
+ 
   // Status colors
-  static const Color success = Color(0xFF2ECC71);
-  static const Color warning = Color(0xFFF39C12);
-  static const Color error = Color(0xFFE74C3C);
-  static const Color info = Color(0xFF3498DB);
-
+  static const Color success = Color(0xFF2B8A3E); // Deep forest green
+  static const Color warning = Color(0xFFE67E22);
+  static const Color error = Color(0xFFC92A2A);
+  static const Color info = Color(0xFF1971C2);
+ 
   // Border/divider
-  static const Color border = Color(0xFF3D3D3D);
-  static const Color divider = Color(0xFF2D2D2D);
-
+  static const Color border = Color(0xFF2C2E33);
+  static const Color divider = Color(0xFF212529);
+ 
   // Appointment status colors
   static const Color scheduled = arcane;
   static const Color completed = success;
   static const Color cancelled = error;
   static const Color noShow = warning;
   static const Color blockOff = voidColor;
-
+ 
   // Glow/Neon Effects
   static Color bloodGlow = blood.withValues(alpha: 0.3);
   static Color arcaneGlow = arcane.withValues(alpha: 0.3);

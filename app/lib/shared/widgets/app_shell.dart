@@ -150,7 +150,7 @@ class _NavigationRail extends ConsumerWidget {
                           border: Border.all(color: InfernalColors.blood, width: 2),
                         ),
                         child: const Icon(
-                          Icons.local_fire_department,
+                          Icons.colorize,
                           color: InfernalColors.blood,
                           size: InfernalIconSize.lg,
                         ),

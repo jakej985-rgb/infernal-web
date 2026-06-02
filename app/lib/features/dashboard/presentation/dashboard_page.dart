@@ -147,7 +147,7 @@ class DashboardPage extends ConsumerWidget {
                         title: Text(appt.clientName, style: const TextStyle(color: InfernalColors.textPrimary, fontWeight: FontWeight.bold)),
                         subtitle: Text('$timeFmt • ${appt.serviceType}', style: const TextStyle(color: InfernalColors.textSecondary)),
                         trailing: const Icon(Icons.chevron_right, color: InfernalColors.textMuted),
-                        onTap: () => context.go('/appointments'),
+                        onTap: () => context.go(AppRoutes.appointments),
                       ),
                     ),
                   );
@@ -178,19 +178,19 @@ class DashboardPage extends ConsumerWidget {
                   icon: Icons.calendar_month,
                   label: UiLabels.get('action_new_ritual', useInfernal),
                   color: InfernalColors.blood,
-                  onTap: () => context.go('/appointments/new'),
+                  onTap: () => context.go('${AppRoutes.appointments}/new'),
                 ),
                 _QuickActionBtn(
                   icon: Icons.person_add,
                   label: UiLabels.get('action_new_soul', useInfernal),
                   color: InfernalColors.arcane,
-                  onTap: () => context.go('/clients/new'),
+                  onTap: () => context.go('${AppRoutes.clients}/new'),
                 ),
                 _QuickActionBtn(
                   icon: Icons.calculate,
                   label: UiLabels.get('action_new_quote', useInfernal),
                   color: InfernalColors.gold,
-                  onTap: () => context.go('/quotes/new'),
+                  onTap: () => context.go('${AppRoutes.quotes}/new'),
                 ),
                 _QuickActionBtn(
                   icon: Icons.inventory_2_outlined,

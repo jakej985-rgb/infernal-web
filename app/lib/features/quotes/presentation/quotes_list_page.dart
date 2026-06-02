@@ -4,18 +4,21 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/quotes_provider.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
+import '../../../app/router.dart';
 
 class QuotesListPage extends ConsumerWidget {
   const QuotesListPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
     final quotesAsync = ref.watch(filteredQuotesProvider);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('Estimates'),
+        title: Text(UiLabels.get('quotes', useInfernal)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),
@@ -23,7 +26,7 @@ class QuotesListPage extends ConsumerWidget {
         backgroundColor: InfernalColors.gold,
         foregroundColor: InfernalColors.textPrimary,
         child: const Icon(Icons.add),
-        onPressed: () => context.go('/quotes/new'),
+        onPressed: () => context.go('${AppRoutes.quotes}/new'),
       ),
       body: Column(
         children: [
@@ -81,7 +84,7 @@ class QuotesListPage extends ConsumerWidget {
                                             const Icon(Icons.chevron_right, color: InfernalColors.textMuted, size: 16),
                                          ],
                                       ),
-                                      onTap: () => context.go('/quotes/${quote.id}'),
+                                      onTap: () => context.go('${AppRoutes.quotes}/${quote.id}'),
                                   ),
                               );
                           },
