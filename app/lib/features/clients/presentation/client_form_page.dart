@@ -21,6 +21,7 @@ class ClientFormPage extends ConsumerStatefulWidget {
 class _ClientFormPageState extends ConsumerState<ClientFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameCtrl = TextEditingController();
+  final _middleNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -37,6 +38,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
   @override
   void dispose() {
     _firstNameCtrl.dispose();
+    _middleNameCtrl.dispose();
     _lastNameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
@@ -63,6 +65,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
 
           if (!_initialized) {
             _firstNameCtrl.text = client.firstName;
+            _middleNameCtrl.text = client.middleName;
             _lastNameCtrl.text = client.lastName;
             _emailCtrl.text = client.email;
             _phoneCtrl.text = client.phone;
@@ -191,6 +194,8 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
               const SizedBox(height: InfernalSpacing.xl),
               _buildTextField("First Name", _firstNameCtrl, required: true),
               const SizedBox(height: InfernalSpacing.md),
+              _buildTextField("Middle Name", _middleNameCtrl),
+              const SizedBox(height: InfernalSpacing.md),
               _buildTextField("Last Name", _lastNameCtrl, required: true),
               const SizedBox(height: InfernalSpacing.md),
               _buildTextField(
@@ -274,6 +279,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
 
         final updated = existing.copyWith(
           firstName: _firstNameCtrl.text,
+          middleName: _middleNameCtrl.text,
           lastName: _lastNameCtrl.text,
           email: _emailCtrl.text,
           phone: _phoneCtrl.text,
@@ -287,6 +293,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
           id: 0,
           syncId: '',
           firstName: _firstNameCtrl.text,
+          middleName: _middleNameCtrl.text,
           lastName: _lastNameCtrl.text,
           email: _emailCtrl.text,
           phone: _phoneCtrl.text,
