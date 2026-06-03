@@ -1,1 +1,65 @@
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+*.local
 
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# =========================
+# Flutter / Dart
+# =========================
+app/build/
+app/.dart_tool/
+app/.packages
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+*.g.dart
+*.freezed.dart
+
+# =========================
+# Go Backend
+# =========================
+backend/server
+backend/*.exe
+backend/tmp/
+
+# =========================
+# Node / Cloud Functions
+# =========================
+functions/node_modules/
+functions/lib/
+
+# =========================
+# Firebase
+# =========================
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+pubsub-debug.log
+
+# =========================
+# Logs & Debug Output
+# =========================
+*.log
+output.txt
+app/analyze_output.txt
+app/structure.txt
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db

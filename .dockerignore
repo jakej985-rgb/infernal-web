@@ -1,8 +1,0 @@
-.git
-.gitignore
-build/
-node_modules/
-.dart_tool/
-.idea/
-.vscode/
-*.log

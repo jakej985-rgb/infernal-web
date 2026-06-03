@@ -11,6 +11,7 @@ import (
 type Client struct {
 	Conn           *websocket.Conn
 	OrganizationID string
+	writeMu        sync.Mutex
 }
 
 type Hub struct {
@@ -68,7 +69,9 @@ func (h *Hub) Broadcast(orgID string, message interface{}) {
 
 	for client := range clients {
 		go func(c *Client) {
+			c.writeMu.Lock()
 			err := c.Conn.WriteMessage(websocket.TextMessage, payload)
+			c.writeMu.Unlock()
 			if err != nil {
 				slog.Warn("Failed to write to client socket, removing connection...", "error", err)
 				h.Unregister(c)

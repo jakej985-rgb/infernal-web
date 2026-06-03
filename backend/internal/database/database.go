@@ -90,30 +90,35 @@ func (db *DB) RunMigrations(ctx context.Context, migrationsDir string) error {
 			continue
 		}
 
-		slog.Info("Applying database migration", "version", version)
-		content, err := os.ReadFile(filepath.Join(migrationsDir, version))
-		if err != nil {
-			return fmt.Errorf("failed to read migration file %s: %w", version, err)
-		}
+		if err := func() error {
+			slog.Info("Applying database migration", "version", version)
+			content, err := os.ReadFile(filepath.Join(migrationsDir, version))
+			if err != nil {
+				return fmt.Errorf("failed to read migration file %s: %w", version, err)
+			}
 
-		tx, err := db.Pool.Begin(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to begin transaction: %w", err)
-		}
-		defer tx.Rollback(ctx)
+			tx, err := db.Pool.Begin(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to begin transaction: %w", err)
+			}
+			defer tx.Rollback(ctx)
 
-		if _, err := tx.Exec(ctx, string(content)); err != nil {
-			return fmt.Errorf("failed to execute migration sql in %s: %w", version, err)
-		}
+			if _, err := tx.Exec(ctx, string(content)); err != nil {
+				return fmt.Errorf("failed to execute migration sql in %s: %w", version, err)
+			}
 
-		if _, err := tx.Exec(ctx, "INSERT INTO schema_migrations (version) VALUES ($1)", version); err != nil {
-			return fmt.Errorf("failed to record migration status for %s: %w", version, err)
-		}
+			if _, err := tx.Exec(ctx, "INSERT INTO schema_migrations (version) VALUES ($1)", version); err != nil {
+				return fmt.Errorf("failed to record migration status for %s: %w", version, err)
+			}
 
-		if err := tx.Commit(ctx); err != nil {
-			return fmt.Errorf("failed to commit migration transaction: %w", err)
+			if err := tx.Commit(ctx); err != nil {
+				return fmt.Errorf("failed to commit migration transaction: %w", err)
+			}
+			slog.Info("Successfully applied database migration", "version", version)
+			return nil
+		}(); err != nil {
+			return err
 		}
-		slog.Info("Successfully applied database migration", "version", version)
 	}
 
 	return nil

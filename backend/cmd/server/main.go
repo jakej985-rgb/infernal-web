@@ -67,7 +67,7 @@ func main() {
 	// 5. Initialize router
 	r := router.NewRouter(db, cfg.JWTSecret, hub)
 
-	// 5. Start HTTP server
+	// 6. Start HTTP server
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,
 		Handler: r,

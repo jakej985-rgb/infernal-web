@@ -37,14 +37,18 @@ func LoadConfig() (*Config, error) {
 		databaseURL = os.Getenv("DATABASE_URL")
 	}
 
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "supersecretkey"
-	}
-
 	env := os.Getenv("ENV")
 	if env == "" {
 		env = "development"
+	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		if env == "production" {
+			return nil, fmt.Errorf("JWT_SECRET environment variable is required in production")
+		}
+		slog.Warn("JWT_SECRET not set, using insecure default — DO NOT use in production")
+		jwtSecret = "dev-only-insecure-key"
 	}
 
 	return &Config{

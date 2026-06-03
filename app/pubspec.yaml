@@ -1,7 +1,7 @@
 name: infernal_ink_steel
 description: "Infernal Ink & Steel Suite - Tattoo Shop Management"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.2+2
 
 environment:
   sdk: ^3.10.4
@@ -31,7 +31,6 @@ dependencies:
   shared_preferences: ^2.5.3
   rxdart: ^0.28.0
   table_calendar: ^3.2.0
-  bcrypt: ^1.2.0
   image_picker: ^1.2.1
   dio: ^5.9.2
   flutter_secure_storage: ^10.3.1

@@ -92,14 +92,10 @@ class AuthService extends _$AuthService {
       final resolvedEmail = username.contains('@')
           ? username
           : '$username@inkandsteel.xyz';
-      var resolvedPassword = password;
-      if (resolvedEmail == 'admin@inkandsteel.xyz' && password == 'admin') {
-        resolvedPassword = 'adminadmin';
-      }
 
       await fb.FirebaseAuth.instance.signInWithEmailAndPassword(
         email: resolvedEmail,
-        password: resolvedPassword,
+        password: password,
       );
     } on fb.FirebaseException catch (e) {
       state = AsyncValue.data(

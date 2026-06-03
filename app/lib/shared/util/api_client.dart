@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -98,8 +97,7 @@ class RetryInterceptor extends Interceptor {
         err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.sendTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
-        err.type == DioExceptionType.connectionError ||
-        (err.error is SocketException);
+        err.type == DioExceptionType.connectionError;
 
     // Get current retry count
     var retryCount = requestOptions.extra['retry_count'] as int? ?? 0;

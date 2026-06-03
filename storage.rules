@@ -8,10 +8,16 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    // Function to check if user is a member of the organization
+    function isOrgMember(orgId) {
+      return isAuthenticated() &&
+        firestore.exists(/databases/(default)/documents/organizations/$(orgId)/users/$(request.auth.uid));
+    }
+
     match /organizations/{orgId}/clients/{clientId}/{allPaths=**} {
-      // Allow read/write access to files inside client directories for authenticated users
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      // Allow read/write access only to members of the same organization
+      allow read: if isOrgMember(orgId);
+      allow write: if isOrgMember(orgId);
     }
   }
 }

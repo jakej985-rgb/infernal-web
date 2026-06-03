@@ -8,17 +8,18 @@ import '../core/services/appointment_service_api_impl.dart';
 
 part 'use_api_provider.g.dart';
 
+/// Controls whether the app uses the Go API backend or Firebase directly.
+/// Currently hardcoded to true (Go API mode).
 @riverpod
 class UseApi extends _$UseApi {
   @override
   bool build() {
-    // Hardcoded to true as Drift SQLite is fully removed and central Go API/Cloud SQL is the sole database
+    // Go API / Cloud SQL is the sole backend — always true
     return true;
   }
 
-  Future<void> toggle(bool value) async {
-    // No-op: Toggle disabled since local DB mode is deleted
-  }
+  // ignore: no-op kept to avoid breaking the settings page UI
+  void toggle(bool value) {}
 }
 
 @riverpod
@@ -41,21 +42,14 @@ AppointmentService appointmentServiceApiImpl(Ref ref) {
   return AppointmentServiceApiImpl(ref);
 }
 
+/// Primary client service — always uses the API implementation.
 @riverpod
 ClientService globalClientService(Ref ref) {
-  final useApi = ref.watch(useApiProvider);
-  if (useApi) {
-    return ref.watch(clientServiceApiImplProvider);
-  }
-  return ref.watch(clientServiceFirebaseImplProvider);
+  return ref.watch(clientServiceApiImplProvider);
 }
 
+/// Primary appointment service — always uses the API implementation.
 @riverpod
 AppointmentService globalAppointmentService(Ref ref) {
-  final useApi = ref.watch(useApiProvider);
-  if (useApi) {
-    return ref.watch(appointmentServiceApiImplProvider);
-  }
-  return ref.watch(appointmentServiceFirebaseImplProvider);
+  return ref.watch(appointmentServiceApiImplProvider);
 }
-

@@ -3,6 +3,7 @@ package handlers
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/jakej985-rgb/infernal-web/backend/internal/auth"
@@ -25,7 +26,12 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		origin := r.Header.Get("Origin")
+		// Allow production domain and localhost for development
+		return origin == "https://inkandsteel.xyz" ||
+			origin == "https://m3tal-project.web.app" ||
+			origin == "https://m3tal-project.firebaseapp.com" ||
+			strings.HasPrefix(origin, "http://localhost")
 	},
 }
 
