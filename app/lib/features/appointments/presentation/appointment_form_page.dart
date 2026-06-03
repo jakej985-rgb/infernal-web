@@ -112,6 +112,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
               visits: 0,
               photoPath: '',
               status: ClientStatus.bound,
+              createdAt: DateTime.now(),
               lastModifiedUtc: DateTime.now(),
               lastModifiedBy: '',
               isDeleted: false,

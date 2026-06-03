@@ -157,6 +157,8 @@ class ClientServiceFirebaseImpl implements ClientService {
 
     final updatedAtTimestamp = data['updatedAt'] as Timestamp?;
     final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
+    final createdAtTimestamp = data['createdAt'] as Timestamp?;
+    final createdAt = createdAtTimestamp?.toDate() ?? updatedAt;
 
     return domain.Client(
       id: id,
@@ -165,6 +167,7 @@ class ClientServiceFirebaseImpl implements ClientService {
       lastName: lastName,
       email: email,
       phone: phone,
+      createdAt: createdAt.toUtc(),
       lastModifiedUtc: updatedAt.toUtc(),
     );
   }

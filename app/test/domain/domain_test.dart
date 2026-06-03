@@ -9,6 +9,7 @@ void main() {
         syncId: 'abc-123',
         firstName: 'John',
         lastName: 'Doe',
+        createdAt: DateTime.utc(2026, 1, 21),
         lastModifiedUtc: DateTime.utc(2026, 1, 21),
       );
 
@@ -25,6 +26,7 @@ void main() {
         firstName: 'John',
         middleName: 'William',
         lastName: 'Doe',
+        createdAt: DateTime.utc(2026, 1, 21),
         lastModifiedUtc: DateTime.utc(2026, 1, 21),
       );
 
@@ -40,6 +42,7 @@ void main() {
         email: 'jane@example.com',
         phone: '555-1234',
         status: ClientStatus.highValue,
+        createdAt: DateTime.utc(2026, 1, 20),
         lastModifiedUtc: DateTime.utc(2026, 1, 21),
       );
 
@@ -50,6 +53,7 @@ void main() {
       expect(restored.firstName, client.firstName);
       expect(restored.email, client.email);
       expect(restored.status, ClientStatus.highValue);
+      expect(restored.createdAt, client.createdAt);
     });
 
     test('should copyWith correctly', () {
@@ -58,6 +62,7 @@ void main() {
         syncId: 'abc-123',
         firstName: 'John',
         lastName: 'Doe',
+        createdAt: DateTime.utc(2026, 1, 21),
         lastModifiedUtc: DateTime.utc(2026, 1, 21),
       );
 
@@ -67,6 +72,95 @@ void main() {
       expect(updated.visits, 5);
       expect(updated.lastName, 'Doe'); // Unchanged
     });
+  });
+
+  group('ClientLifecycleLabel', () {
+    test('should mark a client created today as new', () {
+      final now = DateTime.utc(2026, 1, 21);
+      final client = _client(createdAt: now);
+
+      final lifecycle = deriveClientLifecycle(
+        client: client,
+        appointments: const [],
+        now: now,
+      );
+
+      expect(lifecycle, ClientLifecycleLabel.newClient);
+    });
+
+    test(
+      'should mark an older client with a recent completed visit as active',
+      () {
+        final now = DateTime.utc(2026, 1, 21);
+        final client = _client(createdAt: DateTime.utc(2026, 1, 13));
+
+        final lifecycle = deriveClientLifecycle(
+          client: client,
+          appointments: [
+            _appointment(
+              clientId: client.id,
+              dateTime: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+          now: now,
+        );
+
+        expect(lifecycle, ClientLifecycleLabel.active);
+      },
+    );
+
+    test(
+      'should mark an older client without a recent completed visit inactive',
+      () {
+        final now = DateTime.utc(2026, 1, 21);
+        final client = _client(createdAt: DateTime.utc(2026, 1, 13));
+
+        final lifecycle = deriveClientLifecycle(
+          client: client,
+          appointments: [
+            _appointment(
+              clientId: client.id,
+              dateTime: DateTime.utc(2024, 1, 20),
+            ),
+          ],
+          now: now,
+        );
+
+        expect(lifecycle, ClientLifecycleLabel.inactive);
+      },
+    );
+
+    test(
+      'should not count cancelled, no-show, or scheduled appointments as visits',
+      () {
+        final now = DateTime.utc(2026, 1, 21);
+        final client = _client(createdAt: DateTime.utc(2026, 1, 13));
+
+        final lifecycle = deriveClientLifecycle(
+          client: client,
+          appointments: [
+            _appointment(
+              clientId: client.id,
+              dateTime: DateTime.utc(2026, 1, 1),
+              status: 'Cancelled',
+            ),
+            _appointment(
+              clientId: client.id,
+              dateTime: DateTime.utc(2026, 1, 2),
+              status: 'No Show',
+            ),
+            _appointment(
+              clientId: client.id,
+              dateTime: DateTime.utc(2026, 1, 3),
+              status: 'Scheduled',
+            ),
+          ],
+          now: now,
+        );
+
+        expect(lifecycle, ClientLifecycleLabel.inactive);
+      },
+    );
   });
 
   group('User', () {
@@ -400,4 +494,32 @@ void main() {
       expect(restored.confidenceScore, 0.85);
     });
   });
+}
+
+Client _client({required DateTime createdAt}) {
+  return Client(
+    id: 1,
+    syncId: 'client-1',
+    firstName: 'Jane',
+    lastName: 'Doe',
+    createdAt: createdAt,
+    lastModifiedUtc: createdAt,
+  );
+}
+
+Appointment _appointment({
+  required int clientId,
+  required DateTime dateTime,
+  String status = 'Completed',
+}) {
+  return Appointment(
+    id: 1,
+    syncId: 'appointment-1',
+    clientId: clientId,
+    userId: 1,
+    dateTime: dateTime,
+    durationMinutes: 60,
+    status: status,
+    lastModifiedUtc: dateTime,
+  );
 }

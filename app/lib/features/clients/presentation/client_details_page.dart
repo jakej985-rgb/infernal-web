@@ -20,6 +20,7 @@ class ClientDetailsPage extends ConsumerWidget {
     }
 
     final clientAsync = ref.watch(clientDetailProvider(id));
+    final lifecycleAsync = ref.watch(clientLifecycleProvider(id));
     final useInfernal = ref.watch(useInfernalLabelsProvider);
 
     return Scaffold(
@@ -77,7 +78,12 @@ class ClientDetailsPage extends ConsumerWidget {
                                 ),
                           ),
                           const SizedBox(height: 4),
-                          ClientStatusChip(status: client.status),
+                          lifecycleAsync.maybeWhen(
+                            data: (lifecycle) => lifecycle == null
+                                ? const SizedBox.shrink()
+                                : ClientStatusChip(lifecycle: lifecycle),
+                            orElse: () => const SizedBox.shrink(),
+                          ),
                         ],
                       ),
                     ),

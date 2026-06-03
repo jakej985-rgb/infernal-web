@@ -229,6 +229,10 @@ class ClientServiceApiImpl implements ClientService {
     final updatedAt = updatedAtStr != null
         ? DateTime.parse(updatedAtStr).toLocal()
         : DateTime.now();
+    final createdAtStr = json['created_at'] as String? ?? updatedAtStr;
+    final createdAt = createdAtStr != null
+        ? DateTime.parse(createdAtStr).toLocal()
+        : updatedAt;
 
     return domain.Client(
       id: id,
@@ -237,6 +241,7 @@ class ClientServiceApiImpl implements ClientService {
       lastName: lastName,
       email: email,
       phone: phone,
+      createdAt: createdAt.toUtc(),
       lastModifiedUtc: updatedAt.toUtc(),
     );
   }

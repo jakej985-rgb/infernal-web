@@ -20,6 +20,7 @@ _Client _$ClientFromJson(Map<String, dynamic> json) => _Client(
   status:
       $enumDecodeNullable(_$ClientStatusEnumMap, json['status']) ??
       ClientStatus.bound,
+  createdAt: DateTime.parse(_readCreatedAt(json, 'createdAt') as String),
   lastModifiedUtc: DateTime.parse(json['lastModifiedUtc'] as String),
   lastModifiedBy: json['lastModifiedBy'] as String? ?? '',
   isDeleted: json['isDeleted'] as bool? ?? false,
@@ -37,6 +38,7 @@ Map<String, dynamic> _$ClientToJson(_Client instance) => <String, dynamic>{
   'visits': instance.visits,
   'photoPath': instance.photoPath,
   'status': _$ClientStatusEnumMap[instance.status]!,
+  'createdAt': instance.createdAt.toIso8601String(),
   'lastModifiedUtc': instance.lastModifiedUtc.toIso8601String(),
   'lastModifiedBy': instance.lastModifiedBy,
   'isDeleted': instance.isDeleted,

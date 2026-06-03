@@ -5,6 +5,7 @@ library;
 
 export 'enums.dart';
 export 'client.dart';
+export 'client_lifecycle.dart';
 export 'user.dart';
 export 'appointment.dart';
 export 'quote.dart';

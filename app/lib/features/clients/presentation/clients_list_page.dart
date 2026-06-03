@@ -12,7 +12,7 @@ class ClientsListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final clientsAsync = ref.watch(filteredClientsProvider);
+    final clientsAsync = ref.watch(filteredClientsWithLifecycleProvider);
     final useInfernal = ref.watch(useInfernalLabelsProvider);
 
     return Scaffold(
@@ -72,7 +72,8 @@ class ClientsListPage extends ConsumerWidget {
                   separatorBuilder: (_, index) =>
                       const SizedBox(height: InfernalSpacing.sm),
                   itemBuilder: (ctx, idx) {
-                    final client = clients[idx];
+                    final entry = clients[idx];
+                    final client = entry.client;
                     return Card(
                       color: InfernalColors.surface,
                       child: ListTile(
@@ -95,7 +96,7 @@ class ClientsListPage extends ConsumerWidget {
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Row(
                             children: [
-                              ClientStatusChip(status: client.status),
+                              ClientStatusChip(lifecycle: entry.lifecycle),
                               if (client.phone.isNotEmpty) ...[
                                 const SizedBox(width: 8),
                                 Expanded(

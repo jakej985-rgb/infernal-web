@@ -217,3 +217,123 @@ final class ClientDetailFamily extends $Family
   @override
   String toString() => r'clientDetailProvider';
 }
+
+@ProviderFor(filteredClientsWithLifecycle)
+final filteredClientsWithLifecycleProvider =
+    FilteredClientsWithLifecycleProvider._();
+
+final class FilteredClientsWithLifecycleProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ClientLifecycleEntry>>,
+          List<ClientLifecycleEntry>,
+          Stream<List<ClientLifecycleEntry>>
+        >
+    with
+        $FutureModifier<List<ClientLifecycleEntry>>,
+        $StreamProvider<List<ClientLifecycleEntry>> {
+  FilteredClientsWithLifecycleProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'filteredClientsWithLifecycleProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$filteredClientsWithLifecycleHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<List<ClientLifecycleEntry>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<ClientLifecycleEntry>> create(Ref ref) {
+    return filteredClientsWithLifecycle(ref);
+  }
+}
+
+String _$filteredClientsWithLifecycleHash() =>
+    r'75c7a29436b2ec89874ba5b902a7842585856433';
+
+@ProviderFor(clientLifecycle)
+final clientLifecycleProvider = ClientLifecycleFamily._();
+
+final class ClientLifecycleProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ClientLifecycleLabel?>,
+          ClientLifecycleLabel?,
+          Stream<ClientLifecycleLabel?>
+        >
+    with
+        $FutureModifier<ClientLifecycleLabel?>,
+        $StreamProvider<ClientLifecycleLabel?> {
+  ClientLifecycleProvider._({
+    required ClientLifecycleFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'clientLifecycleProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$clientLifecycleHash();
+
+  @override
+  String toString() {
+    return r'clientLifecycleProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<ClientLifecycleLabel?> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<ClientLifecycleLabel?> create(Ref ref) {
+    final argument = this.argument as int;
+    return clientLifecycle(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ClientLifecycleProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$clientLifecycleHash() => r'b645bece7c5e92fc3b4a9297aa9b5c5a52e9f992';
+
+final class ClientLifecycleFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<ClientLifecycleLabel?>, int> {
+  ClientLifecycleFamily._()
+    : super(
+        retry: null,
+        name: r'clientLifecycleProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  ClientLifecycleProvider call(int id) =>
+      ClientLifecycleProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'clientLifecycleProvider';
+}

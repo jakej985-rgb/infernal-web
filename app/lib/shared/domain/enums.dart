@@ -1,8 +1,10 @@
 /// Domain enums matching the legacy C# codebase
 library;
 
-/// Client status matching legacy ClientStatus enum
-/// Maps to: Bound (Active), FreshSoul (New), HighValue (VIP), Void (Archived)
+/// Client status matching legacy ClientStatus enum.
+///
+/// Kept for legacy data compatibility. New client lifecycle labels are derived
+/// automatically from creation date and completed appointment history.
 enum ClientStatus {
   /// Active client
   bound,
@@ -10,7 +12,7 @@ enum ClientStatus {
   /// New client
   freshSoul,
 
-  /// VIP/High-value client
+  /// Legacy high-value client
   highValue,
 
   /// Archived/Inactive client
@@ -20,13 +22,13 @@ enum ClientStatus {
   String get displayName {
     switch (this) {
       case ClientStatus.bound:
-        return 'Bound';
+        return 'Active';
       case ClientStatus.freshSoul:
-        return 'Fresh Soul';
+        return 'New';
       case ClientStatus.highValue:
-        return 'High Value';
+        return 'Active';
       case ClientStatus.void_:
-        return 'Void';
+        return 'Inactive';
     }
   }
 }

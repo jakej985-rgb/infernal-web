@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/domain/enums.dart';
+import '../../../../shared/domain/client_lifecycle.dart';
 import '../../../../app/theme/tokens.dart';
 
 class ClientStatusChip extends StatelessWidget {
-  final ClientStatus status;
-  const ClientStatusChip({super.key, required this.status});
+  final ClientLifecycleLabel lifecycle;
+  const ClientStatusChip({super.key, required this.lifecycle});
 
   @override
   Widget build(BuildContext context) {
-    final colors = _getColors(status);
+    final colors = _getColors(lifecycle);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -17,7 +17,7 @@ class ClientStatusChip extends StatelessWidget {
         border: Border.all(color: colors.border),
       ),
       child: Text(
-        _getLabel(status).toUpperCase(),
+        lifecycle.displayName.toUpperCase(),
         style: TextStyle(
           color: colors.text,
           fontSize: 10,
@@ -28,42 +28,23 @@ class ClientStatusChip extends StatelessWidget {
     );
   }
 
-  String _getLabel(ClientStatus status) {
-    switch (status) {
-      case ClientStatus.bound:
-        return 'Bound';
-      case ClientStatus.freshSoul:
-        return 'Fresh Soul';
-      case ClientStatus.highValue:
-        return 'High Value';
-      case ClientStatus.void_:
-        return 'Void';
-    }
-  }
-
   ({Color background, Color border, Color text}) _getColors(
-    ClientStatus status,
+    ClientLifecycleLabel lifecycle,
   ) {
-    switch (status) {
-      case ClientStatus.bound:
+    switch (lifecycle) {
+      case ClientLifecycleLabel.active:
         return (
           background: InfernalColors.success.withValues(alpha: 0.1),
           border: InfernalColors.success.withValues(alpha: 0.5),
           text: InfernalColors.success,
         );
-      case ClientStatus.freshSoul:
+      case ClientLifecycleLabel.newClient:
         return (
           background: InfernalColors.info.withValues(alpha: 0.1),
           border: InfernalColors.info.withValues(alpha: 0.5),
           text: InfernalColors.info,
         );
-      case ClientStatus.highValue:
-        return (
-          background: InfernalColors.gold.withValues(alpha: 0.1),
-          border: InfernalColors.gold.withValues(alpha: 0.5),
-          text: InfernalColors.gold,
-        );
-      case ClientStatus.void_:
+      case ClientLifecycleLabel.inactive:
         return (
           background: InfernalColors.voidColor.withValues(alpha: 0.2),
           border: InfernalColors.voidColor.withValues(alpha: 0.5),

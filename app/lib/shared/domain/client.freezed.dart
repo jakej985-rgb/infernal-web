@@ -26,7 +26,8 @@ mixin _$Client {
  String get notes;/// Number of visits
  int get visits;/// Path to profile photo
  String get photoPath;/// Client status (Bound/FreshSoul/HighValue/Void)
- ClientStatus get status;/// Last modification timestamp (UTC)
+ ClientStatus get status;/// Creation timestamp (UTC)
+@JsonKey(readValue: _readCreatedAt) DateTime get createdAt;/// Last modification timestamp (UTC)
  DateTime get lastModifiedUtc;/// User who last modified this record
  String get lastModifiedBy;/// Soft delete flag
  bool get isDeleted;
@@ -42,16 +43,16 @@ $ClientCopyWith<Client> get copyWith => _$ClientCopyWithImpl<Client>(this as Cli
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Client&&(identical(other.id, id) || other.id == id)&&(identical(other.syncId, syncId) || other.syncId == syncId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.middleName, middleName) || other.middleName == middleName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.visits, visits) || other.visits == visits)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.status, status) || other.status == status)&&(identical(other.lastModifiedUtc, lastModifiedUtc) || other.lastModifiedUtc == lastModifiedUtc)&&(identical(other.lastModifiedBy, lastModifiedBy) || other.lastModifiedBy == lastModifiedBy)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Client&&(identical(other.id, id) || other.id == id)&&(identical(other.syncId, syncId) || other.syncId == syncId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.middleName, middleName) || other.middleName == middleName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.visits, visits) || other.visits == visits)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastModifiedUtc, lastModifiedUtc) || other.lastModifiedUtc == lastModifiedUtc)&&(identical(other.lastModifiedBy, lastModifiedBy) || other.lastModifiedBy == lastModifiedBy)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,syncId,firstName,middleName,lastName,phone,email,notes,visits,photoPath,status,lastModifiedUtc,lastModifiedBy,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,syncId,firstName,middleName,lastName,phone,email,notes,visits,photoPath,status,createdAt,lastModifiedUtc,lastModifiedBy,isDeleted);
 
 @override
 String toString() {
-  return 'Client(id: $id, syncId: $syncId, firstName: $firstName, middleName: $middleName, lastName: $lastName, phone: $phone, email: $email, notes: $notes, visits: $visits, photoPath: $photoPath, status: $status, lastModifiedUtc: $lastModifiedUtc, lastModifiedBy: $lastModifiedBy, isDeleted: $isDeleted)';
+  return 'Client(id: $id, syncId: $syncId, firstName: $firstName, middleName: $middleName, lastName: $lastName, phone: $phone, email: $email, notes: $notes, visits: $visits, photoPath: $photoPath, status: $status, createdAt: $createdAt, lastModifiedUtc: $lastModifiedUtc, lastModifiedBy: $lastModifiedBy, isDeleted: $isDeleted)';
 }
 
 
@@ -62,7 +63,7 @@ abstract mixin class $ClientCopyWith<$Res>  {
   factory $ClientCopyWith(Client value, $Res Function(Client) _then) = _$ClientCopyWithImpl;
 @useResult
 $Res call({
- int id, String syncId, String firstName, String middleName, String lastName, String phone, String email, String notes, int visits, String photoPath, ClientStatus status, DateTime lastModifiedUtc, String lastModifiedBy, bool isDeleted
+ int id, String syncId, String firstName, String middleName, String lastName, String phone, String email, String notes, int visits, String photoPath, ClientStatus status,@JsonKey(readValue: _readCreatedAt) DateTime createdAt, DateTime lastModifiedUtc, String lastModifiedBy, bool isDeleted
 });
 
 
@@ -79,7 +80,7 @@ class _$ClientCopyWithImpl<$Res>
 
 /// Create a copy of Client
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? syncId = null,Object? firstName = null,Object? middleName = null,Object? lastName = null,Object? phone = null,Object? email = null,Object? notes = null,Object? visits = null,Object? photoPath = null,Object? status = null,Object? lastModifiedUtc = null,Object? lastModifiedBy = null,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? syncId = null,Object? firstName = null,Object? middleName = null,Object? lastName = null,Object? phone = null,Object? email = null,Object? notes = null,Object? visits = null,Object? photoPath = null,Object? status = null,Object? createdAt = null,Object? lastModifiedUtc = null,Object? lastModifiedBy = null,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,syncId: null == syncId ? _self.syncId : syncId // ignore: cast_nullable_to_non_nullable
@@ -92,7 +93,8 @@ as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to
 as String,visits: null == visits ? _self.visits : visits // ignore: cast_nullable_to_non_nullable
 as int,photoPath: null == photoPath ? _self.photoPath : photoPath // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as ClientStatus,lastModifiedUtc: null == lastModifiedUtc ? _self.lastModifiedUtc : lastModifiedUtc // ignore: cast_nullable_to_non_nullable
+as ClientStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,lastModifiedUtc: null == lastModifiedUtc ? _self.lastModifiedUtc : lastModifiedUtc // ignore: cast_nullable_to_non_nullable
 as DateTime,lastModifiedBy: null == lastModifiedBy ? _self.lastModifiedBy : lastModifiedBy // ignore: cast_nullable_to_non_nullable
 as String,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,
@@ -180,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String syncId,  String firstName,  String middleName,  String lastName,  String phone,  String email,  String notes,  int visits,  String photoPath,  ClientStatus status,  DateTime lastModifiedUtc,  String lastModifiedBy,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String syncId,  String firstName,  String middleName,  String lastName,  String phone,  String email,  String notes,  int visits,  String photoPath,  ClientStatus status, @JsonKey(readValue: _readCreatedAt)  DateTime createdAt,  DateTime lastModifiedUtc,  String lastModifiedBy,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Client() when $default != null:
-return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.lastName,_that.phone,_that.email,_that.notes,_that.visits,_that.photoPath,_that.status,_that.lastModifiedUtc,_that.lastModifiedBy,_that.isDeleted);case _:
+return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.lastName,_that.phone,_that.email,_that.notes,_that.visits,_that.photoPath,_that.status,_that.createdAt,_that.lastModifiedUtc,_that.lastModifiedBy,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -201,10 +203,10 @@ return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.las
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String syncId,  String firstName,  String middleName,  String lastName,  String phone,  String email,  String notes,  int visits,  String photoPath,  ClientStatus status,  DateTime lastModifiedUtc,  String lastModifiedBy,  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String syncId,  String firstName,  String middleName,  String lastName,  String phone,  String email,  String notes,  int visits,  String photoPath,  ClientStatus status, @JsonKey(readValue: _readCreatedAt)  DateTime createdAt,  DateTime lastModifiedUtc,  String lastModifiedBy,  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _Client():
-return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.lastName,_that.phone,_that.email,_that.notes,_that.visits,_that.photoPath,_that.status,_that.lastModifiedUtc,_that.lastModifiedBy,_that.isDeleted);case _:
+return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.lastName,_that.phone,_that.email,_that.notes,_that.visits,_that.photoPath,_that.status,_that.createdAt,_that.lastModifiedUtc,_that.lastModifiedBy,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -221,10 +223,10 @@ return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.las
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String syncId,  String firstName,  String middleName,  String lastName,  String phone,  String email,  String notes,  int visits,  String photoPath,  ClientStatus status,  DateTime lastModifiedUtc,  String lastModifiedBy,  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String syncId,  String firstName,  String middleName,  String lastName,  String phone,  String email,  String notes,  int visits,  String photoPath,  ClientStatus status, @JsonKey(readValue: _readCreatedAt)  DateTime createdAt,  DateTime lastModifiedUtc,  String lastModifiedBy,  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _Client() when $default != null:
-return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.lastName,_that.phone,_that.email,_that.notes,_that.visits,_that.photoPath,_that.status,_that.lastModifiedUtc,_that.lastModifiedBy,_that.isDeleted);case _:
+return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.lastName,_that.phone,_that.email,_that.notes,_that.visits,_that.photoPath,_that.status,_that.createdAt,_that.lastModifiedUtc,_that.lastModifiedBy,_that.isDeleted);case _:
   return null;
 
 }
@@ -236,7 +238,7 @@ return $default(_that.id,_that.syncId,_that.firstName,_that.middleName,_that.las
 @JsonSerializable()
 
 class _Client extends Client {
-  const _Client({required this.id, required this.syncId, required this.firstName, this.middleName = '', required this.lastName, this.phone = '', this.email = '', this.notes = '', this.visits = 0, this.photoPath = '', this.status = ClientStatus.bound, required this.lastModifiedUtc, this.lastModifiedBy = '', this.isDeleted = false}): super._();
+  const _Client({required this.id, required this.syncId, required this.firstName, this.middleName = '', required this.lastName, this.phone = '', this.email = '', this.notes = '', this.visits = 0, this.photoPath = '', this.status = ClientStatus.bound, @JsonKey(readValue: _readCreatedAt) required this.createdAt, required this.lastModifiedUtc, this.lastModifiedBy = '', this.isDeleted = false}): super._();
   factory _Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
 
 /// Primary key
@@ -261,6 +263,8 @@ class _Client extends Client {
 @override@JsonKey() final  String photoPath;
 /// Client status (Bound/FreshSoul/HighValue/Void)
 @override@JsonKey() final  ClientStatus status;
+/// Creation timestamp (UTC)
+@override@JsonKey(readValue: _readCreatedAt) final  DateTime createdAt;
 /// Last modification timestamp (UTC)
 @override final  DateTime lastModifiedUtc;
 /// User who last modified this record
@@ -281,16 +285,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Client&&(identical(other.id, id) || other.id == id)&&(identical(other.syncId, syncId) || other.syncId == syncId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.middleName, middleName) || other.middleName == middleName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.visits, visits) || other.visits == visits)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.status, status) || other.status == status)&&(identical(other.lastModifiedUtc, lastModifiedUtc) || other.lastModifiedUtc == lastModifiedUtc)&&(identical(other.lastModifiedBy, lastModifiedBy) || other.lastModifiedBy == lastModifiedBy)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Client&&(identical(other.id, id) || other.id == id)&&(identical(other.syncId, syncId) || other.syncId == syncId)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.middleName, middleName) || other.middleName == middleName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.email, email) || other.email == email)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.visits, visits) || other.visits == visits)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.status, status) || other.status == status)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.lastModifiedUtc, lastModifiedUtc) || other.lastModifiedUtc == lastModifiedUtc)&&(identical(other.lastModifiedBy, lastModifiedBy) || other.lastModifiedBy == lastModifiedBy)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,syncId,firstName,middleName,lastName,phone,email,notes,visits,photoPath,status,lastModifiedUtc,lastModifiedBy,isDeleted);
+int get hashCode => Object.hash(runtimeType,id,syncId,firstName,middleName,lastName,phone,email,notes,visits,photoPath,status,createdAt,lastModifiedUtc,lastModifiedBy,isDeleted);
 
 @override
 String toString() {
-  return 'Client(id: $id, syncId: $syncId, firstName: $firstName, middleName: $middleName, lastName: $lastName, phone: $phone, email: $email, notes: $notes, visits: $visits, photoPath: $photoPath, status: $status, lastModifiedUtc: $lastModifiedUtc, lastModifiedBy: $lastModifiedBy, isDeleted: $isDeleted)';
+  return 'Client(id: $id, syncId: $syncId, firstName: $firstName, middleName: $middleName, lastName: $lastName, phone: $phone, email: $email, notes: $notes, visits: $visits, photoPath: $photoPath, status: $status, createdAt: $createdAt, lastModifiedUtc: $lastModifiedUtc, lastModifiedBy: $lastModifiedBy, isDeleted: $isDeleted)';
 }
 
 
@@ -301,7 +305,7 @@ abstract mixin class _$ClientCopyWith<$Res> implements $ClientCopyWith<$Res> {
   factory _$ClientCopyWith(_Client value, $Res Function(_Client) _then) = __$ClientCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String syncId, String firstName, String middleName, String lastName, String phone, String email, String notes, int visits, String photoPath, ClientStatus status, DateTime lastModifiedUtc, String lastModifiedBy, bool isDeleted
+ int id, String syncId, String firstName, String middleName, String lastName, String phone, String email, String notes, int visits, String photoPath, ClientStatus status,@JsonKey(readValue: _readCreatedAt) DateTime createdAt, DateTime lastModifiedUtc, String lastModifiedBy, bool isDeleted
 });
 
 
@@ -318,7 +322,7 @@ class __$ClientCopyWithImpl<$Res>
 
 /// Create a copy of Client
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? syncId = null,Object? firstName = null,Object? middleName = null,Object? lastName = null,Object? phone = null,Object? email = null,Object? notes = null,Object? visits = null,Object? photoPath = null,Object? status = null,Object? lastModifiedUtc = null,Object? lastModifiedBy = null,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? syncId = null,Object? firstName = null,Object? middleName = null,Object? lastName = null,Object? phone = null,Object? email = null,Object? notes = null,Object? visits = null,Object? photoPath = null,Object? status = null,Object? createdAt = null,Object? lastModifiedUtc = null,Object? lastModifiedBy = null,Object? isDeleted = null,}) {
   return _then(_Client(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,syncId: null == syncId ? _self.syncId : syncId // ignore: cast_nullable_to_non_nullable
@@ -331,7 +335,8 @@ as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to
 as String,visits: null == visits ? _self.visits : visits // ignore: cast_nullable_to_non_nullable
 as int,photoPath: null == photoPath ? _self.photoPath : photoPath // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as ClientStatus,lastModifiedUtc: null == lastModifiedUtc ? _self.lastModifiedUtc : lastModifiedUtc // ignore: cast_nullable_to_non_nullable
+as ClientStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,lastModifiedUtc: null == lastModifiedUtc ? _self.lastModifiedUtc : lastModifiedUtc // ignore: cast_nullable_to_non_nullable
 as DateTime,lastModifiedBy: null == lastModifiedBy ? _self.lastModifiedBy : lastModifiedBy // ignore: cast_nullable_to_non_nullable
 as String,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,

@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../app/theme/tokens.dart';
 import '../../../shared/domain/client.dart';
-import '../../../shared/domain/enums.dart';
 import '../data/clients_provider.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
 
@@ -26,7 +25,6 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
-  ClientStatus _status = ClientStatus.bound;
 
   XFile? _avatarFile;
   String? _existingPhotoPath;
@@ -69,7 +67,6 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
             _emailCtrl.text = client.email;
             _phoneCtrl.text = client.phone;
             _notesCtrl.text = client.notes;
-            _status = client.status;
             _existingPhotoPath = client.photoPath;
             _initialized = true;
           }
@@ -208,24 +205,6 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: InfernalSpacing.md),
-              DropdownButtonFormField<ClientStatus>(
-                initialValue: _status,
-                dropdownColor: InfernalColors.surfaceElevated,
-                style: const TextStyle(color: InfernalColors.textPrimary),
-                decoration: _inputDecoration("Status"),
-                items: ClientStatus.values
-                    .map(
-                      (s) => DropdownMenuItem(
-                        value: s,
-                        child: Text(s.displayName.toUpperCase()),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _status = val);
-                },
-              ),
-              const SizedBox(height: InfernalSpacing.md),
               _buildTextField("Notes", _notesCtrl, maxLines: 3),
             ],
           ),
@@ -299,7 +278,6 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
           email: _emailCtrl.text,
           phone: _phoneCtrl.text,
           notes: _notesCtrl.text,
-          status: _status,
           photoPath: photoPath,
         );
         await service.updateClient(updated);
@@ -313,9 +291,9 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
           email: _emailCtrl.text,
           phone: _phoneCtrl.text,
           notes: _notesCtrl.text,
-          status: _status,
           visits: 0,
           photoPath: photoPath,
+          createdAt: DateTime.now(),
           lastModifiedUtc: DateTime.now(),
           lastModifiedBy: 'user',
           isDeleted: false,

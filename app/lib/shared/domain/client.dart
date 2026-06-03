@@ -44,6 +44,9 @@ abstract class Client with _$Client {
     /// Client status (Bound/FreshSoul/HighValue/Void)
     @Default(ClientStatus.bound) ClientStatus status,
 
+    /// Creation timestamp (UTC)
+    @JsonKey(readValue: _readCreatedAt) required DateTime createdAt,
+
     /// Last modification timestamp (UTC)
     required DateTime lastModifiedUtc,
 
@@ -68,4 +71,8 @@ abstract class Client with _$Client {
 
   /// Create from JSON
   factory Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
+}
+
+Object? _readCreatedAt(Map<dynamic, dynamic> json, String key) {
+  return json[key] ?? json['lastModifiedUtc'];
 }

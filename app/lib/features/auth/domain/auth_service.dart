@@ -31,8 +31,23 @@ class AuthService extends _$AuthService {
               .doc(fbUser.uid);
 
           var doc = await docRef.get();
-          if (!doc.exists || (doc.data()?['isDeleted'] == true)) {
-            // User Firestore doc is corrupt or missing or deleted -> FORCE LOGOUT
+          if (!doc.exists) {
+            // Self-heal: Create default user document in Firestore if missing
+            final email = fbUser.email ?? '';
+            final isAdmin = email == 'admin@inkandsteel.xyz';
+            await docRef.set({
+              'email': email,
+              'displayName': email.split('@').first,
+              'role': isAdmin ? 'admin' : 'artist',
+              'hourlyRate': 150.0,
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+            doc = await docRef.get();
+          }
+
+          if (doc.data()?['isDeleted'] == true) {
+            // User Firestore doc is marked deleted -> FORCE LOGOUT
             await fb.FirebaseAuth.instance.signOut();
             if (!completer.isCompleted) {
               completer.complete(const AuthState.unauthenticated());
