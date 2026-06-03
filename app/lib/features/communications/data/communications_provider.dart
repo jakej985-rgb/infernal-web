@@ -2,20 +2,22 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/cache/id_mapper.dart';
+import '../../../shared/data/org_provider.dart';
 import '../../../../shared/domain/communication.dart';
 
 part 'communications_provider.g.dart';
 
-CollectionReference<Map<String, dynamic>> _communicationsRef() =>
+CollectionReference<Map<String, dynamic>> _communicationsRef(String orgId) =>
     FirebaseFirestore.instance
         .collection('organizations')
-        .doc('default-org')
+        .doc(orgId)
         .collection('communications');
 
 @riverpod
 Stream<List<CommunicationRitual>> communications(Ref ref) {
   final idMapper = ref.watch(idMapperProvider);
-  return _communicationsRef()
+  final orgIdVal = ref.watch(orgIdProvider);
+  return _communicationsRef(orgIdVal)
       .where('isDeleted', isEqualTo: false)
       .snapshots()
       .asyncMap((snapshot) async {
@@ -33,9 +35,10 @@ class CommunicationsService extends _$CommunicationsService {
   FutureOr<void> build() {}
 
   IdMapper get _idMapper => ref.read(idMapperProvider);
+  String get _orgId => ref.read(orgIdProvider);
 
   Future<void> sendCommunication(CommunicationRitual ritual) async {
-    final docRef = _communicationsRef().doc();
+    final docRef = _communicationsRef(_orgId).doc();
     final uuid = docRef.id;
 
     String? clientUuid;
@@ -62,7 +65,7 @@ class CommunicationsService extends _$CommunicationsService {
     final uuid = _idMapper.getUuid('communication', id);
     if (uuid == null) throw Exception('Cannot resolve ID for communication.');
 
-    await _communicationsRef().doc(uuid).update({
+    await _communicationsRef(_orgId).doc(uuid).update({
       'isDeleted': true,
       'sentAt': FieldValue.serverTimestamp(),
     });

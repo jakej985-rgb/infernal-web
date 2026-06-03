@@ -2,20 +2,22 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/cache/id_mapper.dart';
+import '../../../shared/data/org_provider.dart';
 import '../../../../shared/domain/inventory.dart' as domain;
 
 part 'inventory_provider.g.dart';
 
-CollectionReference<Map<String, dynamic>> _inventoryRef() => FirebaseFirestore
+CollectionReference<Map<String, dynamic>> _inventoryRef(String orgId) => FirebaseFirestore
     .instance
     .collection('organizations')
-    .doc('default-org')
+    .doc(orgId)
     .collection('inventory');
 
 @riverpod
 Stream<List<domain.InventoryItem>> inventoryItems(Ref ref) {
   final idMapper = ref.watch(idMapperProvider);
-  return _inventoryRef()
+  final orgIdVal = ref.watch(orgIdProvider);
+  return _inventoryRef(orgIdVal)
       .where('isDeleted', isEqualTo: false)
       .snapshots()
       .asyncMap((snapshot) async {
@@ -33,9 +35,10 @@ class InventoryService extends _$InventoryService {
   FutureOr<void> build() {}
 
   IdMapper get _idMapper => ref.read(idMapperProvider);
+  String get _orgId => ref.read(orgIdProvider);
 
   Future<void> addItem(domain.InventoryItem item) async {
-    final docRef = _inventoryRef().doc();
+    final docRef = _inventoryRef(_orgId).doc();
     final uuid = docRef.id;
 
     await docRef.set({
@@ -59,7 +62,7 @@ class InventoryService extends _$InventoryService {
     final uuid = _idMapper.getUuid('inventory', item.id);
     if (uuid == null) throw Exception('Cannot resolve ID for inventory item.');
 
-    await _inventoryRef().doc(uuid).update({
+    await _inventoryRef(_orgId).doc(uuid).update({
       'name': item.name,
       'category': item.category,
       'stockQuantity': item.stockQuantity,
@@ -77,7 +80,7 @@ class InventoryService extends _$InventoryService {
     final uuid = _idMapper.getUuid('inventory', id);
     if (uuid == null) throw Exception('Cannot resolve ID for inventory item.');
 
-    await _inventoryRef().doc(uuid).update({
+    await _inventoryRef(_orgId).doc(uuid).update({
       'isDeleted': true,
       'updatedAt': FieldValue.serverTimestamp(),
     });

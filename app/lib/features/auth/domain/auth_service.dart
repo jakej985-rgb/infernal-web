@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/cache/id_mapper.dart';
+import '../../../shared/data/org_provider.dart';
 import '../../../shared/domain/enums.dart';
 import '../../../shared/domain/user.dart';
 import 'auth_state.dart';
@@ -24,9 +25,10 @@ class AuthService extends _$AuthService {
         }
       } else {
         try {
+          final orgIdVal = ref.watch(orgIdProvider);
           final docRef = FirebaseFirestore.instance
               .collection('organizations')
-              .doc('default-org')
+              .doc(orgIdVal)
               .collection('users')
               .doc(fbUser.uid);
 
@@ -125,10 +127,11 @@ class AuthService extends _$AuthService {
           );
       final fbUser = credential.user;
       if (fbUser != null) {
+        final orgIdVal = ref.read(orgIdProvider);
         // 2. Create the Firestore document inside 'organizations/default-org/users'
         final docRef = FirebaseFirestore.instance
             .collection('organizations')
-            .doc('default-org')
+            .doc(orgIdVal)
             .collection('users')
             .doc(fbUser.uid);
 
@@ -152,9 +155,10 @@ class AuthService extends _$AuthService {
               );
           final fbUser = credential.user;
           if (fbUser != null) {
+            final orgIdVal = ref.read(orgIdProvider);
             final docRef = FirebaseFirestore.instance
                 .collection('organizations')
-                .doc('default-org')
+                .doc(orgIdVal)
                 .collection('users')
                 .doc(fbUser.uid);
 

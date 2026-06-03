@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../shared/cache/id_mapper.dart';
+import '../../../../shared/data/org_provider.dart';
 import '../../../../shared/domain/user.dart' as domain;
 import '../../../../shared/domain/enums.dart';
 
@@ -10,9 +11,10 @@ part 'user_management_provider.g.dart';
 @riverpod
 Stream<List<domain.User>> allUsers(Ref ref) {
   final idMapper = ref.watch(idMapperProvider);
+  final orgIdVal = ref.watch(orgIdProvider);
   return FirebaseFirestore.instance
       .collection('organizations')
-      .doc('default-org')
+      .doc(orgIdVal)
       .collection('users')
       .where('isDeleted', isEqualTo: false)
       .snapshots()
@@ -35,11 +37,12 @@ class UserManagementService {
   UserManagementService(this._ref);
 
   IdMapper get _idMapper => _ref.read(idMapperProvider);
+  String get _orgId => _ref.read(orgIdProvider);
 
   CollectionReference<Map<String, dynamic>> get _usersRef => FirebaseFirestore
       .instance
       .collection('organizations')
-      .doc('default-org')
+      .doc(_orgId)
       .collection('users');
 
   Future<void> createUser({

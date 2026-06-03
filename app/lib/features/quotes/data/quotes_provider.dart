@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../shared/cache/id_mapper.dart';
+import '../../../../shared/data/org_provider.dart';
 import '../../../../shared/domain/quote.dart' as domain;
 
 part 'quotes_provider.g.dart';
@@ -13,18 +14,19 @@ class QuoteSearchQuery extends _$QuoteSearchQuery {
   void set(String query) => state = query;
 }
 
-CollectionReference<Map<String, dynamic>> _quotesRef() => FirebaseFirestore
+CollectionReference<Map<String, dynamic>> _quotesRef(String orgId) => FirebaseFirestore
     .instance
     .collection('organizations')
-    .doc('default-org')
+    .doc(orgId)
     .collection('quotes');
 
 @riverpod
 Stream<List<domain.Quote>> filteredQuotes(Ref ref) {
   final query = ref.watch(quoteSearchQueryProvider);
   final idMapper = ref.watch(idMapperProvider);
+  final orgIdVal = ref.watch(orgIdProvider);
 
-  return _quotesRef()
+  return _quotesRef(orgIdVal)
       .snapshots()
       .asyncMap((snapshot) async {
         final list = <domain.Quote>[];
@@ -48,12 +50,13 @@ Stream<List<domain.Quote>> filteredQuotes(Ref ref) {
 @riverpod
 Stream<domain.Quote?> quoteDetail(Ref ref, int id) {
   final idMapper = ref.watch(idMapperProvider);
+  final orgIdVal = ref.watch(orgIdProvider);
   final uuid = idMapper.getUuid('quote', id);
   if (uuid == null) {
     return Stream.value(null);
   }
 
-  return _quotesRef().doc(uuid).snapshots().asyncMap((doc) async {
+  return _quotesRef(orgIdVal).doc(uuid).snapshots().asyncMap((doc) async {
     if (!doc.exists) return null;
     return await _mapDocToDomain(doc, idMapper);
   });
@@ -69,9 +72,10 @@ class QuotesService {
   QuotesService(this._ref);
 
   IdMapper get _idMapper => _ref.read(idMapperProvider);
+  String get _orgId => _ref.read(orgIdProvider);
 
   Future<void> createQuote(domain.Quote quote) async {
-    final docRef = _quotesRef().doc();
+    final docRef = _quotesRef(_orgId).doc();
     final uuid = docRef.id;
 
     String? clientUuid;
@@ -122,7 +126,7 @@ class QuotesService {
       clientUuid = _idMapper.getUuid('client', quote.clientId!);
     }
 
-    await _quotesRef().doc(uuid).update({
+    await _quotesRef(_orgId).doc(uuid).update({
       'client_id': clientUuid,
       'placement': quote.placement,
       'style': quote.style,
@@ -151,7 +155,7 @@ class QuotesService {
     final uuid = _idMapper.getUuid('quote', id);
     if (uuid == null) throw Exception('Cannot resolve ID for quote.');
 
-    await _quotesRef().doc(uuid).delete();
+    await _quotesRef(_orgId).doc(uuid).delete();
   }
 }
 

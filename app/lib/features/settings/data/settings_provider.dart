@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/util/shared_prefs_provider.dart';
+import '../../../shared/data/org_provider.dart';
 
 part 'settings_provider.g.dart';
 
@@ -79,10 +80,12 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
       taxRate: prefs.getDouble('settings_tax_rate') ?? 0.08,
     );
 
+    final orgIdVal = ref.watch(orgIdProvider);
+
     // Listen to Firestore document updates to stay real-time
     _subscription = FirebaseFirestore.instance
         .collection('organizations')
-        .doc('default-org')
+        .doc(orgIdVal)
         .snapshots()
         .listen((doc) {
           if (doc.exists) {
@@ -144,9 +147,10 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
     if (logoPath != null) updates['settings.logoPath'] = logoPath;
     if (accentColor != null) updates['settings.accentColor'] = accentColor;
 
+    final orgIdVal = ref.read(orgIdProvider);
     await FirebaseFirestore.instance
         .collection('organizations')
-        .doc('default-org')
+        .doc(orgIdVal)
         .set(updates, SetOptions(merge: true));
   }
 
@@ -172,9 +176,10 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
     }
     if (taxRate != null) updates['settings.taxRate'] = taxRate;
 
+    final orgIdVal = ref.read(orgIdProvider);
     await FirebaseFirestore.instance
         .collection('organizations')
-        .doc('default-org')
+        .doc(orgIdVal)
         .set(updates, SetOptions(merge: true));
   }
 
@@ -188,9 +193,10 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
       updates['settings.depositAmount'] = depositAmount;
     }
 
+    final orgIdVal = ref.read(orgIdProvider);
     await FirebaseFirestore.instance
         .collection('organizations')
-        .doc('default-org')
+        .doc(orgIdVal)
         .set(updates, SetOptions(merge: true));
   }
 
@@ -210,9 +216,10 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
       'settings.taxRate': defaultSettings.taxRate,
     };
 
+    final orgIdVal = ref.read(orgIdProvider);
     await FirebaseFirestore.instance
         .collection('organizations')
-        .doc('default-org')
+        .doc(orgIdVal)
         .set(updates, SetOptions(merge: true));
   }
 }

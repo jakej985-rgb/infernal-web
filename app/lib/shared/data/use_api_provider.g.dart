@@ -8,11 +8,17 @@ part of 'use_api_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Controls whether the app uses the Go API backend or Firebase directly.
+/// Hardcoded to false now that the API layer is deleted.
 
 @ProviderFor(UseApi)
 final useApiProvider = UseApiProvider._();
 
+/// Controls whether the app uses the Go API backend or Firebase directly.
+/// Hardcoded to false now that the API layer is deleted.
 final class UseApiProvider extends $NotifierProvider<UseApi, bool> {
+  /// Controls whether the app uses the Go API backend or Firebase directly.
+  /// Hardcoded to false now that the API layer is deleted.
   UseApiProvider._()
     : super(
         from: null,
@@ -40,7 +46,10 @@ final class UseApiProvider extends $NotifierProvider<UseApi, bool> {
   }
 }
 
-String _$useApiHash() => r'6646087f1df2f7ffea9ad8d032c6c8ff42aca493';
+String _$useApiHash() => r'1a6411b3d6269e9743f424976d725eea68fb4c18';
+
+/// Controls whether the app uses the Go API backend or Firebase directly.
+/// Hardcoded to false now that the API layer is deleted.
 
 abstract class _$UseApi extends $Notifier<bool> {
   bool build();
@@ -102,48 +111,6 @@ final class ClientServiceFirebaseImplProvider
 String _$clientServiceFirebaseImplHash() =>
     r'efb286012067dccc5ac85b82af10c0473bad4768';
 
-@ProviderFor(clientServiceApiImpl)
-final clientServiceApiImplProvider = ClientServiceApiImplProvider._();
-
-final class ClientServiceApiImplProvider
-    extends $FunctionalProvider<ClientService, ClientService, ClientService>
-    with $Provider<ClientService> {
-  ClientServiceApiImplProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'clientServiceApiImplProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$clientServiceApiImplHash();
-
-  @$internal
-  @override
-  $ProviderElement<ClientService> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ClientService create(Ref ref) {
-    return clientServiceApiImpl(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ClientService value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ClientService>(value),
-    );
-  }
-}
-
-String _$clientServiceApiImplHash() =>
-    r'93bfdf144af7270f7ff481f6fccccedf065fa366';
-
 @ProviderFor(appointmentServiceFirebaseImpl)
 final appointmentServiceFirebaseImplProvider =
     AppointmentServiceFirebaseImplProvider._();
@@ -193,60 +160,17 @@ final class AppointmentServiceFirebaseImplProvider
 String _$appointmentServiceFirebaseImplHash() =>
     r'94b0b4d8e5f70ce9dd39a69923440d9bfc96a86e';
 
-@ProviderFor(appointmentServiceApiImpl)
-final appointmentServiceApiImplProvider = AppointmentServiceApiImplProvider._();
-
-final class AppointmentServiceApiImplProvider
-    extends
-        $FunctionalProvider<
-          AppointmentService,
-          AppointmentService,
-          AppointmentService
-        >
-    with $Provider<AppointmentService> {
-  AppointmentServiceApiImplProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'appointmentServiceApiImplProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$appointmentServiceApiImplHash();
-
-  @$internal
-  @override
-  $ProviderElement<AppointmentService> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  AppointmentService create(Ref ref) {
-    return appointmentServiceApiImpl(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AppointmentService value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AppointmentService>(value),
-    );
-  }
-}
-
-String _$appointmentServiceApiImplHash() =>
-    r'a7355f412ac5a1c25c302816ab9e43578d967e60';
+/// Primary client service — always uses the Firebase implementation.
 
 @ProviderFor(globalClientService)
 final globalClientServiceProvider = GlobalClientServiceProvider._();
 
+/// Primary client service — always uses the Firebase implementation.
+
 final class GlobalClientServiceProvider
     extends $FunctionalProvider<ClientService, ClientService, ClientService>
     with $Provider<ClientService> {
+  /// Primary client service — always uses the Firebase implementation.
   GlobalClientServiceProvider._()
     : super(
         from: null,
@@ -281,10 +205,14 @@ final class GlobalClientServiceProvider
 }
 
 String _$globalClientServiceHash() =>
-    r'8b40359c110dc157a25831c724c094c472417003';
+    r'63c28e511fdee2d9bce459af327a74bc5f32c306';
+
+/// Primary appointment service — always uses the Firebase implementation.
 
 @ProviderFor(globalAppointmentService)
 final globalAppointmentServiceProvider = GlobalAppointmentServiceProvider._();
+
+/// Primary appointment service — always uses the Firebase implementation.
 
 final class GlobalAppointmentServiceProvider
     extends
@@ -294,6 +222,7 @@ final class GlobalAppointmentServiceProvider
           AppointmentService
         >
     with $Provider<AppointmentService> {
+  /// Primary appointment service — always uses the Firebase implementation.
   GlobalAppointmentServiceProvider._()
     : super(
         from: null,
@@ -329,4 +258,4 @@ final class GlobalAppointmentServiceProvider
 }
 
 String _$globalAppointmentServiceHash() =>
-    r'678cda2920999f5dee67eed408c9b62d43b90c32';
+    r'9202ede33fddc3a84ee16b9cc0bea9895b8e3f57';

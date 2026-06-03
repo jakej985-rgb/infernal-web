@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../cache/id_mapper.dart';
 import '../../domain/client.dart' as domain;
 import '../../data/interfaces/client_service.dart';
+import '../../data/org_provider.dart';
 
 class ClientServiceFirebaseImpl implements ClientService {
   final Ref _ref;
@@ -14,7 +15,7 @@ class ClientServiceFirebaseImpl implements ClientService {
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
-  static const String _orgId = 'default-org';
+  String get _orgId => _ref.read(orgIdProvider);
 
   CollectionReference<Map<String, dynamic>> get _clientsRef =>
       _firestore.collection('organizations').doc(_orgId).collection('clients');

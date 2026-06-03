@@ -48,7 +48,7 @@ final class InventoryItemsProvider
   }
 }
 
-String _$inventoryItemsHash() => r'75f67c7aaaa6192be070fc90b5b64f9a81188191';
+String _$inventoryItemsHash() => r'760d386a52a1a40e8af1df1c0e6dc78d5a607816';
 
 @ProviderFor(InventoryService)
 final inventoryServiceProvider = InventoryServiceProvider._();
@@ -74,7 +74,7 @@ final class InventoryServiceProvider
   InventoryService create() => InventoryService();
 }
 
-String _$inventoryServiceHash() => r'd12e55881a744aa7b707d200d83df697857cefa7';
+String _$inventoryServiceHash() => r'63d15cefdafd753c1a51a33d63003c4d54e6b499';
 
 abstract class _$InventoryService extends $AsyncNotifier<void> {
   FutureOr<void> build();

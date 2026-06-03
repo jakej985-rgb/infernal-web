@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart' as fb_storage;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../shared/cache/id_mapper.dart';
+import '../../../shared/data/org_provider.dart';
 import '../../../../shared/domain/document.dart' as domain;
 
 part 'documents_provider.g.dart';
@@ -16,18 +17,19 @@ class DocumentSearchQuery extends _$DocumentSearchQuery {
   void set(String query) => state = query;
 }
 
-CollectionReference<Map<String, dynamic>> _documentsRef() => FirebaseFirestore
+CollectionReference<Map<String, dynamic>> _documentsRef(String orgId) => FirebaseFirestore
     .instance
     .collection('organizations')
-    .doc('default-org')
+    .doc(orgId)
     .collection('documents');
 
 @riverpod
 Stream<List<domain.Document>> filteredDocuments(Ref ref) {
   final query = ref.watch(documentSearchQueryProvider);
   final idMapper = ref.watch(idMapperProvider);
+  final orgIdVal = ref.watch(orgIdProvider);
 
-  return _documentsRef()
+  return _documentsRef(orgIdVal)
       .where('isDeleted', isEqualTo: false)
       .snapshots()
       .asyncMap((snapshot) async {
@@ -50,12 +52,13 @@ Stream<List<domain.Document>> filteredDocuments(Ref ref) {
 @riverpod
 Stream<domain.Document?> documentDetail(Ref ref, int id) {
   final idMapper = ref.watch(idMapperProvider);
+  final orgIdVal = ref.watch(orgIdProvider);
   final uuid = idMapper.getUuid('document', id);
   if (uuid == null) {
     return Stream.value(null);
   }
 
-  return _documentsRef().doc(uuid).snapshots().asyncMap((doc) async {
+  return _documentsRef(orgIdVal).doc(uuid).snapshots().asyncMap((doc) async {
     if (!doc.exists) return null;
     return await _mapDocToDomain(doc, idMapper);
   });
@@ -71,6 +74,7 @@ class DocumentsService {
   DocumentsService(this._ref);
 
   IdMapper get _idMapper => _ref.read(idMapperProvider);
+  String get _orgId => _ref.read(orgIdProvider);
 
   Future<void> createDocument(domain.Document doc) async {
     final clientUuid = _idMapper.getUuid('client', doc.clientId);
@@ -78,14 +82,14 @@ class DocumentsService {
       throw Exception('Could not resolve client UUID.');
     }
 
-    final docRef = _documentsRef().doc();
+    final docRef = _documentsRef(_orgId).doc();
     final uuid = docRef.id;
 
     // 1. Upload file bytes to Firebase Storage
     final storageRef = fb_storage.FirebaseStorage.instance
         .ref()
         .child('organizations')
-        .child('default-org')
+        .child(_orgId)
         .child('clients')
         .child(clientUuid)
         .child('documents')
@@ -117,7 +121,7 @@ class DocumentsService {
     final clientUuid = _idMapper.getUuid('client', doc.clientId);
     if (clientUuid == null) throw Exception('Could not resolve client UUID.');
 
-    await _documentsRef().doc(uuid).update({
+    await _documentsRef(_orgId).doc(uuid).update({
       'client_id': clientUuid,
       'title': doc.title,
       'filePath': doc.filePath,
@@ -128,7 +132,7 @@ class DocumentsService {
     final uuid = _idMapper.getUuid('document', id);
     if (uuid == null) throw Exception('Could not resolve document UUID.');
 
-    await _documentsRef().doc(uuid).update({'isDeleted': true});
+    await _documentsRef(_orgId).doc(uuid).update({'isDeleted': true});
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../cache/id_mapper.dart';
 import '../../domain/appointment.dart' as domain;
 import '../../data/interfaces/appointment_service.dart';
+import '../../data/org_provider.dart';
 
 class AppointmentServiceFirebaseImpl implements AppointmentService {
   final Ref _ref;
@@ -13,7 +14,7 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
-  static const String _orgId = 'default-org';
+  String get _orgId => _ref.read(orgIdProvider);
 
   CollectionReference<Map<String, dynamic>> get _apptsRef => _firestore
       .collection('organizations')

@@ -1,5 +1,0 @@
-DROP TABLE IF EXISTS audit_logs;
-DROP TABLE IF EXISTS communications;
-DROP TABLE IF EXISTS documents;
-DROP TABLE IF EXISTS inventory;
-DROP TABLE IF EXISTS appointments;
