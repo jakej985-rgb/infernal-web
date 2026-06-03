@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+const path = require("path");
+
 module.exports = {
   root: true,
   env: {
@@ -14,7 +17,10 @@ module.exports = {
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ["tsconfig.json", "tsconfig.dev.json"],
+    project: [
+      path.join(__dirname, "tsconfig.json"),
+      path.join(__dirname, "tsconfig.dev.json"),
+    ],
     sourceType: "module",
   },
   ignorePatterns: [
@@ -29,5 +35,10 @@ module.exports = {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
     "indent": ["error", 2],
+    "require-jsdoc": 0,
+    "valid-jsdoc": 0,
+    "max-len": ["error", {"code": 120}],
+    "@typescript-eslint/no-explicit-any": 0,
+    "@typescript-eslint/no-non-null-assertion": 0,
   },
 };

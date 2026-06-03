@@ -13,7 +13,7 @@ import 'firebase_options.dart';
 import 'shared/util/shared_prefs_provider.dart';
 import 'shared/util/app_version_helper.dart';
 
-const String APP_VERSION = "1.0.2"; // bump every deploy
+const String appVersion = "1.0.2"; // bump every deploy
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,7 @@ void main() async {
   }
 
   // Version check (kills 90% of bugs)
-  await checkAppVersion(APP_VERSION);
+  await checkAppVersion(appVersion);
 
   final prefs = await SharedPreferences.getInstance();
 

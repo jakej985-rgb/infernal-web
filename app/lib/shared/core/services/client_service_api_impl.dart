@@ -1,19 +1,12 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../cache/id_mapper.dart';
 import '../../domain/client.dart' as domain;
 import '../../util/api_client.dart';
-import '../interfaces/client_service.dart';
-
-part 'client_service_api_impl.g.dart';
-
-@riverpod
-ClientServiceApiImpl clientServiceApiImpl(Ref ref) {
-  return ClientServiceApiImpl(ref);
-}
+import '../../data/interfaces/client_service.dart';
 
 class ClientServiceApiImpl implements ClientService {
   final Ref _ref;

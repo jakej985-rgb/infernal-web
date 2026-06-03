@@ -8,6 +8,7 @@ import '../../../../shared/domain/document.dart';
 import '../../auth/domain/auth_service.dart';
 import '../../appointments/presentation/widgets/client_selection_modal.dart';
 import '../data/documents_provider.dart';
+import '../../../shared/presentation/labels/infernal_labels.dart';
 
 class DocumentFormPage extends ConsumerStatefulWidget {
   final String? documentId;
@@ -130,6 +131,7 @@ class _DocumentFormPageState extends ConsumerState<DocumentFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
@@ -177,8 +179,8 @@ class _DocumentFormPageState extends ConsumerState<DocumentFormPage> {
                       child: Text(
                         _selectedClient?.fullName ??
                             (_originalClientId != null
-                                ? 'Client ID: $_originalClientId (Tap to Change)'
-                                : 'Select Client'),
+                                ? '${AppLabels.client(useInfernal)} ID: $_originalClientId (Tap to Change)'
+                                : 'Select ${AppLabels.client(useInfernal)}'),
                         style: TextStyle(
                           color:
                               (_selectedClient != null ||

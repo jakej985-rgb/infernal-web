@@ -1,8 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'interfaces/client_service.dart';
 import 'interfaces/appointment_service.dart';
-import 'firebase/client_service_firebase_impl.dart';
-import 'firebase/appointment_service_firebase_impl.dart';
+import '../core/services/client_service_firebase_impl.dart';
+import '../core/services/client_service_api_impl.dart';
+import '../core/services/appointment_service_firebase_impl.dart';
+import '../core/services/appointment_service_api_impl.dart';
 
 part 'use_api_provider.g.dart';
 
@@ -20,11 +22,40 @@ class UseApi extends _$UseApi {
 }
 
 @riverpod
+ClientService clientServiceFirebaseImpl(Ref ref) {
+  return ClientServiceFirebaseImpl(ref);
+}
+
+@riverpod
+ClientService clientServiceApiImpl(Ref ref) {
+  return ClientServiceApiImpl(ref);
+}
+
+@riverpod
+AppointmentService appointmentServiceFirebaseImpl(Ref ref) {
+  return AppointmentServiceFirebaseImpl(ref);
+}
+
+@riverpod
+AppointmentService appointmentServiceApiImpl(Ref ref) {
+  return AppointmentServiceApiImpl(ref);
+}
+
+@riverpod
 ClientService globalClientService(Ref ref) {
+  final useApi = ref.watch(useApiProvider);
+  if (useApi) {
+    return ref.watch(clientServiceApiImplProvider);
+  }
   return ref.watch(clientServiceFirebaseImplProvider);
 }
 
 @riverpod
 AppointmentService globalAppointmentService(Ref ref) {
+  final useApi = ref.watch(useApiProvider);
+  if (useApi) {
+    return ref.watch(appointmentServiceApiImplProvider);
+  }
   return ref.watch(appointmentServiceFirebaseImplProvider);
 }
+

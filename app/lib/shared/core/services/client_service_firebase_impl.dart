@@ -1,18 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../cache/id_mapper.dart';
 import '../../domain/client.dart' as domain;
-import '../interfaces/client_service.dart';
-
-part 'client_service_firebase_impl.g.dart';
-
-@riverpod
-ClientServiceFirebaseImpl clientServiceFirebaseImpl(Ref ref) {
-  return ClientServiceFirebaseImpl(ref);
-}
+import '../../data/interfaces/client_service.dart';
 
 class ClientServiceFirebaseImpl implements ClientService {
   final Ref _ref;

@@ -1,17 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/cache/id_mapper.dart';
+import '../../cache/id_mapper.dart';
 import '../../domain/appointment.dart' as domain;
-import '../interfaces/appointment_service.dart';
-
-part 'appointment_service_firebase_impl.g.dart';
-
-@riverpod
-AppointmentServiceFirebaseImpl appointmentServiceFirebaseImpl(Ref ref) {
-  return AppointmentServiceFirebaseImpl(ref);
-}
+import '../../data/interfaces/appointment_service.dart';
 
 class AppointmentServiceFirebaseImpl implements AppointmentService {
   final Ref _ref;

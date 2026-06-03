@@ -1,18 +1,11 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/cache/id_mapper.dart';
+import '../../cache/id_mapper.dart';
 import '../../domain/appointment.dart' as domain;
 import '../../util/api_client.dart';
-import '../interfaces/appointment_service.dart';
-
-part 'appointment_service_api_impl.g.dart';
-
-@riverpod
-AppointmentServiceApiImpl appointmentServiceApiImpl(Ref ref) {
-  return AppointmentServiceApiImpl(ref);
-}
+import '../../data/interfaces/appointment_service.dart';
 
 class AppointmentServiceApiImpl implements AppointmentService {
   final Ref _ref;

@@ -4,6 +4,7 @@ import '../../../app/theme/tokens.dart';
 import '../../../shared/presentation/widgets/neon_plate.dart';
 import '../data/inventory_provider.dart';
 import '../../../../shared/domain/inventory.dart' as domain;
+import '../../../shared/presentation/labels/infernal_labels.dart';
 
 class InventoryFormPage extends ConsumerStatefulWidget {
   final domain.InventoryItem? item;
@@ -100,6 +101,7 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
     final isEditing = widget.item != null;
 
     return Scaffold(
@@ -119,13 +121,13 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
           child: Column(
             children: [
               _buildField(
-                'NAME OF ESSENCE',
+                AppLabels.name(useInfernal).toUpperCase(),
                 _nameController,
                 Icons.inventory_2_outlined,
               ),
               const SizedBox(height: InfernalSpacing.md),
               _buildField(
-                'CATEGORY (Inks, Needles, etc.)',
+                AppLabels.category(useInfernal).toUpperCase(),
                 _categoryController,
                 Icons.category_outlined,
               ),

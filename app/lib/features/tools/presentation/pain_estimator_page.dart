@@ -136,19 +136,11 @@ class _PainEstimatorPageState extends State<PainEstimatorPage> {
 
   Widget _buildSilhouette() {
     return Center(
-      child: Opacity(
-        opacity: 0.05,
-        child: ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            colors: [InfernalColors.blood, Colors.transparent],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ).createShader(bounds),
-          child: const Icon(
-            Icons.accessibility_new,
-            size: 400,
-            color: Colors.white,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(InfernalSpacing.md),
+        child: Image.asset(
+          'assets/body_map.png',
+          fit: BoxFit.contain,
         ),
       ),
     );

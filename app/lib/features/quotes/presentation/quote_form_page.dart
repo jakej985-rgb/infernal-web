@@ -7,6 +7,8 @@ import '../../../../shared/domain/client.dart';
 import '../../../../shared/domain/quote.dart';
 import '../../auth/domain/auth_service.dart';
 import '../data/quotes_provider.dart';
+import 'controllers/quote_controller.dart';
+import '../../../../shared/presentation/labels/infernal_labels.dart';
 import '../../appointments/presentation/widgets/client_selection_modal.dart';
 
 class QuoteFormPage extends ConsumerStatefulWidget {
@@ -48,6 +50,13 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
   final _notesCtrl = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _widthCtrl.addListener(_updateEstimates);
+    _heightCtrl.addListener(_updateEstimates);
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_isInit) {
@@ -58,6 +67,8 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
 
   @override
   void dispose() {
+    _widthCtrl.removeListener(_updateEstimates);
+    _heightCtrl.removeListener(_updateEstimates);
     _placementCtrl.dispose();
     _styleCtrl.dispose();
     _widthCtrl.dispose();
@@ -69,6 +80,41 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
     _depositCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
+  }
+
+  double estimatePrice(double hours, double complexity) {
+    return hours * 150 * (1 + complexity * 0.1);
+  }
+
+  void _updateEstimates() {
+    final width = double.tryParse(_widthCtrl.text) ?? 0.0;
+    final height = double.tryParse(_heightCtrl.text) ?? 0.0;
+    final area = width * height;
+
+    if (area == 0.0) return;
+
+    final averageComplexity =
+        (_coverage + _lineWork + _shading + _color + _difficulty) / 5.0;
+
+    // Base hour calculation: 1 sq inch = ~0.15 hours
+    final hoursBase = area * 0.15;
+    final hoursLow = (hoursBase * (averageComplexity / 3.0)).clamp(1.0, 40.0);
+    final hoursHigh = (hoursLow * 1.3).clamp(1.0, 50.0);
+
+    final priceLow = estimatePrice(hoursLow, averageComplexity);
+    final priceHigh = estimatePrice(hoursHigh, averageComplexity);
+
+    final hoursLowStr = hoursLow.toStringAsFixed(1);
+    final hoursHighStr = hoursHigh.toStringAsFixed(1);
+    final priceLowStr = priceLow.toStringAsFixed(0);
+    final priceHighStr = priceHigh.toStringAsFixed(0);
+    final depositStr = (priceLow * 0.2).toStringAsFixed(0); // 20% deposit
+
+    if (_hoursLowCtrl.text != hoursLowStr) _hoursLowCtrl.text = hoursLowStr;
+    if (_hoursHighCtrl.text != hoursHighStr) _hoursHighCtrl.text = hoursHighStr;
+    if (_priceLowCtrl.text != priceLowStr) _priceLowCtrl.text = priceLowStr;
+    if (_priceHighCtrl.text != priceHighStr) _priceHighCtrl.text = priceHighStr;
+    if (_depositCtrl.text != depositStr) _depositCtrl.text = depositStr;
   }
 
   Future<void> _initData() async {
@@ -182,11 +228,11 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
         createdAt: DateTime.now(), // Ignored on update usually
       );
 
-      final service = ref.read(quotesServiceProvider);
+      final controller = ref.read(quoteControllerProvider);
       if (widget.quoteId != null) {
-        await service.updateQuote(q);
+        await controller.updateQuote(q);
       } else {
-        await service.createQuote(q);
+        await controller.createQuote(q);
       }
 
       if (!mounted) return;
@@ -203,10 +249,15 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(widget.quoteId == null ? 'New Estimate' : 'Edit Estimate'),
+        title: Text(
+          widget.quoteId == null
+              ? (useInfernal ? 'New Stencil' : 'New Estimate')
+              : (useInfernal ? 'Edit Stencil' : 'Edit Estimate'),
+        ),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -250,8 +301,8 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
                           (_isLoading ||
                                   (widget.quoteId != null &&
                                       _selectedClient == null)
-                              ? 'Client (Tap to Select)'
-                              : 'Select Client'),
+                              ? '${AppLabels.client(useInfernal)} (Tap to Select)'
+                              : 'Select ${AppLabels.client(useInfernal)}'),
                       style: TextStyle(
                         color: _selectedClient != null
                             ? InfernalColors.textPrimary
@@ -317,23 +368,38 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
             _buildSlider(
               'Coverage',
               _coverage,
-              (v) => setState(() => _coverage = v),
+              (v) => setState(() {
+                _coverage = v;
+                _updateEstimates();
+              }),
             ),
             _buildSlider(
               'Line Work',
               _lineWork,
-              (v) => setState(() => _lineWork = v),
+              (v) => setState(() {
+                _lineWork = v;
+                _updateEstimates();
+              }),
             ),
             _buildSlider(
               'Shading',
               _shading,
-              (v) => setState(() => _shading = v),
+              (v) => setState(() {
+                _shading = v;
+                _updateEstimates();
+              }),
             ),
-            _buildSlider('Color', _color, (v) => setState(() => _color = v)),
+            _buildSlider('Color', _color, (v) => setState(() {
+              _color = v;
+              _updateEstimates();
+            })),
             _buildSlider(
               'Difficulty',
               _difficulty,
-              (v) => setState(() => _difficulty = v),
+              (v) => setState(() {
+                _difficulty = v;
+                _updateEstimates();
+              }),
             ),
 
             const SizedBox(height: InfernalSpacing.lg),

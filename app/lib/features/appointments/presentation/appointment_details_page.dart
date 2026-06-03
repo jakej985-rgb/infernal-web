@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/appointments_provider.dart';
+import 'controllers/appointment_controller.dart';
 import 'widgets/appointment_status_chip.dart';
 import '../../../app/router.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
@@ -217,7 +218,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref.read(appointmentsServiceProvider).deleteAppointment(id);
+              await ref.read(appointmentControllerProvider).deleteAppointment(id);
               if (context.mounted) context.pop();
             },
             child: const Text(

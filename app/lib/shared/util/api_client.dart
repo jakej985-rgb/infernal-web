@@ -14,7 +14,7 @@ Dio apiClient(Ref ref) {
 
   // Dynamic Base URL fallback
   final apiBaseUrl =
-      prefs.getString('api_base_url') ?? 'https://api.inkandsteel.xyz';
+      prefs.getString('api_base_url') ?? 'https://us-central1-m3tal-project.cloudfunctions.net/api';
 
   final dio = Dio(
     BaseOptions(
@@ -26,6 +26,7 @@ Dio apiClient(Ref ref) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'x-org-id': 'default-org',
       },
     ),
   );

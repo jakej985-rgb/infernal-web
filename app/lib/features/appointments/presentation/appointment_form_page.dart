@@ -9,6 +9,8 @@ import '../../../../shared/domain/client.dart';
 import '../../../../shared/domain/enums.dart';
 import '../../auth/domain/auth_service.dart';
 import '../data/appointments_provider.dart';
+import 'controllers/appointment_controller.dart';
+import '../../../../shared/presentation/labels/infernal_labels.dart';
 import 'widgets/client_selection_modal.dart';
 
 class AppointmentFormPage extends ConsumerStatefulWidget {
@@ -229,7 +231,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
 
       final duration = int.tryParse(_durationCtrl.text) ?? 60;
 
-      final service = ref.read(appointmentsServiceProvider);
+      final controller = ref.read(appointmentControllerProvider);
 
       if (widget.appointmentId != null) {
         // Update
@@ -253,7 +255,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
           lastModifiedUtc: DateTime.now(),
         );
 
-        await service.updateAppointment(updated);
+        await controller.updateAppointment(updated);
       } else {
         // Create
         final newApt = Appointment(
@@ -272,7 +274,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
           serviceCategory: 'General',
           priceType: 'Hourly',
         );
-        await service.createAppointment(newApt);
+        await controller.createAppointment(newApt);
       }
 
       if (!mounted) return;
@@ -289,6 +291,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final useInfernal = ref.watch(useInfernalLabelsProvider);
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
@@ -340,7 +343,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
                     Expanded(
                       child: Text(
                         _selectedClient == null
-                            ? 'Select Soul (Client)'
+                            ? 'Select ${AppLabels.client(useInfernal)}'
                             : _selectedClient!.fullName,
                         style: TextStyle(
                           color: _selectedClient == null

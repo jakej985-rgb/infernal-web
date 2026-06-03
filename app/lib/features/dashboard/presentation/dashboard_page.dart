@@ -19,6 +19,10 @@ class DashboardPage extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsRepositoryProvider);
     final appointmentsAsync = ref.watch(dashboardTodayAppointmentsProvider);
     final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final width = MediaQuery.of(context).size.width;
+    final statsCrossAxisCount = width < 600 ? 2 : (width < 1000 ? 3 : 4);
+    final actionsCrossAxisCount = width < 500 ? 2 : (width < 800 ? 3 : 4);
+    final actionsAspectRatio = width < 500 ? 1.4 : 1.6;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
@@ -64,7 +68,7 @@ class DashboardPage extends ConsumerWidget {
             padding: const EdgeInsets.all(InfernalSpacing.md),
             sliver: statsAsync.when(
               data: (stats) => SliverGrid.count(
-                crossAxisCount: 4,
+                crossAxisCount: statsCrossAxisCount,
                 crossAxisSpacing: InfernalSpacing.md,
                 mainAxisSpacing: InfernalSpacing.md,
                 childAspectRatio: 1.2,
@@ -232,10 +236,10 @@ class DashboardPage extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: InfernalSpacing.md),
             sliver: SliverGrid.count(
-              crossAxisCount: 3,
+              crossAxisCount: actionsCrossAxisCount,
               mainAxisSpacing: InfernalSpacing.md,
               crossAxisSpacing: InfernalSpacing.md,
-              childAspectRatio: 1.6,
+              childAspectRatio: actionsAspectRatio,
               children: [
                 _QuickActionBtn(
                   icon: Icons.calendar_month,
