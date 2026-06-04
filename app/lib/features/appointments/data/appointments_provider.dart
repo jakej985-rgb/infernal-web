@@ -1,13 +1,13 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../shared/data/interfaces/appointment_service.dart';
-import '../../../../shared/data/use_api_provider.dart';
+import '../../../../shared/core/services/appointment_service_firebase_impl.dart';
 import '../../../../shared/domain/appointment.dart' as domain;
 
 part 'appointments_provider.g.dart';
 
 @riverpod
 AppointmentService appointmentService(Ref ref) {
-  return ref.watch(globalAppointmentServiceProvider);
+  return AppointmentServiceFirebaseImpl(ref);
 }
 
 @riverpod

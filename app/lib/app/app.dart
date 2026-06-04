@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router.dart';
 import 'theme/theme.dart';
-import '../shared/util/websocket_client.dart';
 
 /// Root application widget
 class InfernalApp extends ConsumerWidget {
@@ -15,9 +14,6 @@ class InfernalApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-
-    // Initialize real-time WebSockets
-    ref.watch(webSocketClientProvider);
 
     return MaterialApp.router(
       title: 'Infernal Ink & Steel',

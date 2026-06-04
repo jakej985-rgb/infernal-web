@@ -10,16 +10,7 @@ import 'package:infernal_ink_steel/shared/domain/enums.dart';
 import 'package:infernal_ink_steel/features/dashboard/data/stats_repository.dart';
 import 'package:infernal_ink_steel/features/dashboard/domain/dashboard_stats.dart';
 import 'package:infernal_ink_steel/shared/util/shared_prefs_provider.dart';
-import 'package:infernal_ink_steel/shared/util/websocket_client.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockWebSocketClient extends WebSocketClient {
-  @override
-  Stream<Map<String, dynamic>> build() {
-    return const Stream.empty();
-  }
-}
 
 class MockAuthService extends AuthService {
   @override
@@ -65,7 +56,6 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           authServiceProvider.overrideWith(() => MockAuthService()),
-          webSocketClientProvider.overrideWith(() => MockWebSocketClient()),
           dashboardStatsRepositoryProvider.overrideWith(
             () => MockDashboardStatsRepository(),
           ),
