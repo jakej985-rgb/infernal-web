@@ -101,7 +101,7 @@ final class FilteredDocumentsProvider
   }
 }
 
-String _$filteredDocumentsHash() => r'34b1cfc7ed5c91241d2d6715987d24071c5a8811';
+String _$filteredDocumentsHash() => r'189ad889c27bc8f28e2eb7537a19d6fdbc2c00a9';
 
 @ProviderFor(documentDetail)
 final documentDetailProvider = DocumentDetailFamily._();
@@ -158,7 +158,7 @@ final class DocumentDetailProvider
   }
 }
 
-String _$documentDetailHash() => r'cf18349e864a650cbf205d3d3f06637babba8002';
+String _$documentDetailHash() => r'9aa5142889689f3eb44502ed632203ea8ddbe295';
 
 final class DocumentDetailFamily extends $Family
     with $FunctionalFamilyOverride<Stream<domain.Document?>, int> {

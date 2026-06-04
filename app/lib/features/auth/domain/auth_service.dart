@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/cache/id_mapper.dart';
-import '../../../shared/data/org_provider.dart';
-import '../../../shared/domain/enums.dart';
+import '../../../shared/core/services/user_service.dart';
 import '../../../shared/domain/user.dart';
 import 'auth_state.dart';
 
@@ -15,6 +13,7 @@ class AuthService extends _$AuthService {
   @override
   FutureOr<AuthState> build() async {
     final completer = Completer<AuthState>();
+    final userService = ref.watch(userServiceProvider);
 
     final subscription = fb.FirebaseAuth.instance.authStateChanges().listen((fbUser) async {
       if (fbUser == null) {
@@ -25,31 +24,21 @@ class AuthService extends _$AuthService {
         }
       } else {
         try {
-          final orgIdVal = ref.watch(orgIdProvider);
-          final docRef = FirebaseFirestore.instance
-              .collection('organizations')
-              .doc(orgIdVal)
-              .collection('users')
-              .doc(fbUser.uid);
+          // Read user profile from UserService (no direct Firestore calls, no self-healing writes here)
+          final userProfile = await userService.getUserById(fbUser.uid);
 
-          var doc = await docRef.get();
-          if (!doc.exists) {
-            // Self-heal: Create default user document in Firestore if missing
-            final email = fbUser.email ?? '';
-            final isAdmin = email == 'admin@inkandsteel.xyz';
-            await docRef.set({
-              'email': email,
-              'displayName': email.split('@').first,
-              'role': isAdmin ? 'admin' : 'artist',
-              'hourlyRate': 150.0,
-              'createdAt': FieldValue.serverTimestamp(),
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
-            doc = await docRef.get();
+          if (userProfile == null) {
+            // Profile not initialized yet, wait for initializeUserProfile to be called explicitly
+            if (!completer.isCompleted) {
+              completer.complete(const AuthState.unauthenticated());
+            } else {
+              state = const AsyncValue.data(AuthState.unauthenticated());
+            }
+            return;
           }
 
-          if (doc.data()?['isDeleted'] == true) {
-            // User Firestore doc is marked deleted -> FORCE LOGOUT
+          if (userProfile.isDeleted) {
+            // User doc is marked deleted -> FORCE LOGOUT
             await fb.FirebaseAuth.instance.signOut();
             if (!completer.isCompleted) {
               completer.complete(const AuthState.unauthenticated());
@@ -59,10 +48,18 @@ class AuthService extends _$AuthService {
             return;
           }
 
-          final user = _mapDocToUser(
-            fbUser.uid,
-            fbUser.email ?? '',
-            doc.data() ?? {},
+          // Register UID in mapper
+          ref.read(idMapperProvider).registerUuid('user', fbUser.uid);
+
+          final user = User(
+            id: userProfile.id,
+            username: userProfile.username,
+            displayName: userProfile.displayName,
+            passwordHash: '',
+            role: userProfile.role,
+            hourlyRate: userProfile.hourlyRate,
+            createdAt: userProfile.createdAt,
+            updatedAt: userProfile.updatedAt,
           );
 
           if (!completer.isCompleted) {
@@ -87,6 +84,22 @@ class AuthService extends _$AuthService {
     return completer.future;
   }
 
+  /// Explicitly initialize user profile document in Firestore after sign-up/login if missing.
+  Future<void> initializeUserProfile(String uid, String email) async {
+    final userService = ref.read(userServiceProvider);
+    final existing = await userService.getUserById(uid);
+    if (existing == null) {
+      final isAdmin = email == 'admin@inkandsteel.xyz';
+      await userService.createUserWithUid(
+        uid: uid,
+        email: email,
+        displayName: email.split('@').first,
+        role: isAdmin ? 'admin' : 'artist',
+        hourlyRate: 150.0,
+      );
+    }
+  }
+
   Future<void> login(String username, String password) async {
     state = const AsyncValue.data(AuthState.loading());
 
@@ -95,10 +108,16 @@ class AuthService extends _$AuthService {
           ? username
           : '$username@inkandsteel.xyz';
 
-      await fb.FirebaseAuth.instance.signInWithEmailAndPassword(
+      final credential = await fb.FirebaseAuth.instance.signInWithEmailAndPassword(
         email: resolvedEmail,
         password: password,
       );
+
+      final fbUser = credential.user;
+      if (fbUser != null) {
+        // Explicitly initialize profile to ensure it exists, with no side-effects in build()
+        await initializeUserProfile(fbUser.uid, fbUser.email ?? resolvedEmail);
+      }
     } on fb.FirebaseException catch (e) {
       state = AsyncValue.data(
         AuthState.error(e.message ?? 'Authentication failed'),
@@ -127,26 +146,18 @@ class AuthService extends _$AuthService {
           );
       final fbUser = credential.user;
       if (fbUser != null) {
-        final orgIdVal = ref.read(orgIdProvider);
-        // 2. Create the Firestore document inside 'organizations/default-org/users'
-        final docRef = FirebaseFirestore.instance
-            .collection('organizations')
-            .doc(orgIdVal)
-            .collection('users')
-            .doc(fbUser.uid);
-
-        await docRef.set({
-          'email': 'admin@inkandsteel.xyz',
-          'displayName': 'admin',
-          'role': 'admin',
-          'hourlyRate': 150.0,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
+        // 2. Delegate profile creation to UserService
+        final userService = ref.read(userServiceProvider);
+        await userService.createUserWithUid(
+          uid: fbUser.uid,
+          email: 'admin@inkandsteel.xyz',
+          displayName: 'admin',
+          role: 'admin',
+          hourlyRate: 150.0,
+        );
       }
     } on fb.FirebaseException catch (e) {
       if (e.code == 'email-already-in-use') {
-        // If the Firebase Auth user already exists, let's make sure the Firestore document is set up properly.
         try {
           final credential = await fb.FirebaseAuth.instance
               .signInWithEmailAndPassword(
@@ -155,21 +166,14 @@ class AuthService extends _$AuthService {
               );
           final fbUser = credential.user;
           if (fbUser != null) {
-            final orgIdVal = ref.read(orgIdProvider);
-            final docRef = FirebaseFirestore.instance
-                .collection('organizations')
-                .doc(orgIdVal)
-                .collection('users')
-                .doc(fbUser.uid);
-
-            await docRef.set({
-              'email': 'admin@inkandsteel.xyz',
-              'displayName': 'admin',
-              'role': 'admin',
-              'hourlyRate': 150.0,
-              'createdAt': FieldValue.serverTimestamp(),
-              'updatedAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
+            final userService = ref.read(userServiceProvider);
+            await userService.createUserWithUid(
+              uid: fbUser.uid,
+              email: 'admin@inkandsteel.xyz',
+              displayName: 'admin',
+              role: 'admin',
+              hourlyRate: 150.0,
+            );
           }
         } catch (_) {
           // If sign-in fails or some other issue occurs, ignore it
@@ -178,31 +182,5 @@ class AuthService extends _$AuthService {
         rethrow;
       }
     }
-  }
-
-  User _mapDocToUser(String uid, String email, Map<String, dynamic> data) {
-    final roleStr = data['role'] as String? ?? 'artist';
-    final displayName =
-        data['displayName'] as String? ?? email.split('@').first;
-    final hourlyRate = (data['hourlyRate'] as num?)?.toDouble() ?? 150.0;
-
-    var id = uid.hashCode & 0x7FFFFFFF;
-    if (id == 0) id = 1;
-
-    ref.read(idMapperProvider).registerUuid('user', uid);
-
-    return User(
-      id: id,
-      username: email,
-      displayName: displayName,
-      passwordHash: '',
-      role: UserRole.values.firstWhere(
-        (e) => e.name.toLowerCase() == roleStr.toLowerCase(),
-        orElse: () => UserRole.artist,
-      ),
-      hourlyRate: hourlyRate,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
   }
 }

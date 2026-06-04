@@ -1,30 +1,14 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../../shared/cache/id_mapper.dart';
-import '../../../../shared/data/org_provider.dart';
-import '../../../../shared/domain/user.dart' as domain;
-import '../../../../shared/domain/enums.dart';
+import '../../../shared/core/services/user_service.dart';
+import '../../../shared/domain/user.dart' as domain;
 
 part 'user_management_provider.g.dart';
 
 @riverpod
 Stream<List<domain.User>> allUsers(Ref ref) {
-  final idMapper = ref.watch(idMapperProvider);
-  final orgIdVal = ref.watch(orgIdProvider);
-  return FirebaseFirestore.instance
-      .collection('organizations')
-      .doc(orgIdVal)
-      .collection('users')
-      .where('isDeleted', isEqualTo: false)
-      .snapshots()
-      .asyncMap((snapshot) async {
-        final list = <domain.User>[];
-        for (final doc in snapshot.docs) {
-          list.add(await _mapDocToUser(doc, idMapper));
-        }
-        return list;
-      });
+  final userService = ref.watch(userServiceProvider);
+  return userService.watchUsers();
 }
 
 @riverpod
@@ -36,14 +20,7 @@ class UserManagementService {
   final Ref _ref;
   UserManagementService(this._ref);
 
-  IdMapper get _idMapper => _ref.read(idMapperProvider);
-  String get _orgId => _ref.read(orgIdProvider);
-
-  CollectionReference<Map<String, dynamic>> get _usersRef => FirebaseFirestore
-      .instance
-      .collection('organizations')
-      .doc(_orgId)
-      .collection('users');
+  UserService get _userService => _ref.read(userServiceProvider);
 
   Future<void> createUser({
     required String username,
@@ -52,76 +29,20 @@ class UserManagementService {
     required String role,
     double? hourlyRate,
   }) async {
-    final docRef = _usersRef.doc();
-    final uuid = docRef.id;
-
-    await docRef.set({
-      'email': username,
-      'displayName': displayName,
-      'role': role.toLowerCase(),
-      'hourlyRate': hourlyRate ?? 150.0,
-      'isDeleted': false,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-
-    await _idMapper.registerUuid('user', uuid);
+    // Note: Password hashing/creation is handled on backend/auth system, here we seed the Firestore profile document
+    await _userService.createUser(
+      username: username,
+      displayName: displayName,
+      role: role,
+      hourlyRate: hourlyRate,
+    );
   }
 
   Future<void> updateUser(domain.User user, {String? newPassword}) async {
-    final uuid = _idMapper.getUuid('user', user.id);
-    if (uuid == null) throw Exception('Cannot resolve ID for user.');
-
-    await _usersRef.doc(uuid).update({
-      'displayName': user.displayName,
-      'role': user.role.name.toLowerCase(),
-      'hourlyRate': user.hourlyRate,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _userService.updateUser(user);
   }
 
   Future<void> deleteUser(int id) async {
-    final uuid = _idMapper.getUuid('user', id);
-    if (uuid == null) throw Exception('Cannot resolve ID for user.');
-
-    await _usersRef.doc(uuid).update({
-      'isDeleted': true,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _userService.deleteUser(id);
   }
-}
-
-Future<domain.User> _mapDocToUser(
-  DocumentSnapshot<Map<String, dynamic>> doc,
-  IdMapper idMapper,
-) async {
-  final uuid = doc.id;
-  final id = await idMapper.registerUuid('user', uuid);
-
-  final data = doc.data() ?? {};
-  final email = data['email'] as String? ?? '';
-  final displayName = data['displayName'] as String? ?? '';
-  final roleStr = data['role'] as String? ?? 'artist';
-  final hourlyRate = (data['hourlyRate'] as num?)?.toDouble() ?? 150.0;
-  final isDeleted = data['isDeleted'] as bool? ?? false;
-
-  final createdAtTimestamp = data['createdAt'] as Timestamp?;
-  final updatedAtTimestamp = data['updatedAt'] as Timestamp?;
-
-  final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
-  final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
-
-  return domain.User(
-    id: id,
-    username: email,
-    displayName: displayName,
-    role: UserRole.values.firstWhere(
-      (e) => e.name.toLowerCase() == roleStr.toLowerCase(),
-      orElse: () => UserRole.artist,
-    ),
-    hourlyRate: hourlyRate,
-    isDeleted: isDeleted,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
 }

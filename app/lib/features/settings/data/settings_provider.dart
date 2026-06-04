@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/util/shared_prefs_provider.dart';
-import '../../../shared/data/org_provider.dart';
+import '../../../shared/core/services/settings_service.dart';
 
 part 'settings_provider.g.dart';
 
@@ -60,11 +59,12 @@ class ShopSettings {
 
 @riverpod
 class ShopSettingsNotifier extends _$ShopSettingsNotifier {
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _subscription;
+  StreamSubscription? _subscription;
 
   @override
   ShopSettings build() {
     final prefs = ref.watch(sharedPreferencesProvider);
+    final settingsService = ref.watch(settingsServiceProvider);
 
     // Initial fallback from local cache (SharedPreferences) to ensure instant synchronous load
     final cachedSettings = ShopSettings(
@@ -80,23 +80,17 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
       taxRate: prefs.getDouble('settings_tax_rate') ?? 0.08,
     );
 
-    final orgIdVal = ref.watch(orgIdProvider);
-
-    // Listen to Firestore document updates to stay real-time
-    _subscription = FirebaseFirestore.instance
-        .collection('organizations')
-        .doc(orgIdVal)
-        .snapshots()
-        .listen((doc) {
-          if (doc.exists) {
-            final data = doc.data()?['settings'] as Map<String, dynamic>?;
-            if (data != null) {
-              final updated = _mapMapToSettings(data);
-              state = updated;
-              _saveToCache(updated);
-            }
-          }
-        });
+    // Listen to Firestore document updates via SettingsService to stay real-time
+    _subscription = settingsService.watchSettings().listen((doc) {
+      if (doc.exists) {
+        final data = doc.data()?['settings'] as Map<String, dynamic>?;
+        if (data != null) {
+          final updated = _mapMapToSettings(data);
+          state = updated;
+          _saveToCache(updated);
+        }
+      }
+    });
 
     ref.onDispose(() {
       _subscription?.cancel();
@@ -142,16 +136,11 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
     String? logoPath,
     String? accentColor,
   }) async {
-    final updates = <String, dynamic>{};
-    if (shopName != null) updates['settings.shopName'] = shopName;
-    if (logoPath != null) updates['settings.logoPath'] = logoPath;
-    if (accentColor != null) updates['settings.accentColor'] = accentColor;
-
-    final orgIdVal = ref.read(orgIdProvider);
-    await FirebaseFirestore.instance
-        .collection('organizations')
-        .doc(orgIdVal)
-        .set(updates, SetOptions(merge: true));
+    await ref.read(settingsServiceProvider).updateShopProfile(
+          shopName: shopName,
+          logoPath: logoPath,
+          accentColor: accentColor,
+        );
   }
 
   Future<void> updatePricing({
@@ -161,43 +150,23 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
     double? shopMinimumRate,
     double? taxRate,
   }) async {
-    final updates = <String, dynamic>{};
-    if (tattooPerHour != null) {
-      updates['settings.tattooPerHour'] = tattooPerHour;
-    }
-    if (piercingSingle != null) {
-      updates['settings.piercingSingle'] = piercingSingle;
-    }
-    if (piercingMulti != null) {
-      updates['settings.piercingMulti'] = piercingMulti;
-    }
-    if (shopMinimumRate != null) {
-      updates['settings.shopMinimumRate'] = shopMinimumRate;
-    }
-    if (taxRate != null) updates['settings.taxRate'] = taxRate;
-
-    final orgIdVal = ref.read(orgIdProvider);
-    await FirebaseFirestore.instance
-        .collection('organizations')
-        .doc(orgIdVal)
-        .set(updates, SetOptions(merge: true));
+    await ref.read(settingsServiceProvider).updatePricing(
+          tattooPerHour: tattooPerHour,
+          piercingSingle: piercingSingle,
+          piercingMulti: piercingMulti,
+          shopMinimumRate: shopMinimumRate,
+          taxRate: taxRate,
+        );
   }
 
   Future<void> updateDepositConfig({
     String? depositType,
     double? depositAmount,
   }) async {
-    final updates = <String, dynamic>{};
-    if (depositType != null) updates['settings.depositType'] = depositType;
-    if (depositAmount != null) {
-      updates['settings.depositAmount'] = depositAmount;
-    }
-
-    final orgIdVal = ref.read(orgIdProvider);
-    await FirebaseFirestore.instance
-        .collection('organizations')
-        .doc(orgIdVal)
-        .set(updates, SetOptions(merge: true));
+    await ref.read(settingsServiceProvider).updateDepositConfig(
+          depositType: depositType,
+          depositAmount: depositAmount,
+        );
   }
 
   Future<void> resetToDefaults() async {
@@ -216,22 +185,18 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
       'settings.taxRate': defaultSettings.taxRate,
     };
 
-    final orgIdVal = ref.read(orgIdProvider);
-    await FirebaseFirestore.instance
-        .collection('organizations')
-        .doc(orgIdVal)
-        .set(updates, SetOptions(merge: true));
+    await ref.read(settingsServiceProvider).resetToDefaults(updates);
   }
 }
 
 @riverpod
-SettingsService settingsService(Ref ref) {
-  return SettingsService(ref);
+LocalSettingsService localSettingsService(Ref ref) {
+  return LocalSettingsService(ref);
 }
 
-class SettingsService {
+class LocalSettingsService {
   final Ref _ref;
-  SettingsService(this._ref);
+  LocalSettingsService(this._ref);
 
   Future<void> updateShopProfile({
     String? shopName,

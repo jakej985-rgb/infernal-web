@@ -189,7 +189,7 @@ class SettingsPage extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               ref
-                  .read(settingsServiceProvider)
+                  .read(localSettingsServiceProvider)
                   .updateShopProfile(shopName: nameCtrl.text);
               Navigator.pop(ctx);
             },
@@ -245,7 +245,7 @@ class SettingsPage extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               ref
-                  .read(settingsServiceProvider)
+                  .read(localSettingsServiceProvider)
                   .updatePricing(
                     tattooPerHour: double.tryParse(tattooCtrl.text),
                     shopMinimumRate: double.tryParse(minCtrl.text),
@@ -318,7 +318,7 @@ class SettingsPage extends ConsumerWidget {
             ElevatedButton(
               onPressed: () {
                 ref
-                    .read(settingsServiceProvider)
+                    .read(localSettingsServiceProvider)
                     .updateDepositConfig(
                       depositType: currentType,
                       depositAmount: double.tryParse(amountCtrl.text),
@@ -424,7 +424,7 @@ class SettingsPage extends ConsumerWidget {
               backgroundColor: InfernalColors.blood,
             ),
             onPressed: () {
-              ref.read(settingsServiceProvider).resetToDefaults();
+              ref.read(localSettingsServiceProvider).resetToDefaults();
               Navigator.pop(ctx);
             },
             child: const Text('RESET'),

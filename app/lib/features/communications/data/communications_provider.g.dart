@@ -48,7 +48,7 @@ final class CommunicationsProvider
   }
 }
 
-String _$communicationsHash() => r'a658116977480228926006027a4c0a8c22d4daf6';
+String _$communicationsHash() => r'05eaa665a860e0b476c22ef7e5eeae5b5c188137';
 
 @ProviderFor(CommunicationsService)
 final communicationsServiceProvider = CommunicationsServiceProvider._();
@@ -75,7 +75,7 @@ final class CommunicationsServiceProvider
 }
 
 String _$communicationsServiceHash() =>
-    r'7445e885a2018401c8cd3f8e56a8e150c018e956';
+    r'00f8e69c01faeb1ea1d6c8ba2fd39c9843d12347';
 
 abstract class _$CommunicationsService extends $AsyncNotifier<void> {
   FutureOr<void> build();

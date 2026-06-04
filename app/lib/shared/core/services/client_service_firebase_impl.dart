@@ -7,18 +7,17 @@ import '../../cache/id_mapper.dart';
 import '../../domain/client.dart' as domain;
 import '../../data/interfaces/client_service.dart';
 import '../../data/org_provider.dart';
+import 'firestore_helpers.dart';
 
 class ClientServiceFirebaseImpl implements ClientService {
   final Ref _ref;
   ClientServiceFirebaseImpl(this._ref);
 
   IdMapper get _idMapper => _ref.read(idMapperProvider);
-  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
-
   String get _orgId => _ref.read(orgIdProvider);
 
   CollectionReference<Map<String, dynamic>> get _clientsRef =>
-      _firestore.collection('organizations').doc(_orgId).collection('clients');
+      orgDoc(_orgId).collection('clients');
 
   @override
   Future<List<domain.Client>> getClients() async {
@@ -124,7 +123,7 @@ class ClientServiceFirebaseImpl implements ClientService {
       return Stream.value(null);
     }
     return _clientsRef.doc(uuid).snapshots().asyncMap((doc) async {
-      if (!doc.exists) return null;
+      if (!doc.exists || doc.data()?['isDeleted'] == true) return null;
       return await _mapDocToDomain(doc);
     });
   }

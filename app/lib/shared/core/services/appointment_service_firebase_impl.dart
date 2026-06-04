@@ -6,20 +6,17 @@ import '../../cache/id_mapper.dart';
 import '../../domain/appointment.dart' as domain;
 import '../../data/interfaces/appointment_service.dart';
 import '../../data/org_provider.dart';
+import 'firestore_helpers.dart';
 
 class AppointmentServiceFirebaseImpl implements AppointmentService {
   final Ref _ref;
   AppointmentServiceFirebaseImpl(this._ref);
 
   IdMapper get _idMapper => _ref.read(idMapperProvider);
-  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
-
   String get _orgId => _ref.read(orgIdProvider);
 
-  CollectionReference<Map<String, dynamic>> get _apptsRef => _firestore
-      .collection('organizations')
-      .doc(_orgId)
-      .collection('appointments');
+  CollectionReference<Map<String, dynamic>> get _apptsRef =>
+      orgDoc(_orgId).collection('appointments');
 
   @override
   Future<List<domain.Appointment>> getAppointments() async {
@@ -144,7 +141,7 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
       return Stream.value(null);
     }
     return _apptsRef.doc(uuid).snapshots().asyncMap((doc) async {
-      if (!doc.exists) return null;
+      if (!doc.exists || doc.data()?['isDeleted'] == true) return null;
       return await _mapDocToDomain(doc);
     });
   }

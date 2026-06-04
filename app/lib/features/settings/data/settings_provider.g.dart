@@ -42,7 +42,7 @@ final class ShopSettingsNotifierProvider
 }
 
 String _$shopSettingsNotifierHash() =>
-    r'498a133b09101fdb8b6baf40ad9ee4d7b96e779f';
+    r'a8458a29756df5b5e6feb3bcf19e68cbec567607';
 
 abstract class _$ShopSettingsNotifier extends $Notifier<ShopSettings> {
   ShopSettings build();
@@ -62,44 +62,50 @@ abstract class _$ShopSettingsNotifier extends $Notifier<ShopSettings> {
   }
 }
 
-@ProviderFor(settingsService)
-final settingsServiceProvider = SettingsServiceProvider._();
+@ProviderFor(localSettingsService)
+final localSettingsServiceProvider = LocalSettingsServiceProvider._();
 
-final class SettingsServiceProvider
+final class LocalSettingsServiceProvider
     extends
-        $FunctionalProvider<SettingsService, SettingsService, SettingsService>
-    with $Provider<SettingsService> {
-  SettingsServiceProvider._()
+        $FunctionalProvider<
+          LocalSettingsService,
+          LocalSettingsService,
+          LocalSettingsService
+        >
+    with $Provider<LocalSettingsService> {
+  LocalSettingsServiceProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'settingsServiceProvider',
+        name: r'localSettingsServiceProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$settingsServiceHash();
+  String debugGetCreateSourceHash() => _$localSettingsServiceHash();
 
   @$internal
   @override
-  $ProviderElement<SettingsService> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<LocalSettingsService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
-  SettingsService create(Ref ref) {
-    return settingsService(ref);
+  LocalSettingsService create(Ref ref) {
+    return localSettingsService(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SettingsService value) {
+  Override overrideWithValue(LocalSettingsService value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<SettingsService>(value),
+      providerOverride: $SyncValueProvider<LocalSettingsService>(value),
     );
   }
 }
 
-String _$settingsServiceHash() => r'baf34b05236fcf0cbf01fd0b3fbadb69195b3e70';
+String _$localSettingsServiceHash() =>
+    r'b5ef06e7a0d3964447abc52bc6ed08e67f1df218';
