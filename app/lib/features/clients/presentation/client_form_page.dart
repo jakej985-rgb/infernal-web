@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -95,15 +96,16 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
   }
 
   Widget _buildScaffold(BuildContext context) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
         title: Text(
           _isEdit
-              ? UiLabels.get('edit_client', useInfernal)
-              : UiLabels.get('add_client', useInfernal),
+              ? UiLabels.get('edit_client', useInfernal, customLabels)
+              : UiLabels.get('add_client', useInfernal, customLabels),
         ),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,

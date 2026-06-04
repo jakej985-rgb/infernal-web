@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../shared/data/org_provider.dart';
+import '../../../shared/data/org_labels_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -20,7 +23,7 @@ class SettingsPage extends ConsumerWidget {
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
         title: Text(
-          UiLabels.get('settings_title', ref.watch(useInfernalLabelsProvider)),
+          UiLabels.get('settings_title', ref.watch(labelModeProvider)),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: InfernalColors.blood,
             letterSpacing: 4,
@@ -98,21 +101,33 @@ class SettingsPage extends ConsumerWidget {
           items: [
             _SettingsItem(
               title: 'Studio Terminology',
-              subtitle: ref.watch(useInfernalLabelsProvider)
-                  ? 'Studio terminology active (Studio, Sessions, Canvases)'
-                  : 'Standard terminology active (Home, Calendar, Contacts)',
+              subtitle: _getSubtitleForMode(ref.watch(labelModeProvider)),
               icon: Icons.auto_awesome,
-              trailing: Switch(
-                value: ref.watch(useInfernalLabelsProvider),
+              trailing: DropdownButton<String>(
+                value: ref.watch(labelModeProvider),
+                dropdownColor: InfernalColors.surface,
+                underline: const SizedBox(),
+                items: const [
+                  DropdownMenuItem(value: kLabelModeStandard, child: Text('Standard', style: TextStyle(color: InfernalColors.textPrimary))),
+                  DropdownMenuItem(value: kLabelModeStudio, child: Text('Studio', style: TextStyle(color: InfernalColors.textPrimary))),
+                  DropdownMenuItem(value: kLabelModeInfernal, child: Text('Infernal', style: TextStyle(color: InfernalColors.textPrimary))),
+                  DropdownMenuItem(value: kLabelModeCustom, child: Text('Custom (Override)', style: TextStyle(color: InfernalColors.gold))),
+                ],
                 onChanged: (val) {
-                  ref.read(useInfernalLabelsProvider.notifier).toggle(val);
+                  if (val != null) {
+                    ref.read(labelModeProvider.notifier).setMode(val);
+                  }
                 },
               ),
-              onTap: () {
-                final current = ref.read(useInfernalLabelsProvider);
-                ref.read(useInfernalLabelsProvider.notifier).toggle(!current);
-              },
+              onTap: () {},
             ),
+            if (ref.watch(labelModeProvider) == kLabelModeCustom)
+              _SettingsItem(
+                title: 'Edit Custom Labels',
+                subtitle: 'Customize shop terminology',
+                icon: Icons.edit_note,
+                onTap: () => _showCustomLabelsDialog(context, ref),
+              ),
           ],
         ),
         const SizedBox(height: InfernalSpacing.lg),
@@ -131,6 +146,38 @@ class SettingsPage extends ConsumerWidget {
         ),
         const SizedBox(height: 100),
       ],
+    );
+  }
+
+  String _getSubtitleForMode(String mode) {
+    switch (mode) {
+      case kLabelModeStudio:
+        return 'Studio terminology active (Studio, Sessions, Canvases)';
+      case kLabelModeInfernal:
+        return 'Infernal terminology active (Altar, Dark Rites, Bound Souls)';
+      case kLabelModeCustom:
+        return 'Custom terminology active (Configured by your shop)';
+      default:
+        return 'Standard terminology active (Home, Calendar, Contacts)';
+    }
+  }
+
+    void _showCustomLabelsDialog(BuildContext context, WidgetRef ref) {
+    final customLabelsAsync = ref.watch(orgLabelsProvider);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: InfernalColors.surface,
+        title: const Text(
+          'CUSTOM LABELS',
+          style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold),
+        ),
+        content: customLabelsAsync.when(
+          data: (custom) => _CustomLabelsEditor(initialData: custom, ref: ref),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Text('Error loading labels: $e'),
+        ),
+      ),
     );
   }
 
@@ -430,6 +477,143 @@ class _SettingsItem extends StatelessWidget {
             size: 20,
           ),
       onTap: onTap,
+    );
+  }
+}
+
+class _CustomLabelsEditor extends StatefulWidget {
+  final Map<String, String> initialData;
+  final WidgetRef ref;
+  const _CustomLabelsEditor({required this.initialData, required this.ref});
+
+  @override
+  State<_CustomLabelsEditor> createState() => _CustomLabelsEditorState();
+}
+
+class _CustomLabelsEditorState extends State<_CustomLabelsEditor> {
+  late final TextEditingController _contactsCtrl;
+  late final TextEditingController _calendarCtrl;
+  late final TextEditingController _quotesCtrl;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _contactsCtrl = TextEditingController(text: widget.initialData['contacts'] ?? '');
+    _calendarCtrl = TextEditingController(text: widget.initialData['calendar'] ?? '');
+    _quotesCtrl = TextEditingController(text: widget.initialData['quotes'] ?? '');
+  }
+
+  @override
+  void dispose() {
+    _contactsCtrl.dispose();
+    _calendarCtrl.dispose();
+    _quotesCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    setState(() => _isSaving = true);
+    try {
+      final orgId = widget.ref.read(orgIdProvider);
+      
+      final updates = <String, dynamic>{
+        if (_contactsCtrl.text.isNotEmpty) 'labels.contacts': _contactsCtrl.text,
+        if (_calendarCtrl.text.isNotEmpty) 'labels.calendar': _calendarCtrl.text,
+        if (_quotesCtrl.text.isNotEmpty) 'labels.quotes': _quotesCtrl.text,
+      };
+
+      if (updates.isEmpty) {
+        // Just clear
+        await FirebaseFirestore.instance.collection('organizations').doc(orgId).update({
+          'labels': FieldValue.delete(),
+        });
+      } else {
+        await FirebaseFirestore.instance.collection('organizations').doc(orgId).set({
+          'labels': {
+            if (_contactsCtrl.text.isNotEmpty) 'contacts': _contactsCtrl.text,
+            if (_calendarCtrl.text.isNotEmpty) 'calendar': _calendarCtrl.text,
+            if (_quotesCtrl.text.isNotEmpty) 'quotes': _quotesCtrl.text,
+          }
+        }, SetOptions(merge: true));
+      }
+      
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _reset() async {
+    setState(() => _isSaving = true);
+    try {
+      final orgId = widget.ref.read(orgIdProvider);
+      await FirebaseFirestore.instance.collection('organizations').doc(orgId).update({
+        'labels': FieldValue.delete(),
+      });
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _contactsCtrl,
+            style: const TextStyle(color: InfernalColors.textPrimary),
+            decoration: const InputDecoration(labelText: 'Contacts / Clients', hintText: 'Collectors'),
+          ),
+          const SizedBox(height: InfernalSpacing.md),
+          TextField(
+            controller: _calendarCtrl,
+            style: const TextStyle(color: InfernalColors.textPrimary),
+            decoration: const InputDecoration(labelText: 'Calendar / Appointments', hintText: 'Bookings'),
+          ),
+          const SizedBox(height: InfernalSpacing.md),
+          TextField(
+            controller: _quotesCtrl,
+            style: const TextStyle(color: InfernalColors.textPrimary),
+            decoration: const InputDecoration(labelText: 'Quotes / Estimates', hintText: 'Estimates'),
+          ),
+          const SizedBox(height: InfernalSpacing.lg),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton(
+                onPressed: _isSaving ? null : _reset,
+                child: const Text('RESET', style: TextStyle(color: InfernalColors.error)),
+              ),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: _isSaving ? null : () => Navigator.pop(context),
+                    child: const Text('CANCEL'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _isSaving ? null : _save,
+                    child: _isSaving 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('SAVE'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

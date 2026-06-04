@@ -178,6 +178,83 @@ final class DocumentDetailFamily extends $Family
   String toString() => r'documentDetailProvider';
 }
 
+@ProviderFor(clientDocuments)
+final clientDocumentsProvider = ClientDocumentsFamily._();
+
+final class ClientDocumentsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<domain.Document>>,
+          List<domain.Document>,
+          Stream<List<domain.Document>>
+        >
+    with
+        $FutureModifier<List<domain.Document>>,
+        $StreamProvider<List<domain.Document>> {
+  ClientDocumentsProvider._({
+    required ClientDocumentsFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'clientDocumentsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$clientDocumentsHash();
+
+  @override
+  String toString() {
+    return r'clientDocumentsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<List<domain.Document>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<domain.Document>> create(Ref ref) {
+    final argument = this.argument as int;
+    return clientDocuments(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ClientDocumentsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$clientDocumentsHash() => r'b40b7b87086e6b594601ebb127cfc20235db2dfc';
+
+final class ClientDocumentsFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<List<domain.Document>>, int> {
+  ClientDocumentsFamily._()
+    : super(
+        retry: null,
+        name: r'clientDocumentsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  ClientDocumentsProvider call(int clientId) =>
+      ClientDocumentsProvider._(argument: clientId, from: this);
+
+  @override
+  String toString() => r'clientDocumentsProvider';
+}
+
 @ProviderFor(documentsService)
 final documentsServiceProvider = DocumentsServiceProvider._();
 

@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -27,12 +28,13 @@ class SystemStatusPage extends ConsumerWidget {
     final logsAsync = ref.watch(
       StreamProvider((ref) => Stream.value(<AuditLog>[])),
     );
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(UiLabels.get('admin_status_title', useInfernal)),
+        title: Text(UiLabels.get('admin_status_title', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),
@@ -42,7 +44,7 @@ class SystemStatusPage extends ConsumerWidget {
           _buildSystemInfo(context, ref),
           const SizedBox(height: InfernalSpacing.xl),
           Text(
-            UiLabels.get('recent_logs', useInfernal).toUpperCase(),
+            UiLabels.get('recent_logs', useInfernal, customLabels).toUpperCase(),
             style: const TextStyle(
               color: InfernalColors.textMuted,
               fontWeight: FontWeight.bold,
@@ -54,7 +56,7 @@ class SystemStatusPage extends ConsumerWidget {
             data: (logs) => _buildLogsList(logs),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, s) => Text(
-              '${UiLabels.get('logs_error', useInfernal)}: $e',
+              '${UiLabels.get('logs_error', useInfernal, customLabels)}: $e',
               style: const TextStyle(color: InfernalColors.error),
             ),
           ),

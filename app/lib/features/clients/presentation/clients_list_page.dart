@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,12 +14,13 @@ class ClientsListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final clientsAsync = ref.watch(filteredClientsWithLifecycleProvider);
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(UiLabels.get('contacts', useInfernal)),
+        title: Text(UiLabels.get('contacts', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),
@@ -35,7 +37,7 @@ class ClientsListPage extends ConsumerWidget {
             child: TextField(
               style: const TextStyle(color: InfernalColors.textPrimary),
               decoration: InputDecoration(
-                hintText: UiLabels.get('search_placeholder', useInfernal),
+                hintText: UiLabels.get('search_placeholder', useInfernal, customLabels),
                 hintStyle: const TextStyle(color: InfernalColors.textMuted),
                 prefixIcon: const Icon(
                   Icons.search,
@@ -58,7 +60,7 @@ class ClientsListPage extends ConsumerWidget {
                 if (clients.isEmpty) {
                   return Center(
                     child: Text(
-                      UiLabels.get('no_clients_found', useInfernal),
+                      UiLabels.get('no_clients_found', useInfernal, customLabels),
                       style: const TextStyle(color: InfernalColors.textMuted),
                     ),
                   );

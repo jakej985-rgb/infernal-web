@@ -58,12 +58,13 @@ final GlobalKey<NavigatorState> _shellNavigatorKey =
 
 /// Router provider for app-wide access
 final routerProvider = Provider<GoRouter>((ref) {
-  final authStateAsync = ref.watch(authServiceProvider);
+  final refreshListenable = _GoRouterRefreshNotifier(ref);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.dashboard,
     debugLogDiagnostics: kDebugMode,
+    refreshListenable: refreshListenable,
     routes: [
       // Redirects for legacy and thematic URLs
       GoRoute(
@@ -204,7 +205,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'new',
-                builder: (context, state) => const DocumentFormPage(),
+                builder: (context, state) {
+                  final clientIdStr = state.uri.queryParameters['clientId'];
+                  final clientId = int.tryParse(clientIdStr ?? '');
+                  return DocumentFormPage(preSelectedClientId: clientId);
+                },
               ),
               GoRoute(
                 path: ':id',
@@ -287,13 +292,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
 
-    // Redirect logic using authStateAsync
+    // Redirect logic using authStateAsync read dynamically
     redirect: (context, state) {
+      final authStateAsync = ref.read(authServiceProvider);
       if (authStateAsync.isLoading) {
         return null;
       }
 
-      final authState = authStateAsync.asData?.value;
+      final authState = authStateAsync.value;
       if (authState == null) {
         return null;
       }
@@ -317,3 +323,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         Scaffold(body: Center(child: Text('Page not found: ${state.uri}'))),
   );
 });
+
+class _GoRouterRefreshNotifier extends ChangeNotifier {
+  _GoRouterRefreshNotifier(Ref ref) {
+    ref.listen<AsyncValue<AuthState>>(
+      authServiceProvider,
+      (_, _) => notifyListeners(),
+    );
+  }
+}

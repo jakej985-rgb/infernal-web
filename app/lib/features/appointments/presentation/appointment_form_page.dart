@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -204,9 +205,10 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedClient == null) {
+      final useInfernal = ref.read(labelModeProvider);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You must summon a soul (select client).'),
+        SnackBar(
+          content: Text('You must select a ${AppLabels.client(useInfernal, ref.read(orgLabelsProvider).value).toLowerCase()}.'),
         ),
       );
       return;
@@ -291,12 +293,15 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
         title: Text(
-          widget.appointmentId == null ? 'New Ritual' : 'Edit Ritual',
+          UiLabels.get(
+            widget.appointmentId == null ? 'new_appointment' : 'edit_appointment',
+            useInfernal,
+          ),
         ),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
@@ -343,7 +348,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
                     Expanded(
                       child: Text(
                         _selectedClient == null
-                            ? 'Select ${AppLabels.client(useInfernal)}'
+                            ? 'Select ${AppLabels.client(useInfernal, ref.read(orgLabelsProvider).value)}'
                             : _selectedClient!.fullName,
                         style: TextStyle(
                           color: _selectedClient == null

@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,13 +13,14 @@ class QuotesListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
     final quotesAsync = ref.watch(filteredQuotesProvider);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(UiLabels.get('quotes', useInfernal)),
+        title: Text(UiLabels.get('quotes', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
       ),

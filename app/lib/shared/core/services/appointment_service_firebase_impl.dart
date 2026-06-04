@@ -69,6 +69,9 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
             .add(Duration(minutes: appointment.durationMinutes))
             .toUtc()
             .toIso8601String(),
+        'status': appointment.status,
+        'priceCharged': appointment.priceCharged,
+        'finalPrice': appointment.finalPrice,
         'isDeleted': false,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -99,6 +102,9 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
             .add(Duration(minutes: appointment.durationMinutes))
             .toUtc()
             .toIso8601String(),
+        'status': appointment.status,
+        'priceCharged': appointment.priceCharged,
+        'finalPrice': appointment.finalPrice,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -171,6 +177,10 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
         : DateTime.now();
     final duration = endTime.difference(startTime).inMinutes;
 
+    final status = data['status'] as String? ?? 'Scheduled';
+    final priceCharged = (data['priceCharged'] as num?)?.toDouble() ?? 0.0;
+    final finalPrice = (data['finalPrice'] as num?)?.toDouble();
+
     final updatedAtTimestamp = data['updatedAt'] as Timestamp?;
     final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
 
@@ -184,6 +194,9 @@ class AppointmentServiceFirebaseImpl implements AppointmentService {
       durationMinutes: duration,
       serviceType: title,
       notes: notes,
+      status: status,
+      priceCharged: priceCharged,
+      finalPrice: finalPrice,
       lastModifiedUtc: updatedAt.toUtc(),
       isDeleted: data['isDeleted'] as bool? ?? false,
     );

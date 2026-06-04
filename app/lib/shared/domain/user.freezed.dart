@@ -18,7 +18,8 @@ mixin _$User {
 /// Primary key
  int get id;/// Unique login username
  String get username;/// Display name for UI
- String get displayName;/// Hashed password (BCrypt)
+ String get displayName;/// Organization ID for multi-tenant isolation
+ String get orgId;/// Hashed password (BCrypt)
  String get passwordHash;/// User role (Admin/Artist)
  UserRole get role;/// UI theme preference key
  String get themeKey;/// Path to avatar image
@@ -48,16 +49,16 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.passwordHash, passwordHash) || other.passwordHash == passwordHash)&&(identical(other.role, role) || other.role == role)&&(identical(other.themeKey, themeKey) || other.themeKey == themeKey)&&(identical(other.avatarPath, avatarPath) || other.avatarPath == avatarPath)&&(identical(other.hourlyRate, hourlyRate) || other.hourlyRate == hourlyRate)&&(identical(other.speedFactor, speedFactor) || other.speedFactor == speedFactor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.department, department) || other.department == department)&&(identical(other.commissionRate, commissionRate) || other.commissionRate == commissionRate)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.keyboardShortcutsJson, keyboardShortcutsJson) || other.keyboardShortcutsJson == keyboardShortcutsJson)&&(identical(other.permissionsJson, permissionsJson) || other.permissionsJson == permissionsJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.orgId, orgId) || other.orgId == orgId)&&(identical(other.passwordHash, passwordHash) || other.passwordHash == passwordHash)&&(identical(other.role, role) || other.role == role)&&(identical(other.themeKey, themeKey) || other.themeKey == themeKey)&&(identical(other.avatarPath, avatarPath) || other.avatarPath == avatarPath)&&(identical(other.hourlyRate, hourlyRate) || other.hourlyRate == hourlyRate)&&(identical(other.speedFactor, speedFactor) || other.speedFactor == speedFactor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.department, department) || other.department == department)&&(identical(other.commissionRate, commissionRate) || other.commissionRate == commissionRate)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.keyboardShortcutsJson, keyboardShortcutsJson) || other.keyboardShortcutsJson == keyboardShortcutsJson)&&(identical(other.permissionsJson, permissionsJson) || other.permissionsJson == permissionsJson));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,username,displayName,passwordHash,role,themeKey,avatarPath,hourlyRate,speedFactor,createdAt,updatedAt,lastLoginAt,isActive,isDeleted,deletedAt,department,commissionRate,fontSize,keyboardShortcutsJson,permissionsJson]);
+int get hashCode => Object.hashAll([runtimeType,id,username,displayName,orgId,passwordHash,role,themeKey,avatarPath,hourlyRate,speedFactor,createdAt,updatedAt,lastLoginAt,isActive,isDeleted,deletedAt,department,commissionRate,fontSize,keyboardShortcutsJson,permissionsJson]);
 
 @override
 String toString() {
-  return 'User(id: $id, username: $username, displayName: $displayName, passwordHash: $passwordHash, role: $role, themeKey: $themeKey, avatarPath: $avatarPath, hourlyRate: $hourlyRate, speedFactor: $speedFactor, createdAt: $createdAt, updatedAt: $updatedAt, lastLoginAt: $lastLoginAt, isActive: $isActive, isDeleted: $isDeleted, deletedAt: $deletedAt, department: $department, commissionRate: $commissionRate, fontSize: $fontSize, keyboardShortcutsJson: $keyboardShortcutsJson, permissionsJson: $permissionsJson)';
+  return 'User(id: $id, username: $username, displayName: $displayName, orgId: $orgId, passwordHash: $passwordHash, role: $role, themeKey: $themeKey, avatarPath: $avatarPath, hourlyRate: $hourlyRate, speedFactor: $speedFactor, createdAt: $createdAt, updatedAt: $updatedAt, lastLoginAt: $lastLoginAt, isActive: $isActive, isDeleted: $isDeleted, deletedAt: $deletedAt, department: $department, commissionRate: $commissionRate, fontSize: $fontSize, keyboardShortcutsJson: $keyboardShortcutsJson, permissionsJson: $permissionsJson)';
 }
 
 
@@ -68,7 +69,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- int id, String username, String displayName, String passwordHash, UserRole role, String themeKey, String avatarPath, double hourlyRate, double speedFactor, DateTime createdAt, DateTime updatedAt, DateTime? lastLoginAt, bool isActive, bool isDeleted, DateTime? deletedAt, String department, double commissionRate, int fontSize, String keyboardShortcutsJson, String permissionsJson
+ int id, String username, String displayName, String orgId, String passwordHash, UserRole role, String themeKey, String avatarPath, double hourlyRate, double speedFactor, DateTime createdAt, DateTime updatedAt, DateTime? lastLoginAt, bool isActive, bool isDeleted, DateTime? deletedAt, String department, double commissionRate, int fontSize, String keyboardShortcutsJson, String permissionsJson
 });
 
 
@@ -85,11 +86,12 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? displayName = null,Object? passwordHash = null,Object? role = null,Object? themeKey = null,Object? avatarPath = null,Object? hourlyRate = null,Object? speedFactor = null,Object? createdAt = null,Object? updatedAt = null,Object? lastLoginAt = freezed,Object? isActive = null,Object? isDeleted = null,Object? deletedAt = freezed,Object? department = null,Object? commissionRate = null,Object? fontSize = null,Object? keyboardShortcutsJson = null,Object? permissionsJson = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? displayName = null,Object? orgId = null,Object? passwordHash = null,Object? role = null,Object? themeKey = null,Object? avatarPath = null,Object? hourlyRate = null,Object? speedFactor = null,Object? createdAt = null,Object? updatedAt = null,Object? lastLoginAt = freezed,Object? isActive = null,Object? isDeleted = null,Object? deletedAt = freezed,Object? department = null,Object? commissionRate = null,Object? fontSize = null,Object? keyboardShortcutsJson = null,Object? permissionsJson = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
+as String,orgId: null == orgId ? _self.orgId : orgId // ignore: cast_nullable_to_non_nullable
 as String,passwordHash: null == passwordHash ? _self.passwordHash : passwordHash // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as UserRole,themeKey: null == themeKey ? _self.themeKey : themeKey // ignore: cast_nullable_to_non_nullable
@@ -192,10 +194,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String username,  String displayName,  String passwordHash,  UserRole role,  String themeKey,  String avatarPath,  double hourlyRate,  double speedFactor,  DateTime createdAt,  DateTime updatedAt,  DateTime? lastLoginAt,  bool isActive,  bool isDeleted,  DateTime? deletedAt,  String department,  double commissionRate,  int fontSize,  String keyboardShortcutsJson,  String permissionsJson)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String username,  String displayName,  String orgId,  String passwordHash,  UserRole role,  String themeKey,  String avatarPath,  double hourlyRate,  double speedFactor,  DateTime createdAt,  DateTime updatedAt,  DateTime? lastLoginAt,  bool isActive,  bool isDeleted,  DateTime? deletedAt,  String department,  double commissionRate,  int fontSize,  String keyboardShortcutsJson,  String permissionsJson)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.username,_that.displayName,_that.passwordHash,_that.role,_that.themeKey,_that.avatarPath,_that.hourlyRate,_that.speedFactor,_that.createdAt,_that.updatedAt,_that.lastLoginAt,_that.isActive,_that.isDeleted,_that.deletedAt,_that.department,_that.commissionRate,_that.fontSize,_that.keyboardShortcutsJson,_that.permissionsJson);case _:
+return $default(_that.id,_that.username,_that.displayName,_that.orgId,_that.passwordHash,_that.role,_that.themeKey,_that.avatarPath,_that.hourlyRate,_that.speedFactor,_that.createdAt,_that.updatedAt,_that.lastLoginAt,_that.isActive,_that.isDeleted,_that.deletedAt,_that.department,_that.commissionRate,_that.fontSize,_that.keyboardShortcutsJson,_that.permissionsJson);case _:
   return orElse();
 
 }
@@ -213,10 +215,10 @@ return $default(_that.id,_that.username,_that.displayName,_that.passwordHash,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String username,  String displayName,  String passwordHash,  UserRole role,  String themeKey,  String avatarPath,  double hourlyRate,  double speedFactor,  DateTime createdAt,  DateTime updatedAt,  DateTime? lastLoginAt,  bool isActive,  bool isDeleted,  DateTime? deletedAt,  String department,  double commissionRate,  int fontSize,  String keyboardShortcutsJson,  String permissionsJson)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String username,  String displayName,  String orgId,  String passwordHash,  UserRole role,  String themeKey,  String avatarPath,  double hourlyRate,  double speedFactor,  DateTime createdAt,  DateTime updatedAt,  DateTime? lastLoginAt,  bool isActive,  bool isDeleted,  DateTime? deletedAt,  String department,  double commissionRate,  int fontSize,  String keyboardShortcutsJson,  String permissionsJson)  $default,) {final _that = this;
 switch (_that) {
 case _User():
-return $default(_that.id,_that.username,_that.displayName,_that.passwordHash,_that.role,_that.themeKey,_that.avatarPath,_that.hourlyRate,_that.speedFactor,_that.createdAt,_that.updatedAt,_that.lastLoginAt,_that.isActive,_that.isDeleted,_that.deletedAt,_that.department,_that.commissionRate,_that.fontSize,_that.keyboardShortcutsJson,_that.permissionsJson);case _:
+return $default(_that.id,_that.username,_that.displayName,_that.orgId,_that.passwordHash,_that.role,_that.themeKey,_that.avatarPath,_that.hourlyRate,_that.speedFactor,_that.createdAt,_that.updatedAt,_that.lastLoginAt,_that.isActive,_that.isDeleted,_that.deletedAt,_that.department,_that.commissionRate,_that.fontSize,_that.keyboardShortcutsJson,_that.permissionsJson);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -233,10 +235,10 @@ return $default(_that.id,_that.username,_that.displayName,_that.passwordHash,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String username,  String displayName,  String passwordHash,  UserRole role,  String themeKey,  String avatarPath,  double hourlyRate,  double speedFactor,  DateTime createdAt,  DateTime updatedAt,  DateTime? lastLoginAt,  bool isActive,  bool isDeleted,  DateTime? deletedAt,  String department,  double commissionRate,  int fontSize,  String keyboardShortcutsJson,  String permissionsJson)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String username,  String displayName,  String orgId,  String passwordHash,  UserRole role,  String themeKey,  String avatarPath,  double hourlyRate,  double speedFactor,  DateTime createdAt,  DateTime updatedAt,  DateTime? lastLoginAt,  bool isActive,  bool isDeleted,  DateTime? deletedAt,  String department,  double commissionRate,  int fontSize,  String keyboardShortcutsJson,  String permissionsJson)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.username,_that.displayName,_that.passwordHash,_that.role,_that.themeKey,_that.avatarPath,_that.hourlyRate,_that.speedFactor,_that.createdAt,_that.updatedAt,_that.lastLoginAt,_that.isActive,_that.isDeleted,_that.deletedAt,_that.department,_that.commissionRate,_that.fontSize,_that.keyboardShortcutsJson,_that.permissionsJson);case _:
+return $default(_that.id,_that.username,_that.displayName,_that.orgId,_that.passwordHash,_that.role,_that.themeKey,_that.avatarPath,_that.hourlyRate,_that.speedFactor,_that.createdAt,_that.updatedAt,_that.lastLoginAt,_that.isActive,_that.isDeleted,_that.deletedAt,_that.department,_that.commissionRate,_that.fontSize,_that.keyboardShortcutsJson,_that.permissionsJson);case _:
   return null;
 
 }
@@ -248,7 +250,7 @@ return $default(_that.id,_that.username,_that.displayName,_that.passwordHash,_th
 @JsonSerializable()
 
 class _User extends User {
-  const _User({required this.id, required this.username, this.displayName = '', this.passwordHash = '', this.role = UserRole.artist, this.themeKey = 'InfernalNeon', this.avatarPath = '', this.hourlyRate = 150.0, this.speedFactor = 1.0, required this.createdAt, required this.updatedAt, this.lastLoginAt, this.isActive = true, this.isDeleted = false, this.deletedAt, this.department = '', this.commissionRate = 0.0, this.fontSize = 14, this.keyboardShortcutsJson = '', this.permissionsJson = ''}): super._();
+  const _User({required this.id, required this.username, this.displayName = '', this.orgId = 'default-org', this.passwordHash = '', this.role = UserRole.artist, this.themeKey = 'InfernalNeon', this.avatarPath = '', this.hourlyRate = 150.0, this.speedFactor = 1.0, required this.createdAt, required this.updatedAt, this.lastLoginAt, this.isActive = true, this.isDeleted = false, this.deletedAt, this.department = '', this.commissionRate = 0.0, this.fontSize = 14, this.keyboardShortcutsJson = '', this.permissionsJson = ''}): super._();
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 /// Primary key
@@ -257,6 +259,8 @@ class _User extends User {
 @override final  String username;
 /// Display name for UI
 @override@JsonKey() final  String displayName;
+/// Organization ID for multi-tenant isolation
+@override@JsonKey() final  String orgId;
 /// Hashed password (BCrypt)
 @override@JsonKey() final  String passwordHash;
 /// User role (Admin/Artist)
@@ -305,16 +309,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.passwordHash, passwordHash) || other.passwordHash == passwordHash)&&(identical(other.role, role) || other.role == role)&&(identical(other.themeKey, themeKey) || other.themeKey == themeKey)&&(identical(other.avatarPath, avatarPath) || other.avatarPath == avatarPath)&&(identical(other.hourlyRate, hourlyRate) || other.hourlyRate == hourlyRate)&&(identical(other.speedFactor, speedFactor) || other.speedFactor == speedFactor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.department, department) || other.department == department)&&(identical(other.commissionRate, commissionRate) || other.commissionRate == commissionRate)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.keyboardShortcutsJson, keyboardShortcutsJson) || other.keyboardShortcutsJson == keyboardShortcutsJson)&&(identical(other.permissionsJson, permissionsJson) || other.permissionsJson == permissionsJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.orgId, orgId) || other.orgId == orgId)&&(identical(other.passwordHash, passwordHash) || other.passwordHash == passwordHash)&&(identical(other.role, role) || other.role == role)&&(identical(other.themeKey, themeKey) || other.themeKey == themeKey)&&(identical(other.avatarPath, avatarPath) || other.avatarPath == avatarPath)&&(identical(other.hourlyRate, hourlyRate) || other.hourlyRate == hourlyRate)&&(identical(other.speedFactor, speedFactor) || other.speedFactor == speedFactor)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.department, department) || other.department == department)&&(identical(other.commissionRate, commissionRate) || other.commissionRate == commissionRate)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.keyboardShortcutsJson, keyboardShortcutsJson) || other.keyboardShortcutsJson == keyboardShortcutsJson)&&(identical(other.permissionsJson, permissionsJson) || other.permissionsJson == permissionsJson));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,username,displayName,passwordHash,role,themeKey,avatarPath,hourlyRate,speedFactor,createdAt,updatedAt,lastLoginAt,isActive,isDeleted,deletedAt,department,commissionRate,fontSize,keyboardShortcutsJson,permissionsJson]);
+int get hashCode => Object.hashAll([runtimeType,id,username,displayName,orgId,passwordHash,role,themeKey,avatarPath,hourlyRate,speedFactor,createdAt,updatedAt,lastLoginAt,isActive,isDeleted,deletedAt,department,commissionRate,fontSize,keyboardShortcutsJson,permissionsJson]);
 
 @override
 String toString() {
-  return 'User(id: $id, username: $username, displayName: $displayName, passwordHash: $passwordHash, role: $role, themeKey: $themeKey, avatarPath: $avatarPath, hourlyRate: $hourlyRate, speedFactor: $speedFactor, createdAt: $createdAt, updatedAt: $updatedAt, lastLoginAt: $lastLoginAt, isActive: $isActive, isDeleted: $isDeleted, deletedAt: $deletedAt, department: $department, commissionRate: $commissionRate, fontSize: $fontSize, keyboardShortcutsJson: $keyboardShortcutsJson, permissionsJson: $permissionsJson)';
+  return 'User(id: $id, username: $username, displayName: $displayName, orgId: $orgId, passwordHash: $passwordHash, role: $role, themeKey: $themeKey, avatarPath: $avatarPath, hourlyRate: $hourlyRate, speedFactor: $speedFactor, createdAt: $createdAt, updatedAt: $updatedAt, lastLoginAt: $lastLoginAt, isActive: $isActive, isDeleted: $isDeleted, deletedAt: $deletedAt, department: $department, commissionRate: $commissionRate, fontSize: $fontSize, keyboardShortcutsJson: $keyboardShortcutsJson, permissionsJson: $permissionsJson)';
 }
 
 
@@ -325,7 +329,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String username, String displayName, String passwordHash, UserRole role, String themeKey, String avatarPath, double hourlyRate, double speedFactor, DateTime createdAt, DateTime updatedAt, DateTime? lastLoginAt, bool isActive, bool isDeleted, DateTime? deletedAt, String department, double commissionRate, int fontSize, String keyboardShortcutsJson, String permissionsJson
+ int id, String username, String displayName, String orgId, String passwordHash, UserRole role, String themeKey, String avatarPath, double hourlyRate, double speedFactor, DateTime createdAt, DateTime updatedAt, DateTime? lastLoginAt, bool isActive, bool isDeleted, DateTime? deletedAt, String department, double commissionRate, int fontSize, String keyboardShortcutsJson, String permissionsJson
 });
 
 
@@ -342,11 +346,12 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? displayName = null,Object? passwordHash = null,Object? role = null,Object? themeKey = null,Object? avatarPath = null,Object? hourlyRate = null,Object? speedFactor = null,Object? createdAt = null,Object? updatedAt = null,Object? lastLoginAt = freezed,Object? isActive = null,Object? isDeleted = null,Object? deletedAt = freezed,Object? department = null,Object? commissionRate = null,Object? fontSize = null,Object? keyboardShortcutsJson = null,Object? permissionsJson = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? displayName = null,Object? orgId = null,Object? passwordHash = null,Object? role = null,Object? themeKey = null,Object? avatarPath = null,Object? hourlyRate = null,Object? speedFactor = null,Object? createdAt = null,Object? updatedAt = null,Object? lastLoginAt = freezed,Object? isActive = null,Object? isDeleted = null,Object? deletedAt = freezed,Object? department = null,Object? commissionRate = null,Object? fontSize = null,Object? keyboardShortcutsJson = null,Object? permissionsJson = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
+as String,orgId: null == orgId ? _self.orgId : orgId // ignore: cast_nullable_to_non_nullable
 as String,passwordHash: null == passwordHash ? _self.passwordHash : passwordHash // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as UserRole,themeKey: null == themeKey ? _self.themeKey : themeKey // ignore: cast_nullable_to_non_nullable

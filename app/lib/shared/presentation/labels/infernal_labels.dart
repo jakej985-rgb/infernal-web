@@ -1,44 +1,116 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../util/shared_prefs_provider.dart';
 
-class UseInfernalLabelsNotifier extends Notifier<bool> {
+/// Label mode constants
+const kLabelModeStandard = 'standard';
+const kLabelModeStudio   = 'studio';
+const kLabelModeInfernal = 'infernal';
+const kLabelModeCustom   = 'custom';
+
+const kPrefLabelMode = 'label_mode';
+
+// ─── Provider ────────────────────────────────────────────────────────────────
+
+class LabelModeNotifier extends Notifier<String> {
   @override
-  bool build() {
+  String build() {
     final prefs = ref.watch(sharedPreferencesProvider);
-    return prefs.getBool('use_infernal_labels') ?? false;
+    // Migrate old bool pref → new string pref
+    final legacy = prefs.getBool('use_infernal_labels');
+    if (legacy != null && !prefs.containsKey(kPrefLabelMode)) {
+      return legacy ? kLabelModeStudio : kLabelModeStandard;
+    }
+    return prefs.getString(kPrefLabelMode) ?? kLabelModeStandard;
   }
 
-  Future<void> toggle(bool value) async {
+  Future<void> setMode(String mode) async {
     final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool('use_infernal_labels', value);
-    state = value;
+    await prefs.setString(kPrefLabelMode, mode);
+    state = mode;
+  }
+
+  /// Legacy compat — kept so any old callers don't crash
+  Future<void> toggle(bool value) async {
+    await setMode(value ? kLabelModeStudio : kLabelModeStandard);
   }
 }
 
-final useInfernalLabelsProvider =
-    NotifierProvider<UseInfernalLabelsNotifier, bool>(() {
-      return UseInfernalLabelsNotifier();
-    });
+final labelModeProvider =
+    NotifierProvider<LabelModeNotifier, String>(
+      () => LabelModeNotifier(),
+    );
+
+// ─── AppLabels (short convenience labels) ────────────────────────────────────
 
 class AppLabels {
-  static String client(bool useInfernal) => useInfernal ? "Canvas" : "Client";
-  static String date(bool useInfernal) => useInfernal ? "Session Date" : "Date";
-  static String time(bool useInfernal) => useInfernal ? "Session Time" : "Time";
-  static String service(bool useInfernal) => useInfernal ? "Service" : "Service";
-  static String name(bool useInfernal) => useInfernal ? "Name of Essence" : "Name";
-  static String category(bool useInfernal) =>
-      useInfernal ? "Category (Inks, Needles, etc.)" : "Category";
+  static String client(String mode, [Map<String, String>? custom]) {
+    if (mode == kLabelModeCustom && custom != null && custom.containsKey('contacts')) return custom['contacts']!;
+    switch (mode) {
+      case kLabelModeStudio:   return 'Canvas';
+      case kLabelModeInfernal: return 'Bound Soul';
+      default:                 return 'Client';
+    }
+  }
+
+  static String date(String mode, [Map<String, String>? custom]) {
+    switch (mode) {
+      case kLabelModeStudio:   return 'Session Date';
+      case kLabelModeInfernal: return 'Rite Date';
+      default:                 return 'Date';
+    }
+  }
+
+  static String time(String mode, [Map<String, String>? custom]) {
+    switch (mode) {
+      case kLabelModeStudio:   return 'Session Time';
+      case kLabelModeInfernal: return 'Rite Hour';
+      default:                 return 'Time';
+    }
+  }
+
+  static String service(String mode, [Map<String, String>? custom]) => 'Service';
+
+  static String name(String mode, [Map<String, String>? custom]) {
+    switch (mode) {
+      case kLabelModeStudio:   return 'Name of Essence';
+      case kLabelModeInfernal: return 'True Name';
+      default:                 return 'Name';
+    }
+  }
+
+  static String category(String mode, [Map<String, String>? custom]) {
+    switch (mode) {
+      case kLabelModeStudio:   return 'Category (Inks, Needles, etc.)';
+      case kLabelModeInfernal: return 'Classification';
+      default:                 return 'Category';
+    }
+  }
 }
 
+// ─── UiLabels (full label maps) ───────────────────────────────────────────────
+
 class UiLabels {
+  // ── Standard ──────────────────────────────────────────────────────────────
   static const standardLabels = {
     'home': 'Home',
     'calendar': 'Calendar',
     'contacts': 'Contacts',
     'quotes': 'Quotes',
+    'documents': 'Documents',
     'settings': 'Settings',
     'stats': 'Stats',
     'tools': 'Tools',
+    'documents_title': 'DOCUMENTS',
+    'documents_upload': 'Upload Document',
+    'documents_edit': 'Edit Document',
+    'documents_empty': 'No documents found.',
+    'documents_search': 'Search documents…',
+    'documents_client_section': 'DOCUMENTS & WAIVERS',
+    'documents_client_empty': 'No documents attached.',
+    'document_details': 'Document',
+    'document_delete_title': 'Delete Document?',
+    'document_delete_content': 'This action cannot be undone.',
+    'document_open': 'Open Document',
     'app_title': 'INK & STEEL',
     'dashboard_title': 'DASHBOARD',
     'todays_appointments': "Today's Appointments",
@@ -85,16 +157,31 @@ class UiLabels {
     'delete_quote_title': 'Delete Estimate?',
     'delete_quote_content': 'This action cannot be undone. Continue?',
     'quote_not_found': 'Estimate not found',
+    'new_appointment': 'New Appointment',
+    'edit_appointment': 'Edit Appointment',
   };
 
-  static const infernalLabels = {
+  // ── Studio Mode (previously "infernal") ──────────────────────────────────
+  static const studioLabels = {
     'home': 'Studio',
     'calendar': 'Sessions',
     'contacts': 'Canvases',
     'quotes': 'Stencils',
+    'documents': 'Scrolls',
     'settings': 'Autoclave',
     'stats': 'Ledger',
     'tools': 'Station',
+    'documents_title': 'SCROLLS & PACTS',
+    'documents_upload': 'Bind New Scroll',
+    'documents_edit': 'Edit Scroll',
+    'documents_empty': 'No scrolls or pacts on record.',
+    'documents_search': 'Search scrolls…',
+    'documents_client_section': 'SCROLLS & PACTS',
+    'documents_client_empty': 'No active pacts.',
+    'document_details': 'Scroll',
+    'document_delete_title': 'Burn This Scroll?',
+    'document_delete_content': 'This pact cannot be restored.',
+    'document_open': 'Open Scroll',
     'app_title': 'INK & STEEL',
     'dashboard_title': 'STUDIO FRONT',
     'todays_appointments': "Today's Sessions",
@@ -114,8 +201,7 @@ class UiLabels {
     'search_placeholder': 'Search canvases...',
     'no_clients_found': 'No canvases found.',
     'delete_client_title': 'Archive Canvas?',
-    'delete_client_content':
-        'This canvas record will be soft deleted. Continue?',
+    'delete_client_content': 'This canvas record will be soft deleted. Continue?',
     'delete_client_action': 'Archive',
     'timeline_title': 'SESSION SCHEDULE',
     'stats_title': 'SHOP LEDGER // Stats',
@@ -142,12 +228,104 @@ class UiLabels {
     'delete_quote_title': 'Delete Stencil?',
     'delete_quote_content': 'This stencil estimate will be deleted. Continue?',
     'quote_not_found': 'Stencil not found',
+    'new_appointment': 'New Session',
+    'edit_appointment': 'Edit Session',
   };
 
-  static String get(String key, bool useInfernal) {
-    if (useInfernal) {
-      return infernalLabels[key] ?? standardLabels[key] ?? key;
+  // ── Infernal / Dark Mode ──────────────────────────────────────────────────
+  static const infernalLabels = {
+    'home': 'Altar',
+    'calendar': 'Dark Rites',
+    'contacts': 'Bound Souls',
+    'quotes': 'Blood Pacts',
+    'documents': 'Grimoire',
+    'settings': 'Blood Rites',
+    'stats': 'Blood Ledger',
+    'tools': 'Arsenal',
+    'documents_title': 'GRIMOIRE',
+    'documents_upload': 'Inscribe Grimoire',
+    'documents_edit': 'Edit Inscription',
+    'documents_empty': 'The grimoire is empty.',
+    'documents_search': 'Search grimoire…',
+    'documents_client_section': 'GRIMOIRE ENTRIES',
+    'documents_client_empty': 'No inscriptions found.',
+    'document_details': 'Inscription',
+    'document_delete_title': 'Burn This Inscription?',
+    'document_delete_content': 'This dark knowledge cannot be restored.',
+    'document_open': 'Read Inscription',
+    'app_title': 'INFERNAL INK',
+    'dashboard_title': 'THE ALTAR',
+    'todays_appointments': "Tonight's Rites",
+    'active_clients': 'Bound Souls',
+    'open_quotes': 'Open Blood Pacts',
+    'pending_actions': 'Dark Tasks',
+    'empty_appointments': 'No rituals scheduled tonight.',
+    'no_upcoming_appointments': 'No dark rites foreseen.',
+    'admin_status_title': 'DARK OPS // Status',
+    'admin_users_title': 'COVEN // Members',
+    'settings_title': 'BLOOD RITES',
+    'recent_logs': 'DARK CHRONICLE',
+    'logs_error': 'Error loading chronicles',
+    'edit_client': 'Edit Soul',
+    'add_client': 'Bind New Soul',
+    'client_details': 'Soul Details',
+    'search_placeholder': 'Search souls...',
+    'no_clients_found': 'No souls found.',
+    'delete_client_title': 'Release This Soul?',
+    'delete_client_content': 'This soul will be unbound. Continue?',
+    'delete_client_action': 'Release',
+    'timeline_title': 'RITUAL TIMELINE',
+    'stats_title': 'BLOOD LEDGER // Stats',
+    'summoning_grid_title': 'DARK SUMMONING',
+    'action_new_ritual': 'Rite+',
+    'action_new_soul': 'Soul+',
+    'action_new_quote': 'Pact+',
+    'action_supplies': 'Arsenal',
+    'action_invocation': 'Invoke',
+    'upcoming_sessions': 'Upcoming Rites',
+    'no_future_visions': 'No rituals foreseen.',
+    'no_events_day': 'No dark rites this day.',
+    'tools_title': 'ARSENAL // Tools',
+    'tool_inventory_title': 'Dark Supplies',
+    'tool_inventory_subtitle': 'Manage infernal arsenal',
+    'tool_messages_title': 'Invocations',
+    'tool_messages_subtitle': 'Soul communications',
+    'appointment_details': 'Ritual Details',
+    'delete_appointment_title': 'Cancel This Rite?',
+    'delete_appointment_content':
+        'This dark rite will be struck from the grimoire. Continue?',
+    'appointment_not_found': 'Ritual not found',
+    'quote_details': 'Blood Pact Details',
+    'delete_quote_title': 'Void This Pact?',
+    'delete_quote_content': 'This blood pact will be voided. Continue?',
+    'quote_not_found': 'Pact not found',
+    'new_appointment': 'New Rite',
+    'edit_appointment': 'Edit Rite',
+  };
+
+  static String get(String key, String mode, [Map<String, String>? custom]) {
+    // 🟣 CUSTOM LAYER
+    if (mode == kLabelModeCustom && custom != null) {
+      if (custom.containsKey(key)) {
+        return custom[key]!;
+      }
     }
+
+    // 🔵 INFERNAL LAYER
+    if (mode == kLabelModeInfernal && infernalLabels.containsKey(key)) {
+      return infernalLabels[key]!;
+    }
+
+    // 🔵 STUDIO LAYER
+    if (mode == kLabelModeStudio && studioLabels.containsKey(key)) {
+      return studioLabels[key]!;
+    }
+
+    // ⚪ STANDARD LAYER
+    assert(
+      standardLabels.containsKey(key),
+      'Missing label key: $key',
+    );
     return standardLabels[key] ?? key;
   }
 }

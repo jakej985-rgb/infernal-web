@@ -32,6 +32,7 @@ dependencies:
   rxdart: ^0.28.0
   table_calendar: ^3.2.0
   image_picker: ^1.2.1
+  file_picker: ^8.1.7
   flutter_secure_storage: ^10.3.1
   
   # Firebase

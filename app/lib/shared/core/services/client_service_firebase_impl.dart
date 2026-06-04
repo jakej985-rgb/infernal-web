@@ -57,8 +57,13 @@ class ClientServiceFirebaseImpl implements ClientService {
 
       await docRef.set({
         'name': client.fullName,
+        'first_name': client.firstName,
+        'middle_name': client.middleName,
+        'last_name': client.lastName,
         'email': client.email,
         'phone': client.phone,
+        'notes': client.notes,
+        'photoPath': client.photoPath,
         'isDeleted': false,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -78,8 +83,13 @@ class ClientServiceFirebaseImpl implements ClientService {
 
       await _clientsRef.doc(uuid).update({
         'name': client.fullName,
+        'first_name': client.firstName,
+        'middle_name': client.middleName,
+        'last_name': client.lastName,
         'email': client.email,
         'phone': client.phone,
+        'notes': client.notes,
+        'photoPath': client.photoPath,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -140,13 +150,28 @@ class ClientServiceFirebaseImpl implements ClientService {
     final id = await _idMapper.registerUuid('client', uuid);
 
     final data = doc.data() ?? {};
-    final fullName = data['name'] as String? ?? '';
-    final parts = fullName.trim().split(' ');
-    final firstName = parts.isNotEmpty ? parts.first : '';
-    final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    
+    String firstName = data['first_name'] as String? ?? '';
+    String middleName = data['middle_name'] as String? ?? '';
+    String lastName = data['last_name'] as String? ?? '';
+
+    // Fallback parsing if fields are absent
+    if (firstName.isEmpty && lastName.isEmpty) {
+      final fullName = data['name'] as String? ?? '';
+      final parts = fullName.trim().split(' ');
+      firstName = parts.isNotEmpty ? parts.first : '';
+      if (parts.length > 2) {
+        middleName = parts[1];
+        lastName = parts.sublist(2).join(' ');
+      } else if (parts.length > 1) {
+        lastName = parts[1];
+      }
+    }
 
     final email = data['email'] as String? ?? '';
     final phone = data['phone'] as String? ?? '';
+    final notes = data['notes'] as String? ?? '';
+    final photoPath = data['photoPath'] as String? ?? '';
 
     final updatedAtTimestamp = data['updatedAt'] as Timestamp?;
     final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
@@ -157,9 +182,12 @@ class ClientServiceFirebaseImpl implements ClientService {
       id: id,
       syncId: uuid,
       firstName: firstName,
+      middleName: middleName,
       lastName: lastName,
       email: email,
       phone: phone,
+      notes: notes,
+      photoPath: photoPath,
       createdAt: createdAt.toUtc(),
       lastModifiedUtc: updatedAt.toUtc(),
     );

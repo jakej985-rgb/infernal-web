@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,12 +12,13 @@ class ToolsHubPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(UiLabels.get('tools_title', useInfernal)),
+        title: Text(UiLabels.get('tools_title', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         centerTitle: true,
@@ -59,7 +61,7 @@ class ToolsHubPage extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: _ToolCard(
-                      title: UiLabels.get('tool_inventory_title', useInfernal),
+                      title: UiLabels.get('tool_inventory_title', useInfernal, customLabels),
                       subtitle: UiLabels.get(
                         'tool_inventory_subtitle',
                         useInfernal,
@@ -72,7 +74,7 @@ class ToolsHubPage extends ConsumerWidget {
                   const SizedBox(width: InfernalSpacing.lg),
                   Expanded(
                     child: _ToolCard(
-                      title: UiLabels.get('tool_messages_title', useInfernal),
+                      title: UiLabels.get('tool_messages_title', useInfernal, customLabels),
                       subtitle: UiLabels.get(
                         'tool_messages_subtitle',
                         useInfernal,

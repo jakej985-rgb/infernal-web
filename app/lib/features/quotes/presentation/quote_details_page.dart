@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +15,8 @@ class QuoteDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
     final id = int.tryParse(quoteId);
     if (id == null) {
       return const Scaffold(body: Center(child: Text('Invalid ID')));
@@ -25,7 +27,7 @@ class QuoteDetailsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(UiLabels.get('quote_details', useInfernal)),
+        title: Text(UiLabels.get('quote_details', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -35,7 +37,7 @@ class QuoteDetailsPage extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: InfernalColors.error),
-            onPressed: () => _deleteQuote(context, ref, id, useInfernal),
+            onPressed: () => _deleteQuote(context, ref, id, useInfernal, customLabels),
           ),
         ],
       ),
@@ -43,7 +45,7 @@ class QuoteDetailsPage extends ConsumerWidget {
         data: (quote) {
           if (quote == null) {
             return Center(
-              child: Text(UiLabels.get('quote_not_found', useInfernal)),
+              child: Text(UiLabels.get('quote_not_found', useInfernal, customLabels)),
             );
           }
           return ListView(
@@ -241,18 +243,18 @@ class QuoteDetailsPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     int id,
-    bool useInfernal,
+    String useInfernal, Map<String, String>? customLabels,
   ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
         title: Text(
-          UiLabels.get('delete_quote_title', useInfernal),
+          UiLabels.get('delete_quote_title', useInfernal, customLabels),
           style: const TextStyle(color: InfernalColors.textPrimary),
         ),
         content: Text(
-          UiLabels.get('delete_quote_content', useInfernal),
+          UiLabels.get('delete_quote_content', useInfernal, customLabels),
           style: const TextStyle(color: InfernalColors.textSecondary),
         ),
         actions: [

@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -14,7 +15,7 @@ import '../../../app/router.dart';
 enum AppointmentsViewMode { list, calendar }
 
 final appointmentsViewModeProvider = StateProvider<AppointmentsViewMode>(
-  (ref) => AppointmentsViewMode.list,
+  (ref) => AppointmentsViewMode.calendar,
 );
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
@@ -27,12 +28,13 @@ class AppointmentsListPage extends ConsumerWidget {
     final upcomingAsync = ref.watch(upcomingAppointmentsProvider);
     final todaysAsync = ref.watch(todaysAppointmentsProvider);
     final allAsync = ref.watch(allAppointmentsProvider);
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(UiLabels.get('calendar', useInfernal)),
+        title: Text(UiLabels.get('calendar', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -77,19 +79,20 @@ class _ListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SectionHeader(
-            title: UiLabels.get('todays_appointments', useInfernal),
+            title: UiLabels.get('todays_appointments', useInfernal, customLabels),
           ),
           todaysAsync.when(
             data: (data) => _AppointmentList(
               appointments: data,
-              emptyText: UiLabels.get('empty_appointments', useInfernal),
+              emptyText: UiLabels.get('empty_appointments', useInfernal, customLabels),
             ),
             loading: () => const Padding(
               padding: EdgeInsets.all(InfernalSpacing.md),
@@ -104,11 +107,11 @@ class _ListView extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: InfernalSpacing.lg),
-          _SectionHeader(title: UiLabels.get('upcoming_sessions', useInfernal)),
+          _SectionHeader(title: UiLabels.get('upcoming_sessions', useInfernal, customLabels)),
           upcomingAsync.when(
             data: (data) => _AppointmentList(
               appointments: data,
-              emptyText: UiLabels.get('no_future_visions', useInfernal),
+              emptyText: UiLabels.get('no_future_visions', useInfernal, customLabels),
             ),
             loading: () => const Padding(
               padding: EdgeInsets.all(InfernalSpacing.md),
@@ -222,9 +225,10 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
         Expanded(
           child: _AppointmentList(
             appointments: _getEventsForDay(selectedDay),
+            physics: const AlwaysScrollableScrollPhysics(),
             emptyText: UiLabels.get(
               'no_events_day',
-              ref.watch(useInfernalLabelsProvider),
+              ref.watch(labelModeProvider),
             ),
           ),
         ),
@@ -261,8 +265,13 @@ class _SectionHeader extends StatelessWidget {
 class _AppointmentList extends StatelessWidget {
   final List<domain.Appointment> appointments;
   final String emptyText;
+  final ScrollPhysics physics;
 
-  const _AppointmentList({required this.appointments, required this.emptyText});
+  const _AppointmentList({
+    required this.appointments,
+    required this.emptyText,
+    this.physics = const NeverScrollableScrollPhysics(),
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +290,7 @@ class _AppointmentList extends StatelessWidget {
 
     return ListView.separated(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: physics,
       padding: const EdgeInsets.symmetric(horizontal: InfernalSpacing.md),
       itemCount: appointments.length,
       separatorBuilder: (_, index) =>

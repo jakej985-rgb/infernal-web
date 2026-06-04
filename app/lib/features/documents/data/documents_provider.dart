@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/core/services/document_service.dart' as srv;
 import '../../../../shared/domain/document.dart' as domain;
@@ -34,6 +35,14 @@ Stream<domain.Document?> documentDetail(Ref ref, int id) {
 }
 
 @riverpod
+Stream<List<domain.Document>> clientDocuments(Ref ref, int clientId) {
+  final docService = ref.watch(srv.documentServiceProvider);
+  return docService.watchDocuments().map((docs) {
+    return docs.where((doc) => doc.clientId == clientId).toList();
+  });
+}
+
+@riverpod
 DocumentsService documentsService(Ref ref) {
   return DocumentsService(ref);
 }
@@ -44,12 +53,32 @@ class DocumentsService {
 
   srv.DocumentService get _service => _ref.read(srv.documentServiceProvider);
 
-  Future<void> createDocument(domain.Document doc) async {
-    await _service.createDocument(doc);
+  Future<void> createDocument(
+    domain.Document doc, {
+    Uint8List? bytes,
+    String? fileName,
+    String? contentType,
+  }) async {
+    await _service.createDocument(
+      doc,
+      bytes: bytes,
+      fileName: fileName,
+      contentType: contentType,
+    );
   }
 
-  Future<void> updateDocument(domain.Document doc) async {
-    await _service.updateDocument(doc);
+  Future<void> updateDocument(
+    domain.Document doc, {
+    Uint8List? bytes,
+    String? fileName,
+    String? contentType,
+  }) async {
+    await _service.updateDocument(
+      doc,
+      bytes: bytes,
+      fileName: fileName,
+      contentType: contentType,
+    );
   }
 
   Future<void> deleteDocument(int id) async {

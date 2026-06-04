@@ -20,6 +20,9 @@ abstract class User with _$User {
     /// Display name for UI
     @Default('') String displayName,
 
+    /// Organization ID for multi-tenant isolation
+    @Default('default-org') String orgId,
+
     /// Hashed password (BCrypt)
     @Default('') String passwordHash,
 

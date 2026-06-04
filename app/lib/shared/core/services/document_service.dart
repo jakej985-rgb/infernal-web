@@ -50,7 +50,16 @@ class DocumentService {
     });
   }
 
-  Future<void> createDocument(domain.Document doc) async {
+  /// Upload a document with real file bytes to Firebase Storage.
+  /// [bytes] – raw file data from file_picker
+  /// [fileName] – original filename (used for storage path)
+  /// [contentType] – MIME type e.g. 'image/jpeg', 'application/pdf'
+  Future<void> createDocument(
+    domain.Document doc, {
+    Uint8List? bytes,
+    String? fileName,
+    String? contentType,
+  }) async {
     final clientUuid = _idMapper.getUuid('client', doc.clientId);
     if (clientUuid == null) {
       throw Exception('Could not resolve client UUID.');
@@ -59,23 +68,30 @@ class DocumentService {
     final docRef = _documentsRef.doc();
     final uuid = docRef.id;
 
-    // 1. Upload file bytes to Firebase Storage
-    final storageRef = fb_storage.FirebaseStorage.instance
-        .ref()
-        .child('organizations')
-        .child(_orgId)
-        .child('clients')
-        .child(clientUuid)
-        .child('documents')
-        .child('${uuid}_${doc.title}');
+    String downloadUrl = doc.filePath;
 
-    final uploadTask = storageRef.putData(
-      Uint8List.fromList('dummy file contents'.codeUnits),
-    );
-    final snapshot = await uploadTask;
-    final downloadUrl = await snapshot.ref.getDownloadURL();
+    if (bytes != null && bytes.isNotEmpty) {
+      final safeFileName = fileName ?? '${doc.title}_${DateTime.now().millisecondsSinceEpoch}';
+      final storageRef = fb_storage.FirebaseStorage.instance
+          .ref()
+          .child('organizations')
+          .child(_orgId)
+          .child('clients')
+          .child(clientUuid)
+          .child('documents')
+          .child('${uuid}_$safeFileName');
 
-    // 2. Save metadata to Firestore
+      final metadata = contentType != null
+          ? fb_storage.SettableMetadata(contentType: contentType)
+          : null;
+
+      final uploadTask = metadata != null
+          ? storageRef.putData(bytes, metadata)
+          : storageRef.putData(bytes);
+      final snapshot = await uploadTask;
+      downloadUrl = await snapshot.ref.getDownloadURL();
+    }
+
     await docRef.set({
       'client_id': clientUuid,
       'title': doc.title,
@@ -88,17 +104,46 @@ class DocumentService {
     await _idMapper.registerUuid('document', uuid);
   }
 
-  Future<void> updateDocument(domain.Document doc) async {
+  Future<void> updateDocument(
+    domain.Document doc, {
+    Uint8List? bytes,
+    String? fileName,
+    String? contentType,
+  }) async {
     final uuid = _idMapper.getUuid('document', doc.id);
     if (uuid == null) throw Exception('Could not resolve document UUID.');
 
     final clientUuid = _idMapper.getUuid('client', doc.clientId);
     if (clientUuid == null) throw Exception('Could not resolve client UUID.');
 
+    String filePath = doc.filePath;
+
+    if (bytes != null && bytes.isNotEmpty) {
+      final safeFileName = fileName ?? '${doc.title}_${DateTime.now().millisecondsSinceEpoch}';
+      final storageRef = fb_storage.FirebaseStorage.instance
+          .ref()
+          .child('organizations')
+          .child(_orgId)
+          .child('clients')
+          .child(clientUuid)
+          .child('documents')
+          .child('${uuid}_$safeFileName');
+
+      final metadata = contentType != null
+          ? fb_storage.SettableMetadata(contentType: contentType)
+          : null;
+
+      final uploadTask = metadata != null
+          ? storageRef.putData(bytes, metadata)
+          : storageRef.putData(bytes);
+      final snapshot = await uploadTask;
+      filePath = await snapshot.ref.getDownloadURL();
+    }
+
     await _documentsRef.doc(uuid).update({
       'client_id': clientUuid,
       'title': doc.title,
-      'filePath': doc.filePath,
+      'filePath': filePath,
     });
   }
 
@@ -132,7 +177,7 @@ class DocumentService {
     return domain.Document(
       id: id,
       syncId: uuid,
-      uploadedByUserId: 1, // Default local user ID
+      uploadedByUserId: 1,
       clientId: clientId,
       title: title,
       filePath: filePath,

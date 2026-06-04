@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -249,14 +250,19 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
         title: Text(
           widget.quoteId == null
-              ? (useInfernal ? 'New Stencil' : 'New Estimate')
-              : (useInfernal ? 'Edit Stencil' : 'Edit Estimate'),
+              ? (useInfernal == kLabelModeInfernal ? 'New Blood Pact'
+                 : useInfernal == kLabelModeStudio ? 'New Stencil'
+                 : 'New Estimate')
+              : (useInfernal == kLabelModeInfernal ? 'Edit Blood Pact'
+                 : useInfernal == kLabelModeStudio ? 'Edit Stencil'
+                 : 'Edit Estimate'),
         ),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
@@ -301,8 +307,8 @@ class _QuoteFormPageState extends ConsumerState<QuoteFormPage> {
                           (_isLoading ||
                                   (widget.quoteId != null &&
                                       _selectedClient == null)
-                              ? '${AppLabels.client(useInfernal)} (Tap to Select)'
-                              : 'Select ${AppLabels.client(useInfernal)}'),
+                              ? '${AppLabels.client(useInfernal, customLabels)} (Tap to Select)'
+                              : 'Select ${AppLabels.client(useInfernal, customLabels)}'),
                       style: TextStyle(
                         color: _selectedClient != null
                             ? InfernalColors.textPrimary

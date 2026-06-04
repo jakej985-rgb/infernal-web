@@ -1,9 +1,13 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../app/theme/tokens.dart';
 import '../data/documents_provider.dart';
+import '../../../../shared/domain/document.dart';
+import '../../../shared/data/infernal_labels_provider.dart';
 
 class DocumentDetailsPage extends ConsumerWidget {
   final String documentId;
@@ -17,11 +21,13 @@ class DocumentDetailsPage extends ConsumerWidget {
     }
 
     final docAsync = ref.watch(documentDetailProvider(id));
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: const Text('Document Details'),
+        title: Text(UiLabels.get('document_details', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -31,7 +37,7 @@ class DocumentDetailsPage extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: InfernalColors.error),
-            onPressed: () => _deleteDoc(context, ref, id),
+            onPressed: () => _deleteDoc(context, ref, id, useInfernal, customLabels),
           ),
         ],
       ),
@@ -40,59 +46,15 @@ class DocumentDetailsPage extends ConsumerWidget {
           if (doc == null) {
             return const Center(child: Text('Document not found'));
           }
-          return Padding(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(InfernalSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  doc.title,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: InfernalColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: InfernalSpacing.md),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: InfernalColors.textSecondary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Uploaded: ${DateFormat.yMMMd().format(doc.createdAt)}",
-                      style: const TextStyle(
-                        color: InfernalColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: InfernalSpacing.sm),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.person,
-                      size: 16,
-                      color: InfernalColors.textSecondary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Client ID: ${doc.clientId}",
-                      style: const TextStyle(
-                        color: InfernalColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: InfernalSpacing.lg),
-                const Divider(color: InfernalColors.divider),
-                const SizedBox(height: InfernalSpacing.lg),
-
-                // File simulation
+                // ── Header card ─────────────────────────────────────────
                 Container(
-                  padding: const EdgeInsets.all(InfernalSpacing.lg),
                   width: double.infinity,
+                  padding: const EdgeInsets.all(InfernalSpacing.lg),
                   decoration: BoxDecoration(
                     color: InfernalColors.surface,
                     borderRadius: BorderRadius.circular(InfernalRadius.md),
@@ -100,56 +62,119 @@ class DocumentDetailsPage extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      const Icon(
-                        Icons.insert_drive_file,
-                        size: 64,
-                        color: InfernalColors.arcane,
-                      ),
+                      _typeIcon(doc),
                       const SizedBox(height: InfernalSpacing.md),
                       Text(
-                        doc.filePath.isEmpty ? 'No file path' : doc.filePath,
-                        style: const TextStyle(color: InfernalColors.textMuted),
+                        doc.title,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(
+                          color: InfernalColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: InfernalSpacing.lg),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Opening file...")),
-                          );
-                        },
-                        icon: const Icon(Icons.open_in_new),
-                        label: const Text("Open Document"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: InfernalColors.arcane,
-                          foregroundColor: Colors.white,
+                      const SizedBox(height: InfernalSpacing.sm),
+                      Text(
+                        'Uploaded ${DateFormat.yMMMd().format(doc.createdAt)}',
+                        style: const TextStyle(
+                          color: InfernalColors.textSecondary,
+                          fontSize: 13,
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                const SizedBox(height: InfernalSpacing.lg),
+
+                // ── File Preview ─────────────────────────────────────────
+                _FilePreview(doc: doc),
+
+                const SizedBox(height: InfernalSpacing.lg),
+
+                // ── Open / Download button ────────────────────────────────
+                if (doc.filePath.isNotEmpty)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _openFile(context, doc, useInfernal, customLabels),
+                      icon: const Icon(Icons.open_in_new),
+                      label: Text(UiLabels.get('document_open', useInfernal, customLabels)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: InfernalColors.blood,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: InfernalSpacing.md),
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text("Error: $e")),
+        error: (e, s) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
-  void _deleteDoc(BuildContext context, WidgetRef ref, int id) {
+  Widget _typeIcon(Document doc) {
+    IconData icon;
+    Color color;
+    switch (doc.title) {
+      case 'ID Scan':
+        icon = Icons.badge;
+        color = Colors.blue.shade400;
+        break;
+      case 'Consent Form':
+        icon = Icons.assignment;
+        color = Colors.orange.shade400;
+        break;
+      case 'Work Pic':
+        icon = Icons.photo_camera;
+        color = Colors.purple.shade400;
+        break;
+      default:
+        icon = doc.isPdf ? Icons.picture_as_pdf : Icons.insert_drive_file;
+        color = InfernalColors.arcane;
+    }
+    return CircleAvatar(
+      radius: 30,
+      backgroundColor: color.withValues(alpha: 0.15),
+      child: Icon(icon, size: 32, color: color),
+    );
+  }
+
+  void _openFile(BuildContext context, Document doc, String useInfernal, Map<String, String>? customLabels) {
+    if (kIsWeb && doc.filePath.startsWith('http')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Opening: ${doc.filePath}'),
+          action: SnackBarAction(label: 'OK', onPressed: () {}),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Opening file…')),
+      );
+    }
+  }
+
+  void _deleteDoc(
+      BuildContext context, WidgetRef ref, int id, String useInfernal, Map<String, String>? customLabels) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
-        title: const Text(
-          'Delete Document?',
-          style: TextStyle(color: InfernalColors.textPrimary),
+        title: Text(
+          UiLabels.get('document_delete_title', useInfernal, customLabels),
+          style: const TextStyle(color: InfernalColors.textPrimary),
         ),
-        content: const Text(
-          'This action cannot be undone.',
-          style: TextStyle(color: InfernalColors.textSecondary),
+        content: Text(
+          UiLabels.get('document_delete_content', useInfernal, customLabels),
+          style: const TextStyle(color: InfernalColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -167,6 +192,125 @@ class DocumentDetailsPage extends ConsumerWidget {
               style: TextStyle(color: InfernalColors.error),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Renders a preview based on file type
+class _FilePreview extends StatelessWidget {
+  final Document doc;
+  const _FilePreview({required this.doc});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasUrl = doc.filePath.isNotEmpty && doc.filePath.startsWith('http');
+
+    if (!hasUrl) return const _EmptyPreview();
+
+    if (doc.isImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(InfernalRadius.md),
+        child: Image.network(
+          doc.filePath,
+          width: double.infinity,
+          fit: BoxFit.contain,
+          loadingBuilder: (_, child, progress) {
+            if (progress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value: progress.expectedTotalBytes != null
+                    ? progress.cumulativeBytesLoaded /
+                        progress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+          errorBuilder: (_, e, __) => const _ErrorPreview(),
+        ),
+      );
+    }
+
+    if (doc.isPdf) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(InfernalSpacing.xl),
+        decoration: BoxDecoration(
+          color: InfernalColors.surface,
+          borderRadius: BorderRadius.circular(InfernalRadius.md),
+          border: Border.all(color: InfernalColors.border),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.picture_as_pdf, size: 64, color: Colors.red.shade400),
+            const SizedBox(height: InfernalSpacing.md),
+            const Text(
+              'PDF Document',
+              style: TextStyle(
+                  color: InfernalColors.textPrimary,
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Tap "Open Document" below to view',
+              style: TextStyle(
+                  color: InfernalColors.textSecondary, fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const _EmptyPreview();
+  }
+}
+
+class _EmptyPreview extends StatelessWidget {
+  const _EmptyPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(InfernalSpacing.xl),
+      decoration: BoxDecoration(
+        color: InfernalColors.surface,
+        borderRadius: BorderRadius.circular(InfernalRadius.md),
+        border: Border.all(color: InfernalColors.border),
+      ),
+      child: const Column(
+        children: [
+          Icon(Icons.insert_drive_file,
+              size: 64, color: InfernalColors.textMuted),
+          SizedBox(height: InfernalSpacing.md),
+          Text('No file uploaded',
+              style: TextStyle(color: InfernalColors.textMuted)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorPreview extends StatelessWidget {
+  const _ErrorPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(InfernalSpacing.xl),
+      decoration: BoxDecoration(
+        color: InfernalColors.surface,
+        borderRadius: BorderRadius.circular(InfernalRadius.md),
+        border: Border.all(color: InfernalColors.border),
+      ),
+      child: const Column(
+        children: [
+          Icon(Icons.broken_image, size: 64, color: InfernalColors.textMuted),
+          SizedBox(height: InfernalSpacing.md),
+          Text('Could not load preview',
+              style: TextStyle(color: InfernalColors.textMuted)),
         ],
       ),
     );

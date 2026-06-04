@@ -29,11 +29,11 @@ service cloud.firestore {
 
       match /users/{userId} {
 
-        // 🔒 Only org members can read users
-        allow read: if isOrgMember(orgId);
+        // 🔒 Allow users to read their own profile, or if org member
+        allow read: if request.auth.uid == userId || isOrgMember(orgId);
 
-        // 🔒 NO client-side role modification
-        allow create: if false;
+        // 🔒 Allow users to create their own profile document
+        allow create: if request.auth != null && request.auth.uid == userId;
 
         // 🔒 Users can update limited fields on themselves ONLY
         allow update: if request.auth.uid == userId

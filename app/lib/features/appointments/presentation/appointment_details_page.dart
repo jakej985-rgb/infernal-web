@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,8 @@ import 'controllers/appointment_controller.dart';
 import 'widgets/appointment_status_chip.dart';
 import '../../../app/router.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
+import '../../../shared/domain/appointment.dart' as domain;
+
 
 class AppointmentDetailsPage extends ConsumerWidget {
   final String appointmentId;
@@ -16,7 +19,8 @@ class AppointmentDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
     final id = int.tryParse(appointmentId);
     if (id == null) {
       return const Scaffold(body: Center(child: Text("Invalid ID")));
@@ -27,7 +31,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: InfernalColors.background,
       appBar: AppBar(
-        title: Text(UiLabels.get('appointment_details', useInfernal)),
+        title: Text(UiLabels.get('appointment_details', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         actions: [
@@ -37,7 +41,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: InfernalColors.error),
-            onPressed: () => _deleteAppointment(context, ref, id, useInfernal),
+            onPressed: () => _deleteAppointment(context, ref, id, useInfernal, customLabels),
           ),
         ],
       ),
@@ -45,7 +49,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
         data: (apt) {
           if (apt == null) {
             return Center(
-              child: Text(UiLabels.get('appointment_not_found', useInfernal)),
+              child: Text(UiLabels.get('appointment_not_found', useInfernal, customLabels)),
             );
           }
           return SingleChildScrollView(
@@ -112,7 +116,7 @@ class AppointmentDetailsPage extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                useInfernal ? 'Canvas' : 'Client',
+                                AppLabels.client(useInfernal, customLabels),
                                 style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: InfernalColors.textSecondary,
@@ -158,6 +162,22 @@ class AppointmentDetailsPage extends ConsumerWidget {
                   label: 'Category',
                   value: apt.serviceCategory,
                 ),
+                if (apt.status == 'Completed') ...[
+                  const Divider(color: InfernalColors.divider),
+                  _InfoRow(
+                    icon: Icons.attach_money,
+                    label: 'Price Charged',
+                    value: '\$${apt.priceCharged.toStringAsFixed(2)}',
+                  ),
+                  const Divider(color: InfernalColors.divider),
+                  _InfoRow(
+                    icon: Icons.speed,
+                    label: 'Effective Hourly Rate',
+                    value: apt.durationMinutes > 0
+                        ? '\$${(apt.priceCharged / (apt.durationMinutes / 60.0)).toStringAsFixed(2)}/hr'
+                        : '\$0.00/hr',
+                  ),
+                ],
 
                 const SizedBox(height: InfernalSpacing.lg),
 
@@ -182,6 +202,58 @@ class AppointmentDetailsPage extends ConsumerWidget {
                     ),
                   ),
                 ],
+
+                const SizedBox(height: InfernalSpacing.xl),
+
+                // Status Actions Section
+                if (apt.status == 'Scheduled' || apt.status == 'In Progress') ...[
+                  Text(
+                    "UPDATE STATUS",
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: InfernalColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: InfernalSpacing.sm),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade800,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.check),
+                          label: const Text('Complete'),
+                          onPressed: () => _showCompleteDialog(context, ref, apt),
+                        ),
+                      ),
+                      const SizedBox(width: InfernalSpacing.sm),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange.shade800,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.cancel_presentation),
+                          label: const Text('No Show'),
+                          onPressed: () => _updateStatus(context, ref, apt, 'No Show'),
+                        ),
+                      ),
+                      const SizedBox(width: InfernalSpacing.sm),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade800,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.cancel),
+                          label: const Text('Cancel'),
+                          onPressed: () => _updateStatus(context, ref, apt, 'Cancelled'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           );
@@ -196,18 +268,18 @@ class AppointmentDetailsPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     int id,
-    bool useInfernal,
+    String useInfernal, Map<String, String>? customLabels,
   ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: InfernalColors.surface,
         title: Text(
-          UiLabels.get('delete_appointment_title', useInfernal),
+          UiLabels.get('delete_appointment_title', useInfernal, customLabels),
           style: const TextStyle(color: InfernalColors.textPrimary),
         ),
         content: Text(
-          UiLabels.get('delete_appointment_content', useInfernal),
+          UiLabels.get('delete_appointment_content', useInfernal, customLabels),
           style: const TextStyle(color: InfernalColors.textSecondary),
         ),
         actions: [
@@ -228,6 +300,135 @@ class AppointmentDetailsPage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _updateStatus(
+    BuildContext context,
+    WidgetRef ref,
+    domain.Appointment apt,
+    String newStatus,
+  ) async {
+    final updated = apt.copyWith(
+      status: newStatus,
+      lastModifiedUtc: DateTime.now(),
+    );
+    try {
+      await ref.read(appointmentControllerProvider).updateAppointment(updated);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating status: $e')),
+        );
+      }
+    }
+  }
+
+  void _showCompleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    domain.Appointment apt,
+  ) {
+    final priceController = TextEditingController(
+      text: apt.priceCharged > 0 ? apt.priceCharged.toStringAsFixed(2) : '',
+    );
+    final durationController = TextEditingController(
+      text: apt.durationMinutes.toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: InfernalColors.surface,
+          title: const Text(
+            'Complete Appointment',
+            style: TextStyle(color: InfernalColors.textPrimary),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter final pricing and actual time spent on this appointment.',
+                style: TextStyle(color: InfernalColors.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(height: InfernalSpacing.md),
+              TextField(
+                controller: priceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: const TextStyle(color: InfernalColors.textPrimary),
+                decoration: const InputDecoration(
+                  labelText: r'Price Charged ($)',
+                  labelStyle: TextStyle(color: InfernalColors.textSecondary),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: InfernalColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: InfernalColors.blood),
+                  ),
+                ),
+              ),
+              const SizedBox(height: InfernalSpacing.md),
+              TextField(
+                controller: durationController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: InfernalColors.textPrimary),
+                decoration: const InputDecoration(
+                  labelText: 'Time Spent (minutes)',
+                  labelStyle: TextStyle(color: InfernalColors.textSecondary),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: InfernalColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: InfernalColors.blood),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: InfernalColors.textSecondary),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade800,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                final price = double.tryParse(priceController.text) ?? 0.0;
+                final duration =
+                    int.tryParse(durationController.text) ?? apt.durationMinutes;
+
+                Navigator.pop(ctx);
+
+                final updated = apt.copyWith(
+                  status: 'Completed',
+                  priceCharged: price,
+                  finalPrice: price,
+                  durationMinutes: duration,
+                  lastModifiedUtc: DateTime.now(),
+                );
+
+                try {
+                  await ref.read(appointmentControllerProvider).updateAppointment(updated);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error updating status: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Complete'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

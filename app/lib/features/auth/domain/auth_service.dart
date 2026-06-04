@@ -87,7 +87,7 @@ class AuthService extends _$AuthService {
   /// Explicitly initialize user profile document in Firestore after sign-up/login if missing.
   Future<void> initializeUserProfile(String uid, String email) async {
     final userService = ref.read(userServiceProvider);
-    final existing = await userService.getUserById(uid);
+    var existing = await userService.getUserById(uid);
     if (existing == null) {
       final isAdmin = email == 'admin@inkandsteel.xyz';
       await userService.createUserWithUid(
@@ -97,6 +97,22 @@ class AuthService extends _$AuthService {
         role: isAdmin ? 'admin' : 'artist',
         hourlyRate: 150.0,
       );
+      existing = await userService.getUserById(uid);
+    }
+
+    if (existing != null && !existing.isDeleted) {
+      ref.read(idMapperProvider).registerUuid('user', uid);
+      final user = User(
+        id: existing.id,
+        username: existing.username,
+        displayName: existing.displayName,
+        passwordHash: '',
+        role: existing.role,
+        hourlyRate: existing.hourlyRate,
+        createdAt: existing.createdAt,
+        updatedAt: existing.updatedAt,
+      );
+      state = AsyncValue.data(AuthState.authenticated(user));
     }
   }
 

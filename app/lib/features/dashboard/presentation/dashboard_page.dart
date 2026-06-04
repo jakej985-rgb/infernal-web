@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,8 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsRepositoryProvider);
     final appointmentsAsync = ref.watch(dashboardTodayAppointmentsProvider);
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
     final width = MediaQuery.of(context).size.width;
     final statsCrossAxisCount = width < 600 ? 2 : (width < 1000 ? 3 : 4);
     final actionsCrossAxisCount = width < 500 ? 2 : (width < 800 ? 3 : 4);
@@ -36,7 +38,7 @@ class DashboardPage extends ConsumerWidget {
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: Text(
-                UiLabels.get('dashboard_title', useInfernal),
+                UiLabels.get('dashboard_title', useInfernal, customLabels),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: InfernalColors.blood,
                   fontWeight: FontWeight.bold,
@@ -74,25 +76,25 @@ class DashboardPage extends ConsumerWidget {
                 childAspectRatio: 1.2,
                 children: [
                   MetricCard(
-                    label: UiLabels.get('todays_appointments', useInfernal),
+                    label: UiLabels.get('todays_appointments', useInfernal, customLabels),
                     value: stats.todayRituals.toString(),
                     icon: Icons.auto_awesome,
                     color: InfernalColors.blood,
                   ),
                   MetricCard(
-                    label: UiLabels.get('active_clients', useInfernal),
+                    label: UiLabels.get('active_clients', useInfernal, customLabels),
                     value: stats.boundSouls.toString(),
                     icon: Icons.people_outline,
                     color: InfernalColors.arcane,
                   ),
                   MetricCard(
-                    label: UiLabels.get('open_quotes', useInfernal),
+                    label: UiLabels.get('open_quotes', useInfernal, customLabels),
                     value: stats.openScrolls.toString(),
                     icon: Icons.history_edu,
                     color: InfernalColors.gold,
                   ),
                   MetricCard(
-                    label: UiLabels.get('pending_actions', useInfernal),
+                    label: UiLabels.get('pending_actions', useInfernal, customLabels),
                     value: stats.pending.toString(),
                     icon: Icons.hourglass_top,
                     color: InfernalColors.voidColor,
@@ -127,7 +129,7 @@ class DashboardPage extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    UiLabels.get('timeline_title', useInfernal),
+                    UiLabels.get('timeline_title', useInfernal, customLabels),
                     style: const TextStyle(
                       color: InfernalColors.textPrimary,
                       fontWeight: FontWeight.bold,
@@ -147,7 +149,7 @@ class DashboardPage extends ConsumerWidget {
                     padding: const EdgeInsets.all(InfernalSpacing.xl),
                     child: Center(
                       child: Text(
-                        UiLabels.get('no_upcoming_appointments', useInfernal),
+                        UiLabels.get('no_upcoming_appointments', useInfernal, customLabels),
                         style: const TextStyle(
                           color: InfernalColors.textMuted,
                           fontStyle: FontStyle.italic,
@@ -223,7 +225,7 @@ class DashboardPage extends ConsumerWidget {
                 InfernalSpacing.md,
               ),
               child: Text(
-                UiLabels.get('summoning_grid_title', useInfernal),
+                UiLabels.get('summoning_grid_title', useInfernal, customLabels),
                 style: const TextStyle(
                   color: InfernalColors.textPrimary,
                   fontWeight: FontWeight.bold,
@@ -243,43 +245,49 @@ class DashboardPage extends ConsumerWidget {
               children: [
                 _QuickActionBtn(
                   icon: Icons.calendar_month,
-                  label: UiLabels.get('action_new_ritual', useInfernal),
+                  label: UiLabels.get('action_new_ritual', useInfernal, customLabels),
                   color: InfernalColors.blood,
                   onTap: () => context.go('${AppRoutes.appointments}/new'),
                 ),
                 _QuickActionBtn(
                   icon: Icons.person_add,
-                  label: UiLabels.get('action_new_soul', useInfernal),
+                  label: UiLabels.get('action_new_soul', useInfernal, customLabels),
                   color: InfernalColors.arcane,
                   onTap: () => context.go('${AppRoutes.clients}/new'),
                 ),
                 _QuickActionBtn(
                   icon: Icons.calculate,
-                  label: UiLabels.get('action_new_quote', useInfernal),
+                  label: UiLabels.get('action_new_quote', useInfernal, customLabels),
                   color: InfernalColors.gold,
                   onTap: () => context.go('${AppRoutes.quotes}/new'),
                 ),
                 _QuickActionBtn(
                   icon: Icons.inventory_2_outlined,
-                  label: UiLabels.get('action_supplies', useInfernal),
+                  label: UiLabels.get('action_supplies', useInfernal, customLabels),
                   color: InfernalColors.arcane,
                   onTap: () => context.go(AppRoutes.inventory),
                 ),
                 _QuickActionBtn(
                   icon: Icons.chat_bubble_outline,
-                  label: UiLabels.get('action_invocation', useInfernal),
+                  label: UiLabels.get('action_invocation', useInfernal, customLabels),
                   color: InfernalColors.blood,
                   onTap: () => context.go(AppRoutes.communications),
                 ),
                 _QuickActionBtn(
+                  icon: Icons.folder_open_outlined,
+                  label: UiLabels.get('documents', useInfernal, customLabels),
+                  color: InfernalColors.arcane,
+                  onTap: () => context.go(AppRoutes.documents),
+                ),
+                _QuickActionBtn(
                   icon: Icons.build_outlined,
-                  label: UiLabels.get('tools', useInfernal),
+                  label: UiLabels.get('tools', useInfernal, customLabels),
                   color: InfernalColors.textMuted,
                   onTap: () => context.go(AppRoutes.tools),
                 ),
                 _QuickActionBtn(
                   icon: Icons.analytics_outlined,
-                  label: UiLabels.get('stats', useInfernal),
+                  label: UiLabels.get('stats', useInfernal, customLabels),
                   color: InfernalColors.gold,
                   onTap: () => context.go(AppRoutes.stats),
                 ),
@@ -291,7 +299,7 @@ class DashboardPage extends ConsumerWidget {
                 ),
                 _QuickActionBtn(
                   icon: Icons.settings,
-                  label: UiLabels.get('settings', useInfernal),
+                  label: UiLabels.get('settings', useInfernal, customLabels),
                   color: InfernalColors.voidColor,
                   onTap: () => context.go('/settings'),
                 ),

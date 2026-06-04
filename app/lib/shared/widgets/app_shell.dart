@@ -1,6 +1,7 @@
 /// Application shell with navigation (sidebar/bottom nav)
 library;
 
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,6 +50,12 @@ const navItems = [
     icon: Icons.request_quote_outlined,
     selectedIcon: Icons.request_quote,
     route: AppRoutes.quotes,
+  ),
+  NavItem(
+    id: 'documents',
+    icon: Icons.folder_open_outlined,
+    selectedIcon: Icons.folder,
+    route: AppRoutes.documents,
   ),
   NavItem(
     id: 'settings',
@@ -123,8 +130,9 @@ class _NavigationRail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
-    final appTitle = UiLabels.get('app_title', useInfernal);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
+    final appTitle = UiLabels.get('app_title', useInfernal, customLabels);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -177,7 +185,7 @@ class _NavigationRail extends ConsumerWidget {
                   return NavigationRailDestination(
                     icon: Icon(item.icon),
                     selectedIcon: Icon(item.selectedIcon),
-                    label: Text(UiLabels.get(item.id, useInfernal)),
+                    label: Text(UiLabels.get(item.id, useInfernal, customLabels)),
                   );
                 }).toList(),
               ),
@@ -214,7 +222,8 @@ class _BottomNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
 
     return BottomNavigationBar(
       currentIndex: _selectedIndex(),
@@ -224,7 +233,7 @@ class _BottomNavBar extends ConsumerWidget {
         return BottomNavigationBarItem(
           icon: Icon(item.icon),
           activeIcon: Icon(item.selectedIcon),
-          label: UiLabels.get(item.id, useInfernal),
+          label: UiLabels.get(item.id, useInfernal, customLabels),
         );
       }).toList(),
     );

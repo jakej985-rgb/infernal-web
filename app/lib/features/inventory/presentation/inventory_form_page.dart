@@ -1,3 +1,4 @@
+import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/tokens.dart';
@@ -101,7 +102,8 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final useInfernal = ref.watch(useInfernalLabelsProvider);
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
     final isEditing = widget.item != null;
 
     return Scaffold(
@@ -121,13 +123,13 @@ class _InventoryFormPageState extends ConsumerState<InventoryFormPage> {
           child: Column(
             children: [
               _buildField(
-                AppLabels.name(useInfernal).toUpperCase(),
+                AppLabels.name(useInfernal, customLabels).toUpperCase(),
                 _nameController,
                 Icons.inventory_2_outlined,
               ),
               const SizedBox(height: InfernalSpacing.md),
               _buildField(
-                AppLabels.category(useInfernal).toUpperCase(),
+                AppLabels.category(useInfernal, customLabels).toUpperCase(),
                 _categoryController,
                 Icons.category_outlined,
               ),
