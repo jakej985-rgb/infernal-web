@@ -198,8 +198,8 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
                     : 'New Password (Optional)',
                 prefixIcon: const Icon(Icons.lock_outline),
                 helperText: _existingUser == null
-                    ? 'Initial password for the spirit'
-                    : 'Leave blank to retain current password',
+                    ? 'Initial password for the user'
+                    : 'Leave blank to keep current password. If entered, a reset email will be sent.',
               ),
               obscureText: true,
               style: const TextStyle(color: InfernalColors.textPrimary),

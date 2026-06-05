@@ -19,6 +19,7 @@ class CommunicationsHubPage extends ConsumerStatefulWidget {
 class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
   final TextEditingController _messageController = TextEditingController();
   domain.Client? _selectedClient;
+  String _selectedType = 'SMS';
 
   @override
   void dispose() {
@@ -38,11 +39,11 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
       id: 0,
       clientId: _selectedClient?.id,
       clientName: clientName,
-      type: 'SMS', // Default for now
+      type: _selectedType,
       direction: 'OUTBOUND',
       content: content,
       sentAt: DateTime.now(),
-      status: 'SENT',
+      status: _selectedType == 'Email' ? 'PENDING' : 'SENT',
     );
 
     await ref
@@ -253,11 +254,40 @@ class _CommunicationsHubPageState extends ConsumerState<CommunicationsHubPage> {
             ),
             onPressed: _showClientPicker,
           ),
+          const SizedBox(width: InfernalSpacing.xs),
+          DropdownButton<String>(
+            value: _selectedType,
+            dropdownColor: InfernalColors.surface,
+            underline: const SizedBox(),
+            icon: Icon(
+              _selectedType == 'Email' ? Icons.email_outlined : Icons.sms_outlined,
+              color: InfernalColors.blood,
+              size: 20,
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: 'SMS',
+                child: Text('SMS', style: TextStyle(color: InfernalColors.textPrimary, fontSize: 11)),
+              ),
+              DropdownMenuItem(
+                value: 'Email',
+                child: Text('Email', style: TextStyle(color: InfernalColors.textPrimary, fontSize: 11)),
+              ),
+            ],
+            onChanged: (val) {
+              if (val != null) {
+                setState(() {
+                  _selectedType = val;
+                });
+              }
+            },
+          ),
+          const SizedBox(width: InfernalSpacing.sm),
           Expanded(
             child: TextField(
               controller: _messageController,
               decoration: InputDecoration(
-                hintText: 'Speak thy invocation...',
+                hintText: _selectedType == 'Email' ? 'Inscribe thy email...' : 'Speak thy SMS invocation...',
                 hintStyle: const TextStyle(color: InfernalColors.textMuted),
                 filled: true,
                 fillColor: InfernalColors.background,

@@ -37,8 +37,9 @@ class UserService {
         });
   }
 
-  Future<domain.User?> getUserById(String uid) async {
-    final doc = await _usersRef.doc(uid).get();
+  Future<domain.User?> getUserById(String uid, [String? orgId]) async {
+    final targetOrgId = orgId ?? _orgId;
+    final doc = await orgDoc(targetOrgId).collection('users').doc(uid).get();
     if (!doc.exists) return null;
     return _mapDocToUserSync(doc);
   }
@@ -71,8 +72,12 @@ class UserService {
     required String displayName,
     required String role,
     required double hourlyRate,
+    String? orgId,
   }) async {
-    await _usersRef.doc(uid).set({
+    final targetOrgId = orgId ?? _orgId;
+    
+    // 1. Create org-specific profile document
+    await orgDoc(targetOrgId).collection('users').doc(uid).set({
       'email': email,
       'displayName': displayName,
       'role': role.toLowerCase(),
@@ -80,6 +85,12 @@ class UserService {
       'isDeleted': false,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    // 2. Create root global user mapping document
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'email': email,
+      'orgId': targetOrgId,
     });
   }
 
@@ -125,10 +136,14 @@ class UserService {
     final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
     final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
 
+    final pathSegments = doc.reference.path.split('/');
+    final resolvedOrgId = (pathSegments.length >= 2) ? pathSegments[1] : 'default-org';
+
     return domain.User(
       id: id,
       username: email,
       displayName: displayName,
+      orgId: resolvedOrgId,
       role: UserRole.values.firstWhere(
         (e) => e.name.toLowerCase() == roleStr.toLowerCase(),
         orElse: () => UserRole.artist,
@@ -157,10 +172,14 @@ class UserService {
     final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
     final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
 
+    final pathSegments = doc.reference.path.split('/');
+    final resolvedOrgId = (pathSegments.length >= 2) ? pathSegments[1] : 'default-org';
+
     return domain.User(
       id: id,
       username: email,
       displayName: displayName,
+      orgId: resolvedOrgId,
       role: UserRole.values.firstWhere(
         (e) => e.name.toLowerCase() == roleStr.toLowerCase(),
         orElse: () => UserRole.artist,

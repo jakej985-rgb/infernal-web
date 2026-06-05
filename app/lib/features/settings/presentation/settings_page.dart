@@ -4,6 +4,8 @@ import '../../../shared/data/org_provider.dart';
 import '../../../shared/data/org_labels_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/auth/domain/auth_service.dart';
+import '../../../features/auth/domain/auth_state.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme/tokens.dart';
@@ -18,6 +20,12 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(shopSettingsProvider);
+    final authState = ref.watch(authServiceProvider).value;
+    final userEmail = authState?.maybeWhen(
+      authenticated: (user) => user.username,
+      orElse: () => '',
+    );
+    final isSystemAdmin = userEmail == 'admin@inkandsteel.xyz';
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
@@ -33,7 +41,7 @@ class SettingsPage extends ConsumerWidget {
         backgroundColor: InfernalColors.surface,
         elevation: 0,
       ),
-      body: _buildSettingsList(context, ref, settings),
+      body: _buildSettingsList(context, ref, settings, isSystemAdmin),
     );
   }
 
@@ -41,6 +49,7 @@ class SettingsPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     ShopSettings? settings,
+    bool isSystemAdmin,
   ) {
     return ListView(
       padding: const EdgeInsets.all(InfernalSpacing.lg),
@@ -71,6 +80,12 @@ class SettingsPage extends ConsumerWidget {
               icon: Icons.payments,
               onTap: () => _showDepositDialog(context, ref, settings),
             ),
+            _SettingsItem(
+              title: 'Integrations',
+              subtitle: 'Google OAuth & SMTP fallback',
+              icon: Icons.sync,
+              onTap: () => context.go(AppRoutes.settingsIntegrations),
+            ),
           ],
         ),
         const SizedBox(height: InfernalSpacing.lg),
@@ -79,6 +94,13 @@ class SettingsPage extends ConsumerWidget {
           icon: Icons.admin_panel_settings,
           color: InfernalColors.arcane,
           items: [
+            if (isSystemAdmin)
+              _SettingsItem(
+                title: 'Shop Requests',
+                subtitle: 'Review & approve new tenant requests',
+                icon: Icons.reviews,
+                onTap: () => context.go(AppRoutes.adminRequests),
+              ),
             _SettingsItem(
               title: 'User Management',
               subtitle: 'Artists and admins',

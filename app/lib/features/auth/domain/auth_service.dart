@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../shared/cache/id_mapper.dart';
@@ -24,8 +25,15 @@ class AuthService extends _$AuthService {
         }
       } else {
         try {
-          // Read user profile from UserService (no direct Firestore calls, no self-healing writes here)
-          final userProfile = await userService.getUserById(fbUser.uid);
+          // 1. Resolve organization ID from global registry
+          final userMapDoc = await FirebaseFirestore.instance.collection('users').doc(fbUser.uid).get();
+          String resolvedOrgId = 'default-org';
+          if (userMapDoc.exists) {
+            resolvedOrgId = userMapDoc.data()?['orgId'] as String? ?? 'default-org';
+          }
+
+          // 2. Read user profile from UserService using the resolved organization ID
+          final userProfile = await userService.getUserById(fbUser.uid, resolvedOrgId);
 
           if (userProfile == null) {
             // Profile not initialized yet, wait for initializeUserProfile to be called explicitly
@@ -55,6 +63,7 @@ class AuthService extends _$AuthService {
             id: userProfile.id,
             username: userProfile.username,
             displayName: userProfile.displayName,
+            orgId: resolvedOrgId,
             passwordHash: '',
             role: userProfile.role,
             hourlyRate: userProfile.hourlyRate,
@@ -85,9 +94,10 @@ class AuthService extends _$AuthService {
   }
 
   /// Explicitly initialize user profile document in Firestore after sign-up/login if missing.
-  Future<void> initializeUserProfile(String uid, String email) async {
+  Future<void> initializeUserProfile(String uid, String email, [String? orgId]) async {
+    final resolvedOrgId = orgId ?? 'default-org';
     final userService = ref.read(userServiceProvider);
-    var existing = await userService.getUserById(uid);
+    var existing = await userService.getUserById(uid, resolvedOrgId);
     if (existing == null) {
       final isAdmin = email == 'admin@inkandsteel.xyz';
       await userService.createUserWithUid(
@@ -96,8 +106,9 @@ class AuthService extends _$AuthService {
         displayName: email.split('@').first,
         role: isAdmin ? 'admin' : 'artist',
         hourlyRate: 150.0,
+        orgId: resolvedOrgId,
       );
-      existing = await userService.getUserById(uid);
+      existing = await userService.getUserById(uid, resolvedOrgId);
     }
 
     if (existing != null && !existing.isDeleted) {
@@ -106,6 +117,7 @@ class AuthService extends _$AuthService {
         id: existing.id,
         username: existing.username,
         displayName: existing.displayName,
+        orgId: resolvedOrgId,
         passwordHash: '',
         role: existing.role,
         hourlyRate: existing.hourlyRate,
@@ -131,8 +143,12 @@ class AuthService extends _$AuthService {
 
       final fbUser = credential.user;
       if (fbUser != null) {
+        // Resolve orgId first to initialize profile in correct workspace
+        final userMapDoc = await FirebaseFirestore.instance.collection('users').doc(fbUser.uid).get();
+        final resolvedOrgId = userMapDoc.exists ? (userMapDoc.data()?['orgId'] as String? ?? 'default-org') : 'default-org';
+
         // Explicitly initialize profile to ensure it exists, with no side-effects in build()
-        await initializeUserProfile(fbUser.uid, fbUser.email ?? resolvedEmail);
+        await initializeUserProfile(fbUser.uid, fbUser.email ?? resolvedEmail, resolvedOrgId);
       }
     } on fb.FirebaseException catch (e) {
       state = AsyncValue.data(
@@ -170,6 +186,7 @@ class AuthService extends _$AuthService {
           displayName: 'admin',
           role: 'admin',
           hourlyRate: 150.0,
+          orgId: 'default-org',
         );
       }
     } on fb.FirebaseException catch (e) {
@@ -189,6 +206,7 @@ class AuthService extends _$AuthService {
               displayName: 'admin',
               role: 'admin',
               hourlyRate: 150.0,
+              orgId: 'default-org',
             );
           }
         } catch (_) {
@@ -197,6 +215,148 @@ class AuthService extends _$AuthService {
       } else {
         rethrow;
       }
+    }
+  }
+
+  Future<void> submitShopRequest({
+    required String email,
+    required String shopName,
+    required String shopId,
+    required String displayName,
+  }) async {
+    state = const AsyncValue.data(AuthState.loading());
+    try {
+      final docRef = FirebaseFirestore.instance.collection('requests').doc();
+      final docId = docRef.id;
+      await docRef.set({
+        'id': docId,
+        'email': email,
+        'shopName': shopName,
+        'shopId': shopId,
+        'displayName': displayName,
+        'status': 'pending',
+        'requestedAt': FieldValue.serverTimestamp(),
+      });
+      state = const AsyncValue.data(AuthState.unauthenticated());
+    } catch (e) {
+      state = AsyncValue.data(AuthState.error(e.toString()));
+      rethrow;
+    }
+  }
+
+  Future<void> approveShopRequest(String requestId, String inviteToken) async {
+    try {
+      await FirebaseFirestore.instance.collection('requests').doc(requestId).update({
+        'status': 'approved',
+        'inviteToken': inviteToken,
+        'approvedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> rejectShopRequest(String requestId) async {
+    try {
+      await FirebaseFirestore.instance.collection('requests').doc(requestId).update({
+        'status': 'rejected',
+        'rejectedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> claimShopRequest({
+    required String requestId,
+    required String inviteToken,
+    required String password,
+  }) async {
+    state = const AsyncValue.data(AuthState.loading());
+    try {
+      // 1. Fetch and validate the request
+      final doc = await FirebaseFirestore.instance.collection('requests').doc(requestId).get();
+      if (!doc.exists) {
+        throw Exception('Sanctum request not found.');
+      }
+      final data = doc.data()!;
+      if (data['status'] != 'approved') {
+        throw Exception('This request has not been approved yet.');
+      }
+      if (data['inviteToken'] != inviteToken) {
+        throw Exception('Invalid invitation token.');
+      }
+
+      final email = data['email'] as String;
+      final orgId = data['shopId'] as String;
+      final orgName = data['shopName'] as String;
+      final displayName = data['displayName'] as String;
+
+      // 2. Create account in Firebase Auth
+      final credential = await fb.FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final fbUser = credential.user;
+      if (fbUser == null) {
+        throw Exception('User registration failed - Auth credential not created.');
+      }
+
+      // 3. Create the Organization document
+      await FirebaseFirestore.instance.collection('organizations').doc(orgId).set({
+        'name': orgName,
+      });
+
+      // 4. Create the profile and global mapping
+      final userService = ref.read(userServiceProvider);
+      await userService.createUserWithUid(
+        uid: fbUser.uid,
+        email: email,
+        displayName: displayName,
+        role: 'owner',
+        hourlyRate: 150.0,
+        orgId: orgId,
+      );
+
+      // 5. Create default settings
+      await FirebaseFirestore.instance
+          .collection('organizations')
+          .doc(orgId)
+          .collection('settings')
+          .doc('main')
+          .set({
+        'settings': {
+          'shopName': orgName,
+          'logoPath': '',
+          'accentColor': '#FF0000',
+          'depositType': 'percentage',
+          'depositAmount': 20.0,
+          'tattooPerHour': 150.0,
+          'piercingSingle': 50.0,
+          'piercingMulti': 80.0,
+          'shopMinimumRate': 80.0,
+          'taxRate': 0.08,
+        }
+      });
+
+      // 6. Mark request as claimed in Firestore
+      await FirebaseFirestore.instance.collection('requests').doc(requestId).update({
+        'status': 'claimed',
+        'claimedAt': FieldValue.serverTimestamp(),
+      });
+
+      // 7. Initialize profile mapping to bind user session state
+      await initializeUserProfile(fbUser.uid, email, orgId);
+
+    } on fb.FirebaseException catch (e) {
+      state = AsyncValue.data(
+        AuthState.error(e.message ?? 'Registration failed'),
+      );
+      rethrow;
+    } catch (e) {
+      state = AsyncValue.data(AuthState.error(e.toString()));
+      rethrow;
     }
   }
 }

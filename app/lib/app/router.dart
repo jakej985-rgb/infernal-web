@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/presentation/login_page.dart';
+import '../features/auth/presentation/register_page.dart';
 import '../features/auth/domain/auth_service.dart';
+import '../features/admin/presentation/admin_requests_page.dart';
 import '../features/auth/domain/auth_state.dart';
 import '../features/dashboard/presentation/dashboard_page.dart';
 import '../features/appointments/presentation/appointments_list_page.dart';
@@ -23,6 +25,7 @@ import '../features/documents/presentation/documents_list_page.dart';
 import '../features/documents/presentation/document_form_page.dart';
 import '../features/documents/presentation/document_details_page.dart';
 import '../features/settings/presentation/settings_page.dart';
+import '../features/settings/presentation/integrations_page.dart';
 import '../features/admin/presentation/user_list_page.dart';
 import '../features/admin/presentation/user_form_page.dart';
 import '../features/admin/presentation/system_status_page.dart';
@@ -37,12 +40,16 @@ import '../shared/widgets/app_shell.dart';
 /// Route paths as constants
 abstract final class AppRoutes {
   static const String login = '/login';
+  static const String register = '/register';
+  static const String registerClaim = '/register/claim';
+  static const String adminRequests = '/admin/requests';
   static const String dashboard = '/home';
   static const String appointments = '/calendar';
   static const String clients = '/contacts';
   static const String quotes = '/quotes';
   static const String documents = '/documents';
   static const String settings = '/settings';
+  static const String settingsIntegrations = '/settings/integrations';
   static const String adminUsers = '/admin/users';
   static const String systemStatus = '/admin/status';
   static const String stats = '/stats';
@@ -109,6 +116,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.login,
         name: 'login',
         builder: (context, state) => const LoginPage(),
+      ),
+
+      // Register route (outside shell)
+      GoRoute(
+        path: AppRoutes.register,
+        name: 'register',
+        builder: (context, state) => const RegisterPage(),
+      ),
+
+      // Claim route (outside shell)
+      GoRoute(
+        path: AppRoutes.registerClaim,
+        name: 'registerClaim',
+        builder: (context, state) => const RegisterPage(),
       ),
 
       // Main app shell with navigation
@@ -232,6 +253,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             name: 'settings',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: SettingsPage()),
+            routes: [
+              GoRoute(
+                path: 'integrations',
+                builder: (context, state) => const IntegrationsPage(),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: AppRoutes.adminRequests,
+            name: 'adminRequests',
+            builder: (context, state) => const AdminRequestsPage(),
           ),
           GoRoute(
             path: AppRoutes.adminUsers,
@@ -310,11 +342,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       );
 
       final isLoginRoute = state.matchedLocation == AppRoutes.login;
+      final isRegisterRoute = state.matchedLocation == AppRoutes.register;
+      final isRegisterClaimRoute = state.matchedLocation == AppRoutes.registerClaim;
 
-      if (!isLoggedIn && !isLoginRoute) {
+      if (!isLoggedIn && !isLoginRoute && !isRegisterRoute && !isRegisterClaimRoute) {
         return AppRoutes.login;
       }
-      if (isLoggedIn && isLoginRoute) {
+      if (isLoggedIn && (isLoginRoute || isRegisterRoute || isRegisterClaimRoute)) {
         return AppRoutes.dashboard;
       }
       return null;

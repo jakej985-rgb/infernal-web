@@ -221,7 +221,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(height: InfernalSpacing.xxl),
+                  const SizedBox(height: InfernalSpacing.lg),
+                  TextButton(
+                    onPressed: _isLoading ? null : () => context.go(AppRoutes.register),
+                    style: TextButton.styleFrom(
+                      foregroundColor: InfernalColors.arcane,
+                    ),
+                    child: const Text('CREATE NEW SANCTUM (REGISTER SHOP)'),
+                  ),
+
+                  const SizedBox(height: InfernalSpacing.xl),
 
                   // Dev / Seed tools
                   TextButton.icon(
