@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/org_provider.dart';
-import 'firestore_helpers.dart';
 
 part 'integration_service.g.dart';
 
@@ -113,18 +111,33 @@ class IntegrationService {
   IntegrationService(this._ref);
 
   String get _orgId => _ref.read(orgIdProvider);
-  FirebaseFunctions get _functions => FirebaseFunctions.instance;
-
-  DocumentReference<Map<String, dynamic>> get _integrationSettingsDoc =>
-      orgDoc(_orgId).collection('settings').doc('integration');
 
   Stream<IntegrationConfig> watchConfig() {
-    return _integrationSettingsDoc.snapshots().map((snapshot) {
-      if (!snapshot.exists || snapshot.data() == null) {
-        return IntegrationConfig.empty();
-      }
-      return IntegrationConfig.fromJson(snapshot.data()!);
-    });
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('integration_settings')
+        .stream(primaryKey: ['org_id'])
+        .eq('org_id', _orgId)
+        .map((data) {
+          if (data.isEmpty) {
+            return IntegrationConfig.empty();
+          }
+          final row = data.first;
+          return IntegrationConfig.fromJson({
+            'type': row['type'],
+            'google': {
+              'connected': row['google_connected'],
+              'email': row['google_email'],
+              'scopes': row['google_scopes'] != null ? List<String>.from(row['google_scopes']) : [],
+            },
+            'smtp': {
+              'connected': row['smtp_connected'],
+              'host': row['smtp_host'],
+              'port': row['smtp_port'],
+              'user': row['smtp_user'],
+            }
+          });
+        });
   }
 
   Future<void> saveSmtpConfig({
@@ -134,7 +147,8 @@ class IntegrationService {
     required String password,
   }) async {
     try {
-      await _functions.httpsCallable('saveSmtpConfig').call({
+      final client = sb.Supabase.instance.client;
+      await client.functions.invoke('save-smtp-config', body: {
         'orgId': _orgId,
         'host': host,
         'port': port,
@@ -153,7 +167,8 @@ class IntegrationService {
     required String password,
   }) async {
     try {
-      await _functions.httpsCallable('testSmtpConnection').call({
+      final client = sb.Supabase.instance.client;
+      await client.functions.invoke('test-smtp-connection', body: {
         'host': host,
         'port': port,
         'user': user,
@@ -166,7 +181,8 @@ class IntegrationService {
 
   Future<void> disconnectIntegration() async {
     try {
-      await _functions.httpsCallable('disconnectIntegration').call({
+      final client = sb.Supabase.instance.client;
+      await client.functions.invoke('disconnect-integration', body: {
         'orgId': _orgId,
       });
     } catch (e) {
@@ -176,13 +192,31 @@ class IntegrationService {
 
   Future<List<GoogleContact>> getGoogleContacts() async {
     try {
-      final response = await _functions.httpsCallable('getGoogleContacts').call({
+      final client = sb.Supabase.instance.client;
+      final response = await client.functions.invoke('get-google-contacts', body: {
         'orgId': _orgId,
       });
-      final List data = response.data['contacts'] ?? [];
+      final dynamic responseData = response.data;
+      final List data = responseData != null && responseData is Map ? (responseData['contacts'] ?? []) : [];
       return data
           .map((item) => GoogleContact.fromJson(Map<String, dynamic>.from(item)))
           .toList();
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<Map<String, dynamic>> syncAllAppointments() async {
+    try {
+      final client = sb.Supabase.instance.client;
+      final response = await client.functions.invoke('sync-all-appointments', body: {
+        'orgId': _orgId,
+      });
+      final dynamic responseData = response.data;
+      if (responseData is Map) {
+        return Map<String, dynamic>.from(responseData);
+      }
+      return {};
     } catch (e) {
       throw Exception(e.toString());
     }

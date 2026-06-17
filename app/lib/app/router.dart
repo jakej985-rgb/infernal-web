@@ -343,12 +343,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final isLoginRoute = state.matchedLocation == AppRoutes.login;
       final isRegisterRoute = state.matchedLocation == AppRoutes.register;
-      final isRegisterClaimRoute = state.matchedLocation == AppRoutes.registerClaim;
+      final isRegisterClaimRoute = state.matchedLocation == AppRoutes.registerClaim ||
+          state.uri.path == '/register/claim' ||
+          state.uri.path == '/register/claim/' ||
+          state.matchedLocation.startsWith('/register/claim') ||
+          state.uri.path.startsWith('/register/claim');
+
+      debugPrint('ROUTER REDIRECT: matchedLocation=${state.matchedLocation}, path=${state.uri.path}, isLoggedIn=$isLoggedIn, isRegisterClaimRoute=$isRegisterClaimRoute');
 
       if (!isLoggedIn && !isLoginRoute && !isRegisterRoute && !isRegisterClaimRoute) {
+        debugPrint('ROUTER REDIRECT: Redirecting to login because not logged in and not on auth/claim routes');
         return AppRoutes.login;
       }
       if (isLoggedIn && (isLoginRoute || isRegisterRoute || isRegisterClaimRoute)) {
+        debugPrint('ROUTER REDIRECT: Redirecting to dashboard because logged in');
         return AppRoutes.dashboard;
       }
       return null;

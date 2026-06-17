@@ -55,7 +55,7 @@ final class AppointmentServiceProvider
 }
 
 String _$appointmentServiceHash() =>
-    r'7b1746581351fd294b909042b09f978b4249e9a8';
+    r'8c1bae75542bc523fe9f834a81f4871cdcb75626';
 
 @ProviderFor(todaysAppointments)
 final todaysAppointmentsProvider = TodaysAppointmentsProvider._();

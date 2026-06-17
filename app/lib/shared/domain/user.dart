@@ -17,6 +17,9 @@ abstract class User with _$User {
     /// Unique login username
     required String username,
 
+    /// User email address
+    @Default('') String email,
+
     /// Display name for UI
     @Default('') String displayName,
 

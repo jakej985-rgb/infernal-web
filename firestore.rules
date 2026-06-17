@@ -22,7 +22,8 @@ service cloud.firestore {
     function isSystemAdmin() {
       return request.auth != null && 
         exists(/databases/$(database)/documents/organizations/default-org/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/organizations/default-org/users/$(request.auth.uid)).data.email == 'admin@inkandsteel.xyz';
+        (get(/databases/$(database)/documents/organizations/default-org/users/$(request.auth.uid)).data.email == 'admin.ink.steel@gmail.com' ||
+         get(/databases/$(database)/documents/organizations/default-org/users/$(request.auth.uid)).data.email == 'admin@inkandsteel.xyz');
     }
 
     match /requests/{requestId} {
@@ -37,11 +38,8 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // 🔒 Allow users to read their own mapping, or members of the same organization
-      allow read: if request.auth != null && (
-        request.auth.uid == userId || 
-        (resource != null && exists(/databases/$(database)/documents/organizations/$(resource.data.orgId)/users/$(request.auth.uid)))
-      );
+      // 🔒 Allow read globally to support resolving username to email before login
+      allow read: if true;
       
       // 🔒 Allow users to write their own mapping, or admins of the target organization
       allow write: if request.auth != null && (
@@ -51,6 +49,10 @@ service cloud.firestore {
           exists(/databases/$(database)/documents/organizations/$(request.resource.data.orgId)/users/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/organizations/$(request.resource.data.orgId)/users/$(request.auth.uid)).data.role in ['admin', 'owner']
         )
+      ) && (
+        request.resource.data.email is string &&
+        request.resource.data.username is string &&
+        request.resource.data.orgId is string
       );
     }
 
@@ -59,8 +61,8 @@ service cloud.firestore {
       // 🔒 ONLY members can read org
       allow read: if isOrgMember(orgId);
 
-      // 🔒 ONLY admins/owners can modify org
-      allow write: if hasRole(orgId, ['admin', 'owner']);
+      // 🔒 ONLY admins/owners can modify org, or authenticated users creating it
+      allow write: if hasRole(orgId, ['admin', 'owner']) || (request.auth != null && resource == null);
 
       match /users/{userId} {
 
@@ -68,7 +70,9 @@ service cloud.firestore {
         allow read: if request.auth.uid == userId || isOrgMember(orgId);
 
         // 🔒 Allow users to create their own profile document
-        allow create: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId
+          && request.resource.data.email is string
+          && request.resource.data.username is string;
 
         // 🔒 Users can update limited fields on themselves ONLY
         allow update: if request.auth.uid == userId

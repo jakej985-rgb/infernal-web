@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart' as uuid;
 import '../../cache/id_mapper.dart';
 import '../../data/org_provider.dart';
 import '../../domain/inventory.dart' as domain;
-import 'firestore_helpers.dart';
 
 part 'inventory_service.g.dart';
 
@@ -20,97 +20,99 @@ class InventoryService {
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   String get _orgId => _ref.read(orgIdProvider);
 
-  CollectionReference<Map<String, dynamic>> get _inventoryRef =>
-      orgDoc(_orgId).collection('inventory');
-
   Stream<List<domain.InventoryItem>> watchInventoryItems() {
-    return _inventoryRef
-        .where('isDeleted', isEqualTo: false)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('inventory')
+        .stream(primaryKey: ['id'])
+        .eq('org_id', _orgId)
+        .asyncMap((data) async {
           final list = <domain.InventoryItem>[];
-          for (final doc in snapshot.docs) {
-            list.add(await _mapDocToDomain(doc, _idMapper));
+          for (final row in data) {
+            if (row['is_deleted'] == true) continue;
+            list.add(await _mapRowToDomain(row, _idMapper));
           }
           return list;
         });
   }
 
   Future<void> addItem(domain.InventoryItem item) async {
-    final docRef = _inventoryRef.doc();
-    final uuid = docRef.id;
+    final uuidVal = const uuid.Uuid().v4();
+    final client = sb.Supabase.instance.client;
 
-    await docRef.set({
+    await client.from('inventory').insert({
+      'id': uuidVal,
+      'org_id': _orgId,
       'name': item.name,
       'category': item.category,
-      'stockQuantity': item.stockQuantity,
-      'minimumQuantity': item.minimumQuantity,
+      'stock_quantity': item.stockQuantity,
+      'minimum_quantity': item.minimumQuantity,
       'unit': item.unit,
       'supplier': item.supplier ?? '',
-      'lastOrderedAt': item.lastOrderedAt != null
-          ? Timestamp.fromDate(item.lastOrderedAt!)
-          : null,
-      'isDeleted': false,
-      'updatedAt': FieldValue.serverTimestamp(),
+      'last_ordered_at': item.lastOrderedAt?.toUtc().toIso8601String(),
+      'is_deleted': false,
+      'created_at': DateTime.now().toUtc().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     });
 
-    await _idMapper.registerUuid('inventory', uuid);
+    await _idMapper.registerUuid('inventory', uuidVal);
   }
 
   Future<void> updateItem(domain.InventoryItem item) async {
-    final uuid = _idMapper.getUuid('inventory', item.id);
-    if (uuid == null) throw Exception('Cannot resolve ID for inventory item.');
+    final uuidVal = _idMapper.getUuid('inventory', item.id);
+    if (uuidVal == null) throw Exception('Cannot resolve ID for inventory item.');
 
-    await _inventoryRef.doc(uuid).update({
+    final client = sb.Supabase.instance.client;
+    await client.from('inventory').update({
       'name': item.name,
       'category': item.category,
-      'stockQuantity': item.stockQuantity,
-      'minimumQuantity': item.minimumQuantity,
+      'stock_quantity': item.stockQuantity,
+      'minimum_quantity': item.minimumQuantity,
       'unit': item.unit,
       'supplier': item.supplier ?? '',
-      'lastOrderedAt': item.lastOrderedAt != null
-          ? Timestamp.fromDate(item.lastOrderedAt!)
-          : null,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+      'last_ordered_at': item.lastOrderedAt?.toUtc().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', uuidVal);
   }
 
   Future<void> deleteItem(int id) async {
-    final uuid = _idMapper.getUuid('inventory', id);
-    if (uuid == null) throw Exception('Cannot resolve ID for inventory item.');
+    final uuidVal = _idMapper.getUuid('inventory', id);
+    if (uuidVal == null) throw Exception('Cannot resolve ID for inventory item.');
 
-    await _inventoryRef.doc(uuid).update({
-      'isDeleted': true,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    final client = sb.Supabase.instance.client;
+    await client.from('inventory').update({
+      'is_deleted': true,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', uuidVal);
   }
 
-  Future<domain.InventoryItem> _mapDocToDomain(
-    DocumentSnapshot<Map<String, dynamic>> doc,
+  Future<domain.InventoryItem> _mapRowToDomain(
+    Map<String, dynamic> row,
     IdMapper idMapper,
   ) async {
-    final uuid = doc.id;
-    final id = await idMapper.registerUuid('inventory', uuid);
+    final uuidVal = row['id'] as String;
+    final id = await idMapper.registerUuid('inventory', uuidVal);
 
-    final data = doc.data() ?? {};
-    final name = data['name'] as String? ?? '';
-    final category = data['category'] as String? ?? 'General';
-    final stockQuantity = (data['stockQuantity'] as num? ?? 0.0).toDouble();
-    final minimumQuantity = (data['minimumQuantity'] as num? ?? 5.0).toDouble();
-    final unit = data['unit'] as String? ?? 'pcs';
-    final supplier = data['supplier'] as String?;
+    final name = row['name'] as String? ?? '';
+    final category = row['category'] as String? ?? 'General';
+    final stockQuantity = (row['stock_quantity'] as num? ?? 0.0).toDouble();
+    final minimumQuantity = (row['minimum_quantity'] as num? ?? 5.0).toDouble();
+    final unit = row['unit'] as String? ?? 'pcs';
+    final supplier = row['supplier'] as String?;
 
-    final lastOrderedAtTimestamp = data['lastOrderedAt'] as Timestamp?;
-    final lastOrderedAt = lastOrderedAtTimestamp?.toDate();
+    final lastOrderedAtStr = row['last_ordered_at'] as String?;
+    final lastOrderedAt = lastOrderedAtStr != null && lastOrderedAtStr.isNotEmpty
+        ? DateTime.parse(lastOrderedAtStr).toLocal()
+        : null;
 
-    final updatedAtTimestamp = data['updatedAt'] as Timestamp?;
-    final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
+    final updatedAtStr = row['updated_at'] as String? ?? row['created_at'] as String;
+    final updatedAt = DateTime.parse(updatedAtStr).toLocal();
 
-    final isDeleted = data['isDeleted'] as bool? ?? false;
+    final isDeleted = row['is_deleted'] as bool? ?? false;
 
     return domain.InventoryItem(
       id: id,
-      syncId: uuid,
+      syncId: uuidVal,
       name: name,
       category: category,
       stockQuantity: stockQuantity,

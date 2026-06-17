@@ -14,20 +14,6 @@ class InfernalApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authStateAsync = ref.watch(authServiceProvider);
-
-    if (authStateAsync.isLoading) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: createInfernalTheme(),
-        home: const Scaffold(
-          backgroundColor: InfernalColors.background,
-          body: Center(
-            child: CircularProgressIndicator(color: InfernalColors.blood),
-          ),
-        ),
-      );
-    }
-
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
@@ -35,6 +21,20 @@ class InfernalApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: createInfernalTheme(),
       routerConfig: router,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            ?child,
+            if (authStateAsync.isLoading)
+              const Scaffold(
+                backgroundColor: InfernalColors.background,
+                body: Center(
+                  child: CircularProgressIndicator(color: InfernalColors.blood),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

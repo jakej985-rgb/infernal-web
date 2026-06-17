@@ -100,7 +100,7 @@ final class ClientServiceProvider
   }
 }
 
-String _$clientServiceHash() => r'c2ee8f230272c4b590fc266d1fd858edd7dd80be';
+String _$clientServiceHash() => r'c13fa1392d5408f0f65cb1561ac3aabaade166fb';
 
 @ProviderFor(filteredClients)
 final filteredClientsProvider = FilteredClientsProvider._();

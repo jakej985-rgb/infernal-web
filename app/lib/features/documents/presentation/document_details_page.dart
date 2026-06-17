@@ -227,7 +227,7 @@ class _FilePreview extends StatelessWidget {
               ),
             );
           },
-          errorBuilder: (_, e, __) => const _ErrorPreview(),
+          errorBuilder: (_, e, _) => const _ErrorPreview(),
         ),
       );
     }

@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart' as uuid;
 import '../../cache/id_mapper.dart';
 import '../../data/org_provider.dart';
 import '../../domain/communication.dart';
-import 'firestore_helpers.dart';
 
 part 'communication_service.g.dart';
 
@@ -20,85 +20,87 @@ class CommunicationService {
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   String get _orgId => _ref.read(orgIdProvider);
 
-  CollectionReference<Map<String, dynamic>> get _communicationsRef =>
-      orgDoc(_orgId).collection('communications');
-
   Stream<List<CommunicationRitual>> watchCommunications() {
-    return _communicationsRef
-        .where('isDeleted', isEqualTo: false)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('communications')
+        .stream(primaryKey: ['id'])
+        .eq('org_id', _orgId)
+        .asyncMap((data) async {
           final list = <CommunicationRitual>[];
-          for (final doc in snapshot.docs) {
-            list.add(await _mapDocToDomain(doc, _idMapper));
+          for (final row in data) {
+            if (row['is_deleted'] == true) continue;
+            list.add(await _mapRowToDomain(row, _idMapper));
           }
           return list;
         });
   }
 
   Future<void> sendCommunication(CommunicationRitual ritual) async {
-    final docRef = _communicationsRef.doc();
-    final uuid = docRef.id;
+    final uuidVal = const uuid.Uuid().v4();
+    final client = sb.Supabase.instance.client;
 
     String? clientUuid;
     if (ritual.clientId != null) {
       clientUuid = _idMapper.getUuid('client', ritual.clientId!);
     }
 
-    await docRef.set({
+    await client.from('communications').insert({
+      'id': uuidVal,
+      'org_id': _orgId,
       'client_id': clientUuid,
       'client_name': ritual.clientName,
       'type': ritual.type,
       'direction': ritual.direction,
       'content': ritual.content,
-      'sentAt': FieldValue.serverTimestamp(),
+      'sent_at': DateTime.now().toUtc().toIso8601String(),
       'status': ritual.status,
-      'lastModifiedBy': ritual.lastModifiedBy,
-      'isDeleted': false,
+      'last_modified_by': ritual.lastModifiedBy,
+      'is_deleted': false,
     });
 
-    await _idMapper.registerUuid('communication', uuid);
+    await _idMapper.registerUuid('communication', uuidVal);
   }
 
   Future<void> deleteCommunication(int id) async {
-    final uuid = _idMapper.getUuid('communication', id);
-    if (uuid == null) throw Exception('Cannot resolve ID for communication.');
+    final uuidVal = _idMapper.getUuid('communication', id);
+    if (uuidVal == null) throw Exception('Cannot resolve ID for communication.');
 
-    await _communicationsRef.doc(uuid).update({
-      'isDeleted': true,
-      'sentAt': FieldValue.serverTimestamp(),
-    });
+    final client = sb.Supabase.instance.client;
+    await client.from('communications').update({
+      'is_deleted': true,
+      'sent_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', uuidVal);
   }
 
-  Future<CommunicationRitual> _mapDocToDomain(
-    DocumentSnapshot<Map<String, dynamic>> doc,
+  Future<CommunicationRitual> _mapRowToDomain(
+    Map<String, dynamic> row,
     IdMapper idMapper,
   ) async {
-    final uuid = doc.id;
-    final id = await idMapper.registerUuid('communication', uuid);
+    final uuidVal = row['id'] as String;
+    final id = await idMapper.registerUuid('communication', uuidVal);
 
-    final data = doc.data() ?? {};
-    final clientUuid = data['client_id'] as String?;
+    final clientUuid = row['client_id'] as String?;
     int? clientId;
     if (clientUuid != null && clientUuid.isNotEmpty) {
       clientId = await idMapper.registerUuid('client', clientUuid);
     }
 
-    final clientName = data['client_name'] as String? ?? '';
-    final type = data['type'] as String? ?? 'SMS';
-    final direction = data['direction'] as String? ?? 'OUTBOUND';
-    final content = data['content'] as String? ?? '';
+    final clientName = row['client_name'] as String? ?? '';
+    final type = row['type'] as String? ?? 'SMS';
+    final direction = row['direction'] as String? ?? 'OUTBOUND';
+    final content = row['content'] as String? ?? '';
 
-    final sentAtTimestamp = data['sentAt'] as Timestamp?;
-    final sentAt = sentAtTimestamp?.toDate() ?? DateTime.now();
+    final sentAtStr = row['sent_at'] as String;
+    final sentAt = DateTime.parse(sentAtStr).toLocal();
 
-    final status = data['status'] as String? ?? 'SENT';
-    final lastModifiedBy = data['lastModifiedBy'] as String? ?? 'App';
-    final isDeleted = data['isDeleted'] as bool? ?? false;
+    final status = row['status'] as String? ?? 'SENT';
+    final lastModifiedBy = row['last_modified_by'] as String? ?? 'App';
+    final isDeleted = row['is_deleted'] as bool? ?? false;
 
     return CommunicationRitual(
       id: id,
-      syncId: uuid,
+      syncId: uuidVal,
       clientId: clientId,
       clientName: clientName,
       type: type,

@@ -18,6 +18,7 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  final _emailCtrl = TextEditingController();
   final _usernameCtrl = TextEditingController();
   final _displayNameCtrl = TextEditingController();
   final _rateCtrl = TextEditingController(text: '150');
@@ -38,6 +39,7 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
 
   @override
   void dispose() {
+    _emailCtrl.dispose();
     _usernameCtrl.dispose();
     _displayNameCtrl.dispose();
     _rateCtrl.dispose();
@@ -53,6 +55,7 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
         final user = users.firstWhere((u) => u.id == id);
         setState(() {
           _existingUser = user;
+          _emailCtrl.text = user.email;
           _usernameCtrl.text = user.username;
           _displayNameCtrl.text = user.displayName;
           _rateCtrl.text = user.hourlyRate.toString();
@@ -72,6 +75,7 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
       if (_existingUser != null) {
         await service.updateUser(
           _existingUser!.copyWith(
+            email: _emailCtrl.text,
             username: _usernameCtrl.text,
             displayName: _displayNameCtrl.text,
             role: UserRole.values.firstWhere(
@@ -86,7 +90,8 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
         );
       } else {
         await service.createUser(
-          username: _usernameCtrl.text,
+          email: _emailCtrl.text,
+          username: _usernameCtrl.text.isNotEmpty ? _usernameCtrl.text : _emailCtrl.text.split('@').first,
           password: _passwordCtrl.text,
           displayName: _displayNameCtrl.text,
           role: _selectedRole,
@@ -180,13 +185,27 @@ class _UserFormPageState extends ConsumerState<UserFormPage> {
           padding: const EdgeInsets.all(InfernalSpacing.lg),
           children: [
             TextFormField(
-              controller: _usernameCtrl,
+              controller: _emailCtrl,
               decoration: const InputDecoration(
-                labelText: 'Username (Login)',
-                prefixIcon: Icon(Icons.login),
+                labelText: 'Email Address (Login)',
+                prefixIcon: Icon(Icons.email_outlined),
               ),
               style: const TextStyle(color: InfernalColors.textPrimary),
-              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Required';
+                if (!v.contains('@')) return 'Invalid email format';
+                return null;
+              },
+              enabled: _existingUser == null,
+            ),
+            const SizedBox(height: InfernalSpacing.md),
+            TextFormField(
+              controller: _usernameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Username (Optional, defaults to email prefix)',
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+              style: const TextStyle(color: InfernalColors.textPrimary),
               enabled: _existingUser == null,
             ),
             const SizedBox(height: InfernalSpacing.md),

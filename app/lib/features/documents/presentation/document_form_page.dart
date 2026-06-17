@@ -232,10 +232,12 @@ class _DocumentFormPageState extends ConsumerState<DocumentFormPage> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _isLoading = false;
         _uploadProgress = null;
       });
+      }
     }
   }
 
@@ -349,7 +351,7 @@ class _DocumentFormPageState extends ConsumerState<DocumentFormPage> {
 
             // ── Document Type Dropdown ────────────────────────────────────
             DropdownButtonFormField<String>(
-              value: _selectedType,
+              initialValue: _selectedType,
               style: const TextStyle(color: InfernalColors.textPrimary),
               dropdownColor: InfernalColors.surface,
               decoration: const InputDecoration(
@@ -407,7 +409,7 @@ class _DocumentFormPageState extends ConsumerState<DocumentFormPage> {
                 padding: const EdgeInsets.all(InfernalSpacing.xl),
                 decoration: BoxDecoration(
                   color: hasFile
-                      ? InfernalColors.blood.withOpacity(0.08)
+                      ? InfernalColors.blood.withValues(alpha: 0.08)
                       : InfernalColors.surface,
                   border: Border.all(
                     color: hasFile ? InfernalColors.blood : InfernalColors.border,

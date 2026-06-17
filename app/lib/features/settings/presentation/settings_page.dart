@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../../../shared/data/org_provider.dart';
 import '../../../shared/data/org_labels_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,10 +22,10 @@ class SettingsPage extends ConsumerWidget {
     final settings = ref.watch(shopSettingsProvider);
     final authState = ref.watch(authServiceProvider).value;
     final userEmail = authState?.maybeWhen(
-      authenticated: (user) => user.username,
+      authenticated: (user) => user.email,
       orElse: () => '',
     );
-    final isSystemAdmin = userEmail == 'admin@inkandsteel.xyz';
+    final isSystemAdmin = userEmail == 'admin.ink.steel@gmail.com' || userEmail == 'admin@inkandsteel.xyz';
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
@@ -538,27 +538,17 @@ class _CustomLabelsEditorState extends State<_CustomLabelsEditor> {
     setState(() => _isSaving = true);
     try {
       final orgId = widget.ref.read(orgIdProvider);
-      
-      final updates = <String, dynamic>{
-        if (_contactsCtrl.text.isNotEmpty) 'labels.contacts': _contactsCtrl.text,
-        if (_calendarCtrl.text.isNotEmpty) 'labels.calendar': _calendarCtrl.text,
-        if (_quotesCtrl.text.isNotEmpty) 'labels.quotes': _quotesCtrl.text,
+      final client = sb.Supabase.instance.client;
+
+      final labels = {
+        if (_contactsCtrl.text.isNotEmpty) 'contacts': _contactsCtrl.text,
+        if (_calendarCtrl.text.isNotEmpty) 'calendar': _calendarCtrl.text,
+        if (_quotesCtrl.text.isNotEmpty) 'quotes': _quotesCtrl.text,
       };
 
-      if (updates.isEmpty) {
-        // Just clear
-        await FirebaseFirestore.instance.collection('organizations').doc(orgId).update({
-          'labels': FieldValue.delete(),
-        });
-      } else {
-        await FirebaseFirestore.instance.collection('organizations').doc(orgId).set({
-          'labels': {
-            if (_contactsCtrl.text.isNotEmpty) 'contacts': _contactsCtrl.text,
-            if (_calendarCtrl.text.isNotEmpty) 'calendar': _calendarCtrl.text,
-            if (_quotesCtrl.text.isNotEmpty) 'quotes': _quotesCtrl.text,
-          }
-        }, SetOptions(merge: true));
-      }
+      await client.from('organizations').update({
+        'labels': labels.isEmpty ? null : labels,
+      }).eq('id', orgId);
       
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -574,9 +564,10 @@ class _CustomLabelsEditorState extends State<_CustomLabelsEditor> {
     setState(() => _isSaving = true);
     try {
       final orgId = widget.ref.read(orgIdProvider);
-      await FirebaseFirestore.instance.collection('organizations').doc(orgId).update({
-        'labels': FieldValue.delete(),
-      });
+      final client = sb.Supabase.instance.client;
+      await client.from('organizations').update({
+        'labels': null,
+      }).eq('id', orgId);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {

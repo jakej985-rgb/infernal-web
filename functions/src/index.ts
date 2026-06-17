@@ -38,10 +38,10 @@ function decrypt(encryptedText: string): string {
 // Get Google OAuth2 Client
 async function getOAuth2Client(orgId: string): Promise<any> {
   const db = admin.firestore();
-  
+
   const clientId = process.env.GOOGLE_CLIENT_ID || functions.config().google?.client_id;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET || functions.config().google?.client_secret;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || functions.config().google?.redirect_uri || `https://${process.env.GCLOUD_PROJECT}.web.app/api/auth/google/callback`;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || functions.config().google?.redirect_uri || `https://us-central1-${process.env.GCLOUD_PROJECT}.cloudfunctions.net/authGoogleCallback`;
 
   if (!clientId || !clientSecret || !redirectUri) {
     throw new functions.https.HttpsError(
@@ -101,6 +101,68 @@ async function getOAuth2Client(orgId: string): Promise<any> {
   return oauth2Client;
 }
 
+// Helper to get or create a dedicated calendar for the organization
+async function getOrCreateCalendar(oauth2Client: any, orgId: string): Promise<string> {
+  const db = admin.firestore();
+  const privateDocRef = db.collection('organizations').doc(orgId).collection('integration_private').doc('main');
+  const privateDoc = await privateDocRef.get();
+
+  let calendarId = privateDoc.data()?.google?.calendarId;
+  if (calendarId) {
+    return calendarId;
+  }
+
+  let orgName = 'Studio';
+  try {
+    const orgDoc = await db.collection('organizations').doc(orgId).get();
+    if (orgDoc.exists) {
+      orgName = orgDoc.data()?.name || orgName;
+    }
+  } catch (err) {
+    console.warn(`Failed to fetch organization name:`, err);
+  }
+
+  const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+  const calendarTitle = 'Ink & Steel';
+
+  try {
+    const listResponse = await calendar.calendarList.list({ minAccessRole: 'owner' });
+    const existing = (listResponse.data.items || []).find(
+      (entry: any) => entry.summary === calendarTitle
+    );
+    if (existing) {
+      calendarId = existing.id;
+    }
+  } catch (err) {
+    console.warn(`Failed to list calendars:`, err);
+  }
+
+  if (!calendarId) {
+    try {
+      const createResponse = await calendar.calendars.insert({
+        requestBody: {
+          summary: calendarTitle,
+          timeZone: 'UTC'
+        }
+      });
+      calendarId = createResponse.data.id;
+    } catch (createErr) {
+      console.error(`Failed to create new Google Calendar:`, createErr);
+      return 'primary';
+    }
+  }
+
+  if (calendarId && calendarId !== 'primary') {
+    await privateDocRef.set({
+      google: {
+        calendarId: calendarId
+      }
+    }, { merge: true });
+  }
+
+  return calendarId || 'primary';
+}
+
 // 1. HTTP Endpoint to initiate Google OAuth Flow
 export const authGoogle = functions.https.onRequest(async (req, res) => {
   const orgId = req.query.orgId as string;
@@ -113,7 +175,7 @@ export const authGoogle = functions.https.onRequest(async (req, res) => {
 
   const clientId = process.env.GOOGLE_CLIENT_ID || functions.config().google?.client_id;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET || functions.config().google?.client_secret;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || functions.config().google?.redirect_uri || `https://${process.env.GCLOUD_PROJECT}.web.app/api/auth/google/callback`;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || functions.config().google?.redirect_uri || `https://us-central1-${process.env.GCLOUD_PROJECT}.cloudfunctions.net/authGoogleCallback`;
 
   if (!clientId || !clientSecret || !redirectUri) {
     res.status(500).send('Google OAuth configuration is missing on the server.');
@@ -129,7 +191,7 @@ export const authGoogle = functions.https.onRequest(async (req, res) => {
     'profile',
     'https://www.googleapis.com/auth/gmail.send',
     'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/contacts.readonly'
+    'https://www.googleapis.com/auth/contacts'
   ];
 
   const authUrl = oauth2Client.generateAuthUrl({
@@ -165,7 +227,7 @@ export const authGoogleCallback = functions.https.onRequest(async (req, res) => 
 
   const clientId = process.env.GOOGLE_CLIENT_ID || functions.config().google?.client_id;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET || functions.config().google?.client_secret;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || functions.config().google?.redirect_uri || `https://${process.env.GCLOUD_PROJECT}.web.app/api/auth/google/callback`;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || functions.config().google?.redirect_uri || `https://us-central1-${process.env.GCLOUD_PROJECT}.cloudfunctions.net/authGoogleCallback`;
 
   const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 
@@ -351,6 +413,109 @@ export const getGoogleContacts = functions.https.onCall(async (data, context) =>
   }
 });
 
+// 6.5. Callable: Force Sync All Appointments to Google Calendar
+export const syncAllAppointments = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+  }
+
+  const { orgId } = data;
+  if (!orgId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing organization ID.');
+  }
+
+  const db = admin.firestore();
+
+  try {
+    const publicDoc = await db.collection('organizations').doc(orgId).collection('settings').doc('integration').get();
+    if (!publicDoc.exists || publicDoc.data()?.type !== 'google') {
+      throw new functions.https.HttpsError('failed-precondition', 'Google integration is not active.');
+    }
+
+    const oauth2Client = await getOAuth2Client(orgId);
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    const calendarId = await getOrCreateCalendar(oauth2Client, orgId);
+
+    // Fetch all appointments
+    const apptsSnapshot = await db.collection('organizations').doc(orgId).collection('appointments').get();
+
+    let successCount = 0;
+    let failureCount = 0;
+
+    for (const doc of apptsSnapshot.docs) {
+      const apptData = doc.data();
+      const apptId = doc.id;
+
+      // Skip soft-deleted appointments
+      if (apptData.isDeleted === true) {
+        continue;
+      }
+
+      // Check start_time and end_time
+      if (!apptData.start_time || !apptData.end_time) {
+        continue;
+      }
+
+      try {
+        const event = {
+          summary: apptData.title || 'Tattoo Appointment',
+          description: apptData.notes || '',
+          start: {
+            dateTime: new Date(apptData.start_time).toISOString(),
+          },
+          end: {
+            dateTime: new Date(apptData.end_time).toISOString(),
+          }
+        };
+
+        if (apptData.googleEventId) {
+          try {
+            await calendar.events.update({
+              calendarId,
+              eventId: apptData.googleEventId,
+              requestBody: event
+            });
+            successCount++;
+          } catch (updateErr: any) {
+            // If the event was deleted on Google Calendar side (404/410), recreate it
+            if (updateErr.code === 404 || updateErr.code === 410) {
+              const response = await calendar.events.insert({
+                calendarId,
+                requestBody: event
+              });
+              const googleEventId = response.data.id;
+              if (googleEventId) {
+                await doc.ref.update({ googleEventId });
+              }
+              successCount++;
+            } else {
+              console.error(`Failed to update event ${apptData.googleEventId} for appt ${apptId}:`, updateErr);
+              failureCount++;
+            }
+          }
+        } else {
+          const response = await calendar.events.insert({
+            calendarId,
+            requestBody: event
+          });
+          const googleEventId = response.data.id;
+          if (googleEventId) {
+            await doc.ref.update({ googleEventId });
+          }
+          successCount++;
+        }
+      } catch (apptErr) {
+        console.error(`Failed to sync appointment ${apptId}:`, apptErr);
+        failureCount++;
+      }
+    }
+
+    return { success: true, synced: successCount, failed: failureCount };
+  } catch (err: any) {
+    throw new functions.https.HttpsError('internal', `Force sync failed: ${err.message}`);
+  }
+});
+
 // Utility: Build RFC 2822 raw message format for Gmail API
 function makeGmailBody(to: string, from: string, subject: string, htmlMessage: string): string {
   const str = [
@@ -480,6 +645,7 @@ export const onAppointmentCreated = functions.firestore
 
       const oauth2Client = await getOAuth2Client(orgId);
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+      const calendarId = await getOrCreateCalendar(oauth2Client, orgId);
 
       const event = {
         summary: data.title || 'Tattoo Appointment',
@@ -493,7 +659,7 @@ export const onAppointmentCreated = functions.firestore
       };
 
       const response = await calendar.events.insert({
-        calendarId: 'primary',
+        calendarId,
         requestBody: event
       });
 
@@ -528,12 +694,13 @@ export const onAppointmentUpdated = functions.firestore
 
       const oauth2Client = await getOAuth2Client(orgId);
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+      const calendarId = await getOrCreateCalendar(oauth2Client, orgId);
 
       // Handle soft delete update
       if (afterData.isDeleted && !beforeData.isDeleted) {
         if (afterData.googleEventId) {
           await calendar.events.delete({
-            calendarId: 'primary',
+            calendarId,
             eventId: afterData.googleEventId
           });
           await change.after.ref.update({ googleEventId: admin.firestore.FieldValue.delete() });
@@ -554,14 +721,14 @@ export const onAppointmentUpdated = functions.firestore
 
       if (afterData.googleEventId) {
         await calendar.events.update({
-          calendarId: 'primary',
+          calendarId,
           eventId: afterData.googleEventId,
           requestBody: event
         });
       } else {
         // Create if missing
         const response = await calendar.events.insert({
-          calendarId: 'primary',
+          calendarId,
           requestBody: event
         });
         const googleEventId = response.data.id;
@@ -590,12 +757,178 @@ export const onAppointmentDeleted = functions.firestore
 
       const oauth2Client = await getOAuth2Client(orgId);
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+      const calendarId = await getOrCreateCalendar(oauth2Client, orgId);
 
       await calendar.events.delete({
-        calendarId: 'primary',
+        calendarId,
         eventId: data.googleEventId
       });
     } catch (err) {
       console.error(`Failed to delete appointment ${apptId} from Google Calendar:`, err);
     }
   });
+
+// 9. Firestore Triggers: Google Contacts Sync for Clients
+export const onClientCreated = functions.firestore
+  .document('organizations/{orgId}/clients/{clientId}')
+  .onCreate(async (snapshot, context) => {
+    const data = snapshot.data();
+    const { orgId, clientId } = context.params;
+
+    if (!data || data.isDeleted) return;
+
+    const db = admin.firestore();
+    try {
+      const publicDoc = await db.collection('organizations').doc(orgId).collection('settings').doc('integration').get();
+      if (!publicDoc.exists || publicDoc.data()?.type !== 'google') return;
+
+      const oauth2Client = await getOAuth2Client(orgId);
+      const people = google.people({ version: 'v1', auth: oauth2Client });
+
+      const name = data.name || `${data.first_name || ''} ${data.last_name || ''}`.trim();
+
+      const response = await people.people.createContact({
+        requestBody: {
+          names: [
+            {
+              givenName: data.first_name || name,
+              familyName: data.last_name || '',
+            }
+          ],
+          emailAddresses: data.email ? [{ value: data.email }] : undefined,
+          phoneNumbers: data.phone ? [{ value: data.phone }] : undefined,
+          biographies: data.notes ? [{ value: data.notes }] : undefined,
+        }
+      });
+
+      const googleContactResourceName = response.data.resourceName;
+      if (googleContactResourceName) {
+        await snapshot.ref.update({ googleContactResourceName });
+      }
+    } catch (err) {
+      console.error(`Failed to sync newly created client ${clientId} to Google Contacts:`, err);
+    }
+  });
+
+export const onClientUpdated = functions.firestore
+  .document('organizations/{orgId}/clients/{clientId}')
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    const { orgId, clientId } = context.params;
+
+    if (!afterData) return;
+
+    // Prevent infinite loop if we only updated googleContactResourceName
+    if (beforeData?.googleContactResourceName !== afterData?.googleContactResourceName) {
+      return;
+    }
+
+    const db = admin.firestore();
+    try {
+      const publicDoc = await db.collection('organizations').doc(orgId).collection('settings').doc('integration').get();
+      if (!publicDoc.exists || publicDoc.data()?.type !== 'google') return;
+
+      const oauth2Client = await getOAuth2Client(orgId);
+      const people = google.people({ version: 'v1', auth: oauth2Client });
+
+      // Handle soft delete update
+      if (afterData.isDeleted && !beforeData.isDeleted) {
+        if (afterData.googleContactResourceName) {
+          try {
+            await people.people.deleteContact({
+              resourceName: afterData.googleContactResourceName
+            });
+          } catch (deleteErr) {
+            console.error(`Failed to delete contact from Google on soft delete:`, deleteErr);
+          }
+          await change.after.ref.update({ googleContactResourceName: admin.firestore.FieldValue.delete() });
+        }
+        return;
+      }
+
+      const name = afterData.name || `${afterData.first_name || ''} ${afterData.last_name || ''}`.trim();
+
+      const contactData = {
+        names: [
+          {
+            givenName: afterData.first_name || name,
+            familyName: afterData.last_name || '',
+          }
+        ],
+        emailAddresses: afterData.email ? [{ value: afterData.email }] : [],
+        phoneNumbers: afterData.phone ? [{ value: afterData.phone }] : [],
+        biographies: afterData.notes ? [{ value: afterData.notes }] : [],
+      };
+
+      if (afterData.googleContactResourceName) {
+        try {
+          // Fetch the contact first to obtain current etag
+          const existingContact = await people.people.get({
+            resourceName: afterData.googleContactResourceName,
+            personFields: 'names,emailAddresses,phoneNumbers,biographies'
+          });
+
+          await people.people.updateContact({
+            resourceName: afterData.googleContactResourceName,
+            updatePersonFields: 'names,emailAddresses,phoneNumbers,biographies',
+            requestBody: {
+              etag: existingContact.data.etag,
+              ...contactData
+            }
+          });
+        } catch (updateErr: any) {
+          // If deleted on Google side (404/410), recreate it
+          if (updateErr.code === 404 || updateErr.code === 410) {
+            const response = await people.people.createContact({
+              requestBody: contactData
+            });
+            const googleContactResourceName = response.data.resourceName;
+            if (googleContactResourceName) {
+              await change.after.ref.update({ googleContactResourceName });
+            }
+          } else {
+            console.error(`Failed to update Google Contact ${afterData.googleContactResourceName} for client ${clientId}:`, updateErr);
+          }
+        }
+      } else {
+        // Create if missing and not deleted
+        if (!afterData.isDeleted) {
+          const response = await people.people.createContact({
+            requestBody: contactData
+          });
+          const googleContactResourceName = response.data.resourceName;
+          if (googleContactResourceName) {
+            await change.after.ref.update({ googleContactResourceName });
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`Failed to sync updated client ${clientId} to Google Contacts:`, err);
+    }
+  });
+
+export const onClientDeleted = functions.firestore
+  .document('organizations/{orgId}/clients/{clientId}')
+  .onDelete(async (snapshot, context) => {
+    const data = snapshot.data();
+    const { orgId, clientId } = context.params;
+
+    if (!data || !data.googleContactResourceName) return;
+
+    const db = admin.firestore();
+    try {
+      const publicDoc = await db.collection('organizations').doc(orgId).collection('settings').doc('integration').get();
+      if (!publicDoc.exists || publicDoc.data()?.type !== 'google') return;
+
+      const oauth2Client = await getOAuth2Client(orgId);
+      const people = google.people({ version: 'v1', auth: oauth2Client });
+
+      await people.people.deleteContact({
+        resourceName: data.googleContactResourceName
+      });
+    } catch (err) {
+      console.error(`Failed to delete client ${clientId} from Google Contacts:`, err);
+    }
+  });
+

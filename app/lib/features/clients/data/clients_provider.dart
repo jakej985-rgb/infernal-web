@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../../shared/data/interfaces/client_service.dart';
-import '../../../../shared/core/services/client_service_firebase_impl.dart';
+import '../../../../shared/core/services/client_service_supabase_impl.dart';
 import '../../../../shared/domain/appointment.dart' as appointment_domain;
 import '../../../../shared/domain/client.dart' as domain;
 import '../../../../shared/domain/client_lifecycle.dart';
@@ -25,7 +25,7 @@ class ClientSearchQuery extends _$ClientSearchQuery {
 
 @riverpod
 ClientService clientService(Ref ref) {
-  return ClientServiceFirebaseImpl(ref);
+  return ClientServiceSupabaseImpl(ref);
 }
 
 @riverpod

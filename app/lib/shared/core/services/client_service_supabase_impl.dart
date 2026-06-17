@@ -127,10 +127,10 @@ class ClientServiceSupabaseImpl implements ClientService {
         .from('clients')
         .stream(primaryKey: ['id'])
         .eq('org_id', _orgId)
-        .eq('is_deleted', false)
         .asyncMap((data) async {
           final clients = <domain.Client>[];
           for (final row in data) {
+            if (row['is_deleted'] == true) continue;
             clients.add(await _mapRowToDomain(row));
           }
           return clients;

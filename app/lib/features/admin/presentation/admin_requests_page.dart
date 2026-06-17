@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,11 +82,11 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authServiceProvider).value;
     final userEmail = authState?.maybeWhen(
-      authenticated: (user) => user.username,
+      authenticated: (user) => user.email,
       orElse: () => '',
     );
 
-    if (userEmail != 'admin@inkandsteel.xyz') {
+    if (userEmail != 'admin.ink.steel@gmail.com' && userEmail != 'admin@inkandsteel.xyz') {
       return const Scaffold(
         backgroundColor: InfernalColors.background,
         body: Center(
@@ -107,11 +106,8 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
         foregroundColor: InfernalColors.textPrimary,
         centerTitle: true,
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('requests')
-            .orderBy('requestedAt', descending: true)
-            .snapshots(),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: ref.watch(authServiceProvider.notifier).watchRequests(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: InfernalColors.arcane));
@@ -120,8 +116,8 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
             return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: InfernalColors.error)));
           }
 
-          final docs = snapshot.data?.docs ?? [];
-          if (docs.isEmpty) {
+          final requests = snapshot.data ?? [];
+          if (requests.isEmpty) {
             return const Center(
               child: Text(
                 'NO SHOP REQUESTS FOUND',
@@ -132,10 +128,10 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
 
           return ListView.builder(
             padding: const EdgeInsets.all(InfernalSpacing.lg),
-            itemCount: docs.length,
+            itemCount: requests.length,
             itemBuilder: (context, index) {
-              final data = docs[index].data();
-              final id = docs[index].id;
+              final data = requests[index];
+              final id = data['id'] as String;
               final status = data['status'] as String? ?? 'pending';
               final shopName = data['shopName'] as String? ?? 'Unknown Shop';
               final shopId = data['shopId'] as String? ?? '';
@@ -182,7 +178,7 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: statusColor.withOpacity(0.15),
+                                color: statusColor.withValues(alpha: 0.15),
                                 border: Border.all(color: statusColor),
                                 borderRadius: BorderRadius.circular(4),
                               ),

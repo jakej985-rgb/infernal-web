@@ -80,7 +80,7 @@ class ShopSettingsNotifier extends _$ShopSettingsNotifier {
       taxRate: prefs.getDouble('settings_tax_rate') ?? 0.08,
     );
 
-    // Listen to Firestore document updates via SettingsService to stay real-time
+    // Listen to Supabase settings updates via SettingsService to stay real-time
     _subscription = settingsService.watchSettings().listen((doc) {
       if (doc.exists) {
         final data = doc.data()?['settings'] as Map<String, dynamic>?;

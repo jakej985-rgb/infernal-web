@@ -164,10 +164,12 @@ class _NavigationRail extends ConsumerWidget {
                             width: 2,
                           ),
                         ),
-                        child: const Icon(
-                          Icons.colorize,
-                          color: InfernalColors.blood,
-                          size: InfernalIconSize.lg,
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Image.asset(
+                            'assets/logo.png',
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                       const SizedBox(height: InfernalSpacing.sm),

@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart' as fb_storage;
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart' as uuid;
 import '../../cache/id_mapper.dart';
 import '../../data/org_provider.dart';
 import '../../domain/document.dart' as domain;
-import 'firestore_helpers.dart';
 
 part 'document_service.g.dart';
 
@@ -22,38 +21,38 @@ class DocumentService {
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   String get _orgId => _ref.read(orgIdProvider);
 
-  CollectionReference<Map<String, dynamic>> get _documentsRef =>
-      orgDoc(_orgId).collection('documents');
-
   Stream<List<domain.Document>> watchDocuments() {
-    return _documentsRef
-        .where('isDeleted', isEqualTo: false)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('documents')
+        .stream(primaryKey: ['id'])
+        .eq('org_id', _orgId)
+        .asyncMap((data) async {
           final list = <domain.Document>[];
-          for (final doc in snapshot.docs) {
-            list.add(await _mapDocToDomain(doc, _idMapper));
+          for (final row in data) {
+            if (row['is_deleted'] == true) continue;
+            list.add(await _mapRowToDomain(row, _idMapper));
           }
           return list;
         });
   }
 
   Stream<domain.Document?> watchDocumentById(int id) {
-    final uuid = _idMapper.getUuid('document', id);
-    if (uuid == null) {
+    final uuidVal = _idMapper.getUuid('document', id);
+    if (uuidVal == null) {
       return Stream.value(null);
     }
-
-    return _documentsRef.doc(uuid).snapshots().asyncMap((doc) async {
-      if (!doc.exists || doc.data()?['isDeleted'] == true) return null;
-      return await _mapDocToDomain(doc, _idMapper);
-    });
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('documents')
+        .stream(primaryKey: ['id'])
+        .eq('id', uuidVal)
+        .asyncMap((data) async {
+          if (data.isEmpty || data.first['is_deleted'] == true) return null;
+          return await _mapRowToDomain(data.first, _idMapper);
+        });
   }
 
-  /// Upload a document with real file bytes to Firebase Storage.
-  /// [bytes] – raw file data from file_picker
-  /// [fileName] – original filename (used for storage path)
-  /// [contentType] – MIME type e.g. 'image/jpeg', 'application/pdf'
   Future<void> createDocument(
     domain.Document doc, {
     Uint8List? bytes,
@@ -65,43 +64,35 @@ class DocumentService {
       throw Exception('Could not resolve client UUID.');
     }
 
-    final docRef = _documentsRef.doc();
-    final uuid = docRef.id;
+    final uuidVal = const uuid.Uuid().v4();
+    final supabaseClient = sb.Supabase.instance.client;
 
     String downloadUrl = doc.filePath;
 
     if (bytes != null && bytes.isNotEmpty) {
       final safeFileName = fileName ?? '${doc.title}_${DateTime.now().millisecondsSinceEpoch}';
-      final storageRef = fb_storage.FirebaseStorage.instance
-          .ref()
-          .child('organizations')
-          .child(_orgId)
-          .child('clients')
-          .child(clientUuid)
-          .child('documents')
-          .child('${uuid}_$safeFileName');
+      final storagePath = 'organizations/$_orgId/clients/$clientUuid/documents/${uuidVal}_$safeFileName';
 
-      final metadata = contentType != null
-          ? fb_storage.SettableMetadata(contentType: contentType)
-          : null;
-
-      final uploadTask = metadata != null
-          ? storageRef.putData(bytes, metadata)
-          : storageRef.putData(bytes);
-      final snapshot = await uploadTask;
-      downloadUrl = await snapshot.ref.getDownloadURL();
+      await supabaseClient.storage.from('documents').uploadBinary(
+        storagePath,
+        bytes,
+        fileOptions: sb.FileOptions(contentType: contentType ?? 'application/octet-stream', upsert: true),
+      );
+      downloadUrl = supabaseClient.storage.from('documents').getPublicUrl(storagePath);
     }
 
-    await docRef.set({
+    await supabaseClient.from('documents').insert({
+      'id': uuidVal,
+      'org_id': _orgId,
       'client_id': clientUuid,
       'title': doc.title,
-      'filePath': downloadUrl,
-      'uploadedByUserId': 'default-admin-uuid',
-      'isDeleted': false,
-      'createdAt': FieldValue.serverTimestamp(),
+      'file_path': downloadUrl,
+      'uploaded_by_user_id': 'default-admin-uuid',
+      'is_deleted': false,
+      'created_at': DateTime.now().toUtc().toIso8601String(),
     });
 
-    await _idMapper.registerUuid('document', uuid);
+    await _idMapper.registerUuid('document', uuidVal);
   }
 
   Future<void> updateDocument(
@@ -110,73 +101,64 @@ class DocumentService {
     String? fileName,
     String? contentType,
   }) async {
-    final uuid = _idMapper.getUuid('document', doc.id);
-    if (uuid == null) throw Exception('Could not resolve document UUID.');
+    final uuidVal = _idMapper.getUuid('document', doc.id);
+    if (uuidVal == null) throw Exception('Could not resolve document UUID.');
 
     final clientUuid = _idMapper.getUuid('client', doc.clientId);
     if (clientUuid == null) throw Exception('Could not resolve client UUID.');
 
     String filePath = doc.filePath;
+    final supabaseClient = sb.Supabase.instance.client;
 
     if (bytes != null && bytes.isNotEmpty) {
       final safeFileName = fileName ?? '${doc.title}_${DateTime.now().millisecondsSinceEpoch}';
-      final storageRef = fb_storage.FirebaseStorage.instance
-          .ref()
-          .child('organizations')
-          .child(_orgId)
-          .child('clients')
-          .child(clientUuid)
-          .child('documents')
-          .child('${uuid}_$safeFileName');
+      final storagePath = 'organizations/$_orgId/clients/$clientUuid/documents/${uuidVal}_$safeFileName';
 
-      final metadata = contentType != null
-          ? fb_storage.SettableMetadata(contentType: contentType)
-          : null;
-
-      final uploadTask = metadata != null
-          ? storageRef.putData(bytes, metadata)
-          : storageRef.putData(bytes);
-      final snapshot = await uploadTask;
-      filePath = await snapshot.ref.getDownloadURL();
+      await supabaseClient.storage.from('documents').uploadBinary(
+        storagePath,
+        bytes,
+        fileOptions: sb.FileOptions(contentType: contentType ?? 'application/octet-stream', upsert: true),
+      );
+      filePath = supabaseClient.storage.from('documents').getPublicUrl(storagePath);
     }
 
-    await _documentsRef.doc(uuid).update({
+    await supabaseClient.from('documents').update({
       'client_id': clientUuid,
       'title': doc.title,
-      'filePath': filePath,
-    });
+      'file_path': filePath,
+    }).eq('id', uuidVal);
   }
 
   Future<void> deleteDocument(int id) async {
-    final uuid = _idMapper.getUuid('document', id);
-    if (uuid == null) throw Exception('Could not resolve document UUID.');
+    final uuidVal = _idMapper.getUuid('document', id);
+    if (uuidVal == null) throw Exception('Could not resolve document UUID.');
 
-    await _documentsRef.doc(uuid).update({'isDeleted': true});
+    final supabaseClient = sb.Supabase.instance.client;
+    await supabaseClient.from('documents').update({'is_deleted': true}).eq('id', uuidVal);
   }
 
-  Future<domain.Document> _mapDocToDomain(
-    DocumentSnapshot<Map<String, dynamic>> doc,
+  Future<domain.Document> _mapRowToDomain(
+    Map<String, dynamic> row,
     IdMapper idMapper,
   ) async {
-    final uuid = doc.id;
-    final id = await idMapper.registerUuid('document', uuid);
+    final uuidVal = row['id'] as String;
+    final id = await idMapper.registerUuid('document', uuidVal);
 
-    final data = doc.data() ?? {};
-    final clientUuid = data['client_id'] as String? ?? '';
+    final clientUuid = row['client_id'] as String? ?? '';
     int clientId = 0;
     if (clientUuid.isNotEmpty) {
       clientId = await idMapper.registerUuid('client', clientUuid);
     }
 
-    final title = data['title'] as String? ?? '';
-    final filePath = data['filePath'] as String? ?? '';
+    final title = row['title'] as String? ?? '';
+    final filePath = row['file_path'] as String? ?? '';
 
-    final createdAtTimestamp = data['createdAt'] as Timestamp?;
-    final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
+    final createdAtStr = row['created_at'] as String;
+    final createdAt = DateTime.parse(createdAtStr).toLocal();
 
     return domain.Document(
       id: id,
-      syncId: uuid,
+      syncId: uuidVal,
       uploadedByUserId: 1,
       clientId: clientId,
       title: title,

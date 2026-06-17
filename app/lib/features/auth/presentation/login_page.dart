@@ -127,11 +127,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     },
                     child: NeonPlate(
                       color: InfernalColors.blood,
-                      padding: const EdgeInsets.all(InfernalSpacing.lg),
-                      child: const Icon(
-                        Icons.local_fire_department,
-                        color: InfernalColors.blood,
-                        size: 64,
+                      padding: const EdgeInsets.all(4.0),
+                      child: Image.asset(
+                        'assets/logo.png',
+                        width: 160,
+                        height: 160,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
@@ -174,11 +175,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         TextFormField(
                           controller: _usernameController,
                           decoration: const InputDecoration(
-                            labelText: 'Username',
+                            labelText: 'Email / Username',
                             prefixIcon: Icon(Icons.person_outline),
                           ),
                           validator: (value) => value == null || value.isEmpty
-                              ? 'Username required'
+                              ? 'Email or Username required'
                               : null,
                           onFieldSubmitted: (_) => _login(),
                         ),

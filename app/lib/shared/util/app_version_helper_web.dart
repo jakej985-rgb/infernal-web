@@ -1,5 +1,6 @@
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
 import 'dart:html' as html;
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> checkAppVersion(String appVersion) async {
   final storedVersion = html.window.localStorage['app_version'];
@@ -14,7 +15,7 @@ Future<void> checkAppVersion(String appVersion) async {
     html.window.localStorage['app_version'] = appVersion;
 
     try {
-      await FirebaseAuth.instance.signOut();
+      await Supabase.instance.client.auth.signOut();
     } catch (_) {}
 
     // Safely remove the version flag from storage before clearing, then write it back
@@ -28,7 +29,7 @@ Future<void> checkAppVersion(String appVersion) async {
 
 Future<void> resetApp() async {
   try {
-    await FirebaseAuth.instance.signOut();
+    await Supabase.instance.client.auth.signOut();
   } catch (_) {}
   html.window.localStorage.clear();
   html.window.location.reload();

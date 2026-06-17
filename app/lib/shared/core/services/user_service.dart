@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart' as uuid;
 import '../../cache/id_mapper.dart';
 import '../../data/org_provider.dart';
 import '../../domain/user.dart' as domain;
 import '../../domain/enums.dart';
-import 'firestore_helpers.dart';
 
 part 'user_service.g.dart';
 
@@ -21,49 +21,53 @@ class UserService {
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   String get _orgId => _ref.read(orgIdProvider);
 
-  CollectionReference<Map<String, dynamic>> get _usersRef =>
-      orgDoc(_orgId).collection('users');
-
   Stream<List<domain.User>> watchUsers() {
-    return _usersRef
-        .where('isDeleted', isEqualTo: false)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('users')
+        .stream(primaryKey: ['id'])
+        .eq('org_id', _orgId)
+        .asyncMap((data) async {
           final list = <domain.User>[];
-          for (final doc in snapshot.docs) {
-            list.add(await _mapDocToUser(doc, _idMapper));
+          for (final row in data) {
+            if (row['is_deleted'] == true) continue;
+            list.add(await _mapRowToUser(row, _idMapper));
           }
           return list;
         });
   }
 
   Future<domain.User?> getUserById(String uid, [String? orgId]) async {
-    final targetOrgId = orgId ?? _orgId;
-    final doc = await orgDoc(targetOrgId).collection('users').doc(uid).get();
-    if (!doc.exists) return null;
-    return _mapDocToUserSync(doc);
+    final client = sb.Supabase.instance.client;
+    final row = await client.from('users').select().eq('id', uid).maybeSingle();
+    if (row == null) return null;
+    return _mapRowToUserSync(row);
   }
 
   Future<void> createUser({
+    required String email,
     required String username,
     required String displayName,
     required String role,
     double? hourlyRate,
   }) async {
-    final docRef = _usersRef.doc();
-    final uuid = docRef.id;
+    final client = sb.Supabase.instance.client;
+    final uuidVal = const uuid.Uuid().v4();
 
-    await docRef.set({
-      'email': username,
-      'displayName': displayName,
+    await client.from('users').insert({
+      'id': uuidVal,
+      'org_id': _orgId,
+      'email': email,
+      'username': username,
+      'display_name': displayName,
       'role': role.toLowerCase(),
-      'hourlyRate': hourlyRate ?? 150.0,
-      'isDeleted': false,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
+      'hourly_rate': hourlyRate ?? 150.0,
+      'is_deleted': false,
+      'created_at': DateTime.now().toUtc().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     });
 
-    await _idMapper.registerUuid('user', uuid);
+    await _idMapper.registerUuid('user', uuidVal);
   }
 
   Future<void> createUserWithUid({
@@ -73,75 +77,72 @@ class UserService {
     required String role,
     required double hourlyRate,
     String? orgId,
+    String? username,
   }) async {
+    final client = sb.Supabase.instance.client;
     final targetOrgId = orgId ?? _orgId;
+    final resolvedUsername = username ?? (email.isNotEmpty ? email.split('@').first : '');
     
-    // 1. Create org-specific profile document
-    await orgDoc(targetOrgId).collection('users').doc(uid).set({
+    await client.from('users').insert({
+      'id': uid,
+      'org_id': targetOrgId,
       'email': email,
-      'displayName': displayName,
+      'username': resolvedUsername,
+      'display_name': displayName,
       'role': role.toLowerCase(),
-      'hourlyRate': hourlyRate,
-      'isDeleted': false,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-
-    // 2. Create root global user mapping document
-    await FirebaseFirestore.instance.collection('users').doc(uid).set({
-      'email': email,
-      'orgId': targetOrgId,
+      'hourly_rate': hourlyRate,
+      'is_deleted': false,
+      'created_at': DateTime.now().toUtc().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     });
   }
 
   Future<void> updateUser(domain.User user) async {
-    final uuid = _idMapper.getUuid('user', user.id);
-    if (uuid == null) throw Exception('Cannot resolve ID for user.');
+    final uuidVal = _idMapper.getUuid('user', user.id);
+    if (uuidVal == null) throw Exception('Cannot resolve ID for user.');
 
-    await _usersRef.doc(uuid).update({
-      'displayName': user.displayName,
+    final client = sb.Supabase.instance.client;
+    await client.from('users').update({
+      'display_name': user.displayName,
       'role': user.role.name.toLowerCase(),
-      'hourlyRate': user.hourlyRate,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+      'hourly_rate': user.hourlyRate,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', uuidVal);
   }
 
   Future<void> deleteUser(int id) async {
-    final uuid = _idMapper.getUuid('user', id);
-    if (uuid == null) throw Exception('Cannot resolve ID for user.');
+    final uuidVal = _idMapper.getUuid('user', id);
+    if (uuidVal == null) throw Exception('Cannot resolve ID for user.');
 
-    await _usersRef.doc(uuid).update({
-      'isDeleted': true,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    final client = sb.Supabase.instance.client;
+    await client.from('users').update({
+      'is_deleted': true,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', uuidVal);
   }
 
-  Future<domain.User> _mapDocToUser(
-    DocumentSnapshot<Map<String, dynamic>> doc,
+  Future<domain.User> _mapRowToUser(
+    Map<String, dynamic> row,
     IdMapper idMapper,
   ) async {
-    final uuid = doc.id;
-    final id = await idMapper.registerUuid('user', uuid);
+    final uuidVal = row['id'] as String;
+    final id = await idMapper.registerUuid('user', uuidVal);
 
-    final data = doc.data() ?? {};
-    final email = data['email'] as String? ?? '';
-    final displayName = data['displayName'] as String? ?? '';
-    final roleStr = data['role'] as String? ?? 'artist';
-    final hourlyRate = (data['hourlyRate'] as num?)?.toDouble() ?? 150.0;
-    final isDeleted = data['isDeleted'] as bool? ?? false;
+    final email = row['email'] as String? ?? '';
+    final username = row['username'] as String? ?? '';
+    final displayName = row['display_name'] as String? ?? '';
+    final roleStr = row['role'] as String? ?? 'artist';
+    final hourlyRate = (row['hourly_rate'] as num?)?.toDouble() ?? 150.0;
+    final isDeleted = row['is_deleted'] as bool? ?? false;
 
-    final createdAtTimestamp = data['createdAt'] as Timestamp?;
-    final updatedAtTimestamp = data['updatedAt'] as Timestamp?;
-
-    final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
-    final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
-
-    final pathSegments = doc.reference.path.split('/');
-    final resolvedOrgId = (pathSegments.length >= 2) ? pathSegments[1] : 'default-org';
+    final createdAt = DateTime.parse(row['created_at'] as String).toLocal();
+    final updatedAt = DateTime.parse(row['updated_at'] as String).toLocal();
+    final resolvedOrgId = row['org_id'] as String? ?? 'default-org';
 
     return domain.User(
       id: id,
-      username: email,
+      username: username,
+      email: email,
       displayName: displayName,
       orgId: resolvedOrgId,
       role: UserRole.values.firstWhere(
@@ -155,29 +156,25 @@ class UserService {
     );
   }
 
-  domain.User _mapDocToUserSync(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final uuid = doc.id;
-    final id = uuid.hashCode & 0x7FFFFFFF;
+  domain.User _mapRowToUserSync(Map<String, dynamic> row) {
+    final uuidVal = row['id'] as String;
+    final id = uuidVal.hashCode & 0x7FFFFFFF;
 
-    final data = doc.data() ?? {};
-    final email = data['email'] as String? ?? '';
-    final displayName = data['displayName'] as String? ?? '';
-    final roleStr = data['role'] as String? ?? 'artist';
-    final hourlyRate = (data['hourlyRate'] as num?)?.toDouble() ?? 150.0;
-    final isDeleted = data['isDeleted'] as bool? ?? false;
+    final email = row['email'] as String? ?? '';
+    final username = row['username'] as String? ?? '';
+    final displayName = row['display_name'] as String? ?? '';
+    final roleStr = row['role'] as String? ?? 'artist';
+    final hourlyRate = (row['hourly_rate'] as num?)?.toDouble() ?? 150.0;
+    final isDeleted = row['is_deleted'] as bool? ?? false;
 
-    final createdAtTimestamp = data['createdAt'] as Timestamp?;
-    final updatedAtTimestamp = data['updatedAt'] as Timestamp?;
-
-    final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
-    final updatedAt = updatedAtTimestamp?.toDate() ?? DateTime.now();
-
-    final pathSegments = doc.reference.path.split('/');
-    final resolvedOrgId = (pathSegments.length >= 2) ? pathSegments[1] : 'default-org';
+    final createdAt = DateTime.parse(row['created_at'] as String).toLocal();
+    final updatedAt = DateTime.parse(row['updated_at'] as String).toLocal();
+    final resolvedOrgId = row['org_id'] as String? ?? 'default-org';
 
     return domain.User(
       id: id,
-      username: email,
+      username: username,
+      email: email,
       displayName: displayName,
       orgId: resolvedOrgId,
       role: UserRole.values.firstWhere(

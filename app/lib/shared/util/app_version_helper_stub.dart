@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> checkAppVersion(String appVersion) async {
   // No-op on mobile/stub
@@ -6,6 +6,6 @@ Future<void> checkAppVersion(String appVersion) async {
 
 Future<void> resetApp() async {
   try {
-    await FirebaseAuth.instance.signOut();
+    await Supabase.instance.client.auth.signOut();
   } catch (_) {}
 }

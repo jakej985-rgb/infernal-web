@@ -1,10 +1,17 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/org_provider.dart';
-import 'firestore_helpers.dart';
 
 part 'settings_service.g.dart';
+
+class SettingsSnapshot {
+  final Map<String, dynamic>? dataMap;
+  final bool exists;
+  SettingsSnapshot({required this.exists, this.dataMap});
+
+  Map<String, dynamic>? data() => dataMap;
+}
 
 @riverpod
 SettingsService settingsService(Ref ref) {
@@ -17,11 +24,34 @@ class SettingsService {
 
   String get _orgId => _ref.read(orgIdProvider);
 
-  DocumentReference<Map<String, dynamic>> get _settingsDoc =>
-      orgDoc(_orgId).collection('settings').doc('main');
-
-  Stream<DocumentSnapshot<Map<String, dynamic>>> watchSettings() {
-    return _settingsDoc.snapshots();
+  Stream<SettingsSnapshot> watchSettings() {
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('settings')
+        .stream(primaryKey: ['org_id'])
+        .eq('org_id', _orgId)
+        .map((data) {
+          if (data.isEmpty) {
+            return SettingsSnapshot(exists: false);
+          }
+          final row = data.first;
+          final settingsMap = {
+            'shopName': row['shop_name'],
+            'logoPath': row['logo_path'],
+            'accentColor': row['accent_color'],
+            'depositType': row['deposit_type'],
+            'depositAmount': (row['deposit_amount'] as num?)?.toDouble(),
+            'tattooPerHour': (row['tattoo_per_hour'] as num?)?.toDouble(),
+            'piercingSingle': (row['piercing_single'] as num?)?.toDouble(),
+            'piercingMulti': (row['piercing_multi'] as num?)?.toDouble(),
+            'shopMinimumRate': (row['shop_minimum_rate'] as num?)?.toDouble(),
+            'taxRate': (row['tax_rate'] as num?)?.toDouble(),
+          };
+          return SettingsSnapshot(
+            exists: true,
+            dataMap: {'settings': settingsMap},
+          );
+        });
   }
 
   Future<void> updateShopProfile({
@@ -29,12 +59,15 @@ class SettingsService {
     String? logoPath,
     String? accentColor,
   }) async {
+    final client = sb.Supabase.instance.client;
     final updates = <String, dynamic>{};
-    if (shopName != null) updates['settings.shopName'] = shopName;
-    if (logoPath != null) updates['settings.logoPath'] = logoPath;
-    if (accentColor != null) updates['settings.accentColor'] = accentColor;
+    if (shopName != null) updates['shop_name'] = shopName;
+    if (logoPath != null) updates['logo_path'] = logoPath;
+    if (accentColor != null) updates['accent_color'] = accentColor;
 
-    await _settingsDoc.set(updates, SetOptions(merge: true));
+    await client
+        .from('settings')
+        .upsert({'org_id': _orgId, ...updates});
   }
 
   Future<void> updatePricing({
@@ -44,38 +77,48 @@ class SettingsService {
     double? shopMinimumRate,
     double? taxRate,
   }) async {
+    final client = sb.Supabase.instance.client;
     final updates = <String, dynamic>{};
-    if (tattooPerHour != null) {
-      updates['settings.tattooPerHour'] = tattooPerHour;
-    }
-    if (piercingSingle != null) {
-      updates['settings.piercingSingle'] = piercingSingle;
-    }
-    if (piercingMulti != null) {
-      updates['settings.piercingMulti'] = piercingMulti;
-    }
-    if (shopMinimumRate != null) {
-      updates['settings.shopMinimumRate'] = shopMinimumRate;
-    }
-    if (taxRate != null) updates['settings.taxRate'] = taxRate;
+    if (tattooPerHour != null) updates['tattoo_per_hour'] = tattooPerHour;
+    if (piercingSingle != null) updates['piercing_single'] = piercingSingle;
+    if (piercingMulti != null) updates['piercing_multi'] = piercingMulti;
+    if (shopMinimumRate != null) updates['shop_minimum_rate'] = shopMinimumRate;
+    if (taxRate != null) updates['tax_rate'] = taxRate;
 
-    await _settingsDoc.set(updates, SetOptions(merge: true));
+    await client
+        .from('settings')
+        .upsert({'org_id': _orgId, ...updates});
   }
 
   Future<void> updateDepositConfig({
     String? depositType,
     double? depositAmount,
   }) async {
+    final client = sb.Supabase.instance.client;
     final updates = <String, dynamic>{};
-    if (depositType != null) updates['settings.depositType'] = depositType;
-    if (depositAmount != null) {
-      updates['settings.depositAmount'] = depositAmount;
-    }
+    if (depositType != null) updates['deposit_type'] = depositType;
+    if (depositAmount != null) updates['deposit_amount'] = depositAmount;
 
-    await _settingsDoc.set(updates, SetOptions(merge: true));
+    await client
+        .from('settings')
+        .upsert({'org_id': _orgId, ...updates});
   }
 
   Future<void> resetToDefaults(Map<String, dynamic> defaultUpdates) async {
-    await _settingsDoc.set(defaultUpdates, SetOptions(merge: true));
+    final client = sb.Supabase.instance.client;
+    final mappedUpdates = <String, dynamic>{};
+    defaultUpdates.forEach((key, value) {
+      final subKey = key.replaceFirst('settings.', '');
+      final colName = _toSnakeCase(subKey);
+      mappedUpdates[colName] = value;
+    });
+
+    await client
+        .from('settings')
+        .upsert({'org_id': _orgId, ...mappedUpdates});
+  }
+
+  String _toSnakeCase(String str) {
+    return str.replaceAllMapped(RegExp(r'([A-Z])'), (Match m) => '_${m[1]!.toLowerCase()}');
   }
 }

@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart' as uuid;
 import '../../cache/id_mapper.dart';
 import '../../data/org_provider.dart';
 import '../../domain/quote.dart' as domain;
-import 'firestore_helpers.dart';
 
 part 'quote_service.g.dart';
 
@@ -20,37 +20,41 @@ class QuoteService {
   IdMapper get _idMapper => _ref.read(idMapperProvider);
   String get _orgId => _ref.read(orgIdProvider);
 
-  CollectionReference<Map<String, dynamic>> get _quotesRef =>
-      orgDoc(_orgId).collection('quotes');
-
   Stream<List<domain.Quote>> watchQuotes() {
-    return _quotesRef
-        .where('isDeleted', isEqualTo: false)
-        .snapshots()
-        .asyncMap((snapshot) async {
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('quotes')
+        .stream(primaryKey: ['id'])
+        .eq('org_id', _orgId)
+        .asyncMap((data) async {
           final list = <domain.Quote>[];
-          for (final doc in snapshot.docs) {
-            list.add(await _mapDocToDomain(doc, _idMapper));
+          for (final row in data) {
+            if (row['is_deleted'] == true) continue;
+            list.add(await _mapRowToDomain(row, _idMapper));
           }
           return list;
         });
   }
 
   Stream<domain.Quote?> watchQuoteById(int id) {
-    final uuid = _idMapper.getUuid('quote', id);
-    if (uuid == null) {
+    final uuidVal = _idMapper.getUuid('quote', id);
+    if (uuidVal == null) {
       return Stream.value(null);
     }
-
-    return _quotesRef.doc(uuid).snapshots().asyncMap((doc) async {
-      if (!doc.exists || doc.data()?['isDeleted'] == true) return null;
-      return await _mapDocToDomain(doc, _idMapper);
-    });
+    final client = sb.Supabase.instance.client;
+    return client
+        .from('quotes')
+        .stream(primaryKey: ['id'])
+        .eq('id', uuidVal)
+        .asyncMap((data) async {
+          if (data.isEmpty || data.first['is_deleted'] == true) return null;
+          return await _mapRowToDomain(data.first, _idMapper);
+        });
   }
 
   Future<void> createQuote(domain.Quote quote) async {
-    final docRef = _quotesRef.doc();
-    final uuid = docRef.id;
+    final uuidVal = const uuid.Uuid().v4();
+    final client = sb.Supabase.instance.client;
 
     String? clientUuid;
     if (quote.clientId != null) {
@@ -61,126 +65,128 @@ class QuoteService {
     artistUuid = _idMapper.getUuid('user', quote.artistId);
     artistUuid ??= 'default-artist-uuid';
 
-    await docRef.set({
+    await client.from('quotes').insert({
+      'id': uuidVal,
+      'org_id': _orgId,
       'client_id': clientUuid,
       'artist_id': artistUuid,
       'placement': quote.placement,
       'style': quote.style,
-      'isCoverUp': quote.isCoverUp,
+      'is_cover_up': quote.isCoverUp,
       'width': quote.width,
       'height': quote.height,
-      'coverageLevel': quote.coverageLevel,
-      'lineComplexity': quote.lineComplexity,
-      'shadingComplexity': quote.shadingComplexity,
-      'colorComplexity': quote.colorComplexity,
+      'coverage_level': quote.coverageLevel,
+      'line_complexity': quote.lineComplexity,
+      'shading_complexity': quote.shadingComplexity,
+      'color_complexity': quote.colorComplexity,
       'difficulty': quote.difficulty,
-      'estimatedHoursLow': quote.estimatedHoursLow,
-      'estimatedHoursHigh': quote.estimatedHoursHigh,
-      'priceLow': quote.priceLow,
-      'priceHigh': quote.priceHigh,
-      'shopMinimum': quote.shopMinimum,
-      'recommendedDeposit': quote.recommendedDeposit,
-      'confidenceScore': quote.confidenceScore,
-      'similarJobsCount': quote.similarJobsCount,
+      'estimated_hours_low': quote.estimatedHoursLow,
+      'estimated_hours_high': quote.estimatedHoursHigh,
+      'price_low': quote.priceLow,
+      'price_high': quote.priceHigh,
+      'shop_minimum': quote.shopMinimum,
+      'recommended_deposit': quote.recommendedDeposit,
+      'confidence_score': quote.confidenceScore,
+      'similar_jobs_count': quote.similarJobsCount,
       'notes': quote.notes ?? '',
-      'photoPath': quote.photoPath ?? '',
-      'isDeleted': false,
-      'createdAt': FieldValue.serverTimestamp(),
+      'photo_path': quote.photoPath ?? '',
+      'is_deleted': false,
+      'created_at': DateTime.now().toUtc().toIso8601String(),
     });
 
-    await _idMapper.registerUuid('quote', uuid);
+    await _idMapper.registerUuid('quote', uuidVal);
   }
 
   Future<void> updateQuote(domain.Quote quote) async {
-    final uuid = _idMapper.getUuid('quote', quote.id);
-    if (uuid == null) throw Exception('Cannot resolve ID for quote.');
+    final uuidVal = _idMapper.getUuid('quote', quote.id);
+    if (uuidVal == null) throw Exception('Cannot resolve ID for quote.');
 
     String? clientUuid;
     if (quote.clientId != null) {
       clientUuid = _idMapper.getUuid('client', quote.clientId!);
     }
 
-    await _quotesRef.doc(uuid).update({
+    final client = sb.Supabase.instance.client;
+    await client.from('quotes').update({
       'client_id': clientUuid,
       'placement': quote.placement,
       'style': quote.style,
-      'isCoverUp': quote.isCoverUp,
+      'is_cover_up': quote.isCoverUp,
       'width': quote.width,
       'height': quote.height,
-      'coverageLevel': quote.coverageLevel,
-      'lineComplexity': quote.lineComplexity,
-      'shadingComplexity': quote.shadingComplexity,
-      'colorComplexity': quote.colorComplexity,
+      'coverage_level': quote.coverageLevel,
+      'line_complexity': quote.lineComplexity,
+      'shading_complexity': quote.shadingComplexity,
+      'color_complexity': quote.colorComplexity,
       'difficulty': quote.difficulty,
-      'estimatedHoursLow': quote.estimatedHoursLow,
-      'estimatedHoursHigh': quote.estimatedHoursHigh,
-      'priceLow': quote.priceLow,
-      'priceHigh': quote.priceHigh,
-      'shopMinimum': quote.shopMinimum,
-      'recommendedDeposit': quote.recommendedDeposit,
-      'confidenceScore': quote.confidenceScore,
-      'similarJobsCount': quote.similarJobsCount,
+      'estimated_hours_low': quote.estimatedHoursLow,
+      'estimated_hours_high': quote.estimatedHoursHigh,
+      'price_low': quote.priceLow,
+      'price_high': quote.priceHigh,
+      'shop_minimum': quote.shopMinimum,
+      'recommended_deposit': quote.recommendedDeposit,
+      'confidence_score': quote.confidenceScore,
+      'similar_jobs_count': quote.similarJobsCount,
       'notes': quote.notes ?? '',
-      'photoPath': quote.photoPath ?? '',
-    });
+      'photo_path': quote.photoPath ?? '',
+    }).eq('id', uuidVal);
   }
 
   Future<void> deleteQuote(int id) async {
-    final uuid = _idMapper.getUuid('quote', id);
-    if (uuid == null) throw Exception('Cannot resolve ID for quote.');
+    final uuidVal = _idMapper.getUuid('quote', id);
+    if (uuidVal == null) throw Exception('Cannot resolve ID for quote.');
 
-    await _quotesRef.doc(uuid).update({
-      'isDeleted': true,
-      'deletedAt': FieldValue.serverTimestamp(),
-    });
+    final client = sb.Supabase.instance.client;
+    await client.from('quotes').update({
+      'is_deleted': true,
+    }).eq('id', uuidVal);
   }
 
-  Future<domain.Quote> _mapDocToDomain(
-    DocumentSnapshot<Map<String, dynamic>> doc,
+  Future<domain.Quote> _mapRowToDomain(
+    Map<String, dynamic> row,
     IdMapper idMapper,
   ) async {
-    final uuid = doc.id;
-    final id = await idMapper.registerUuid('quote', uuid);
+    final uuidVal = row['id'] as String;
+    final id = await idMapper.registerUuid('quote', uuidVal);
 
-    final data = doc.data() ?? {};
-    final clientUuid = data['client_id'] as String?;
+    final clientUuid = row['client_id'] as String?;
     int? clientId;
     if (clientUuid != null && clientUuid.isNotEmpty) {
       clientId = await idMapper.registerUuid('client', clientUuid);
     }
 
-    final artistUuid = data['artist_id'] as String? ?? '';
+    final artistUuid = row['artist_id'] as String? ?? '';
     final artistId = artistUuid.isNotEmpty
         ? await idMapper.registerUuid('user', artistUuid)
         : 1;
 
-    final createdAtTimestamp = data['createdAt'] as Timestamp?;
-    final createdAt = createdAtTimestamp?.toDate() ?? DateTime.now();
+    final createdAtStr = row['created_at'] as String;
+    final createdAt = DateTime.parse(createdAtStr).toLocal();
 
     return domain.Quote(
       id: id,
       clientId: clientId,
       artistId: artistId,
-      placement: data['placement'] as String? ?? '',
-      style: data['style'] as String? ?? '',
-      isCoverUp: data['isCoverUp'] as bool? ?? false,
-      width: (data['width'] as num?)?.toDouble() ?? 0.0,
-      height: (data['height'] as num?)?.toDouble() ?? 0.0,
-      coverageLevel: data['coverageLevel'] as int? ?? 3,
-      lineComplexity: data['lineComplexity'] as int? ?? 3,
-      shadingComplexity: data['shadingComplexity'] as int? ?? 3,
-      colorComplexity: data['colorComplexity'] as int? ?? 3,
-      difficulty: data['difficulty'] as int? ?? 3,
-      estimatedHoursLow: (data['estimatedHoursLow'] as num?)?.toDouble() ?? 0.0,
-      estimatedHoursHigh: (data['estimatedHoursHigh'] as num?)?.toDouble() ?? 0.0,
-      priceLow: (data['priceLow'] as num?)?.toDouble() ?? 0.0,
-      priceHigh: (data['priceHigh'] as num?)?.toDouble() ?? 0.0,
-      shopMinimum: (data['shopMinimum'] as num?)?.toDouble() ?? 0.0,
-      recommendedDeposit: (data['recommendedDeposit'] as num?)?.toDouble() ?? 0.0,
-      confidenceScore: (data['confidenceScore'] as num?)?.toDouble() ?? 0.0,
-      similarJobsCount: data['similarJobsCount'] as int? ?? 0,
-      notes: data['notes'] as String?,
-      photoPath: data['photoPath'] as String?,
+      placement: row['placement'] as String? ?? '',
+      style: row['style'] as String? ?? '',
+      isCoverUp: row['is_cover_up'] as bool? ?? false,
+      width: (row['width'] as num?)?.toDouble() ?? 0.0,
+      height: (row['height'] as num?)?.toDouble() ?? 0.0,
+      coverageLevel: row['coverage_level'] as int? ?? 3,
+      lineComplexity: row['line_complexity'] as int? ?? 3,
+      shadingComplexity: row['shading_complexity'] as int? ?? 3,
+      colorComplexity: row['color_complexity'] as int? ?? 3,
+      difficulty: row['difficulty'] as int? ?? 3,
+      estimatedHoursLow: (row['estimated_hours_low'] as num?)?.toDouble() ?? 0.0,
+      estimatedHoursHigh: (row['estimated_hours_high'] as num?)?.toDouble() ?? 0.0,
+      priceLow: (row['price_low'] as num?)?.toDouble() ?? 0.0,
+      priceHigh: (row['price_high'] as num?)?.toDouble() ?? 0.0,
+      shopMinimum: (row['shop_minimum'] as num?)?.toDouble() ?? 0.0,
+      recommendedDeposit: (row['recommended_deposit'] as num?)?.toDouble() ?? 0.0,
+      confidenceScore: (row['confidence_score'] as num?)?.toDouble() ?? 0.0,
+      similarJobsCount: row['similar_jobs_count'] as int? ?? 0,
+      notes: row['notes'] as String?,
+      photoPath: row['photo_path'] as String?,
       createdAt: createdAt,
     );
   }

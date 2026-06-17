@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -75,8 +74,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     });
 
     try {
-      final doc = await FirebaseFirestore.instance.collection('requests').doc(id).get();
-      if (!doc.exists) {
+      final data = await ref.read(authServiceProvider.notifier).getShopRequest(id);
+      if (data == null) {
         setState(() {
           _validationError = 'Sanctum invitation link not found.';
           _isValidatingToken = false;
@@ -84,7 +83,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         return;
       }
 
-      final data = doc.data()!;
       if (data['status'] == 'claimed') {
         setState(() {
           _validationError = 'This invitation has already been claimed.';
@@ -279,7 +277,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
                 const SizedBox(height: InfernalSpacing.md),
                 Text(
-                  'Your sanctum request has been queued for review by the Arch-Admin.\n\nOnce approved, an invitation code and claim link will be dispatched to ${_emailController.text}.',
+                  'Your sanctum request has been queued for review by the Arch-Admin.\n\nOnce approved, an invitation code and claim link will be provided to you by the Arch-Admin.',
                   style: const TextStyle(color: InfernalColors.textMuted, height: 1.4),
                   textAlign: TextAlign.center,
                 ),

@@ -24,7 +24,9 @@ class _IntegrationsPageState extends ConsumerState<IntegrationsPage> {
   bool _isTesting = false;
   bool _isSaving = false;
   bool _isDisconnecting = false;
+  bool _isSyncing = false;
   bool _showSmtpForm = false;
+
 
   @override
   void dispose() {
@@ -187,7 +189,36 @@ class _IntegrationsPageState extends ConsumerState<IntegrationsPage> {
     }
   }
 
+  Future<void> _forceSyncCalendar() async {
+    setState(() => _isSyncing = true);
+    try {
+      final result = await ref.read(integrationServiceProvider).syncAllAppointments();
+      final synced = result['synced'] ?? 0;
+      final failed = result['failed'] ?? 0;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: InfernalColors.success,
+            content: Text('Calendar Sync Ritual Complete! Synced $synced sessions, failed $failed.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: InfernalColors.error,
+            content: Text('Calendar Sync Failed: $e'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+
   @override
+
   Widget build(BuildContext context) {
     final configAsync = ref.watch(watchIntegrationConfigProvider);
 
@@ -288,6 +319,42 @@ class _IntegrationsPageState extends ConsumerState<IntegrationsPage> {
                 _buildGatewayInfo('Calendar Integration', 'Enabled (Real-time Sync)'),
                 _buildGatewayInfo('Contacts API', 'Enabled (Autofill Collector Search)'),
                 const SizedBox(height: InfernalSpacing.md),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: InfernalColors.blood,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        icon: _isSyncing
+                            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.sync, color: Colors.white, size: 16),
+                        label: const Text(
+                          'FORCE SYNC',
+                          style: TextStyle(color: Colors.white, fontSize: 11, letterSpacing: 1.5, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: _isSyncing || _isDisconnecting ? null : _forceSyncCalendar,
+                      ),
+                    ),
+                    const SizedBox(width: InfernalSpacing.sm),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: InfernalColors.border, width: 0.5),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        icon: const Icon(Icons.refresh, color: InfernalColors.textPrimary, size: 16),
+                        label: const Text(
+                          'RE-CONNECT',
+                          style: TextStyle(color: InfernalColors.textPrimary, fontSize: 11, letterSpacing: 1.5),
+                        ),
+                        onPressed: _isSyncing || _isDisconnecting ? null : _connectGoogle,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: InfernalSpacing.sm),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -299,7 +366,7 @@ class _IntegrationsPageState extends ConsumerState<IntegrationsPage> {
                         ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: InfernalColors.textPrimary))
                         : const Icon(Icons.link_off, color: InfernalColors.error, size: 16),
                     label: const Text('DISCONNECT CONDUIT', style: TextStyle(color: InfernalColors.textPrimary, fontSize: 11, letterSpacing: 1.5)),
-                    onPressed: _isDisconnecting ? null : _disconnect,
+                    onPressed: _isSyncing || _isDisconnecting ? null : _disconnect,
                   ),
                 ),
               ] else ...[

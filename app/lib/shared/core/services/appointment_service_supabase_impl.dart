@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:supabase_flutter/supabase_flutter.as_sb' as sb; // wait, let's use standard supabase import
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart' as uuid;
@@ -145,10 +144,10 @@ class AppointmentServiceSupabaseImpl implements AppointmentService {
         .from('appointments')
         .stream(primaryKey: ['id'])
         .eq('org_id', _orgId)
-        .eq('is_deleted', false)
         .asyncMap((data) async {
           final appointments = <domain.Appointment>[];
           for (final row in data) {
+            if (row['is_deleted'] == true) continue;
             appointments.add(await _mapRowToDomain(row));
           }
           return appointments;

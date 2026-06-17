@@ -1,20 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'org_provider.dart';
 
 final orgLabelsProvider = StreamProvider<Map<String, String>>((ref) {
   final orgId = ref.watch(orgIdProvider);
+  final client = sb.Supabase.instance.client;
 
-  return FirebaseFirestore.instance
-      .collection('organizations')
-      .doc(orgId)
-      .snapshots()
-      .map((doc) {
-        final data = doc.data();
-        if (data == null || data['labels'] == null) return {};
-        // Ensure it's typed properly
-        final labelsDynamic = data['labels'] as Map<dynamic, dynamic>;
-        return labelsDynamic.map(
+  return client
+      .from('organizations')
+      .stream(primaryKey: ['id'])
+      .eq('id', orgId)
+      .map((data) {
+        if (data.isEmpty) return {};
+        final row = data.first;
+        final labelsObj = row['labels'];
+        if (labelsObj == null || labelsObj is! Map) return {};
+        return (labelsObj).map(
           (key, value) => MapEntry(key.toString(), value.toString()),
         );
       });

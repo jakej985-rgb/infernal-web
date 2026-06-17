@@ -1,4 +1,8 @@
 {
     "dart.flutterSdkPath": "/home/m3tal/sdk/flutter",
-    "dart.lineLength": 80
+    "dart.lineLength": 80,
+    "deno.enable": true,
+    "deno.enablePaths": [
+        "supabase/functions"
+    ]
 }
