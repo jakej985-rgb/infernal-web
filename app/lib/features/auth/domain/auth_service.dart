@@ -98,6 +98,17 @@ class AuthService extends _$AuthService {
     var existing = await userService.getUserById(uid);
     if (existing == null) {
       final isAdmin = email == 'admin.ink.steel@gmail.com' || email == 'admin@inkandsteel.xyz';
+      
+      // Ensure organization exists to satisfy foreign key constraints
+      try {
+        await sb.Supabase.instance.client.from('organizations').upsert({
+          'id': resolvedOrgId,
+          'name': resolvedOrgId == 'default-org' ? 'Default Sanctum' : 'Shop Sanctum',
+        });
+      } catch (e) {
+        debugPrint('initializeUserProfile: Failed to upsert organization $resolvedOrgId: $e');
+      }
+
       await userService.createUserWithUid(
         uid: uid,
         email: email,
@@ -205,6 +216,7 @@ class AuthService extends _$AuthService {
             role: 'admin',
             hourlyRate: 150.0,
             orgId: 'default-org',
+            username: 'admin',
           );
         }
       }

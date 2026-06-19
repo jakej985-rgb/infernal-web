@@ -63,3 +63,9 @@ app/structure.txt
 # =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# Vercel
+# =========================
+.vercel/
+.vercel

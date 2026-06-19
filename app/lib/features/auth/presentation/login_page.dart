@@ -48,7 +48,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Admin user created (admin/admin). Please login.'),
+            content: Text('Admin user created (admin/adminadmin). Please login.'),
             backgroundColor: InfernalColors.success,
           ),
         );
@@ -75,6 +75,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             authenticated: (user) {
               if (mounted) {
                 context.go(AppRoutes.dashboard);
+              }
+            },
+            error: (message) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Login failed: $message'),
+                    backgroundColor: InfernalColors.error,
+                  ),
+                );
               }
             },
             orElse: () {},
