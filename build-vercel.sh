@@ -38,6 +38,9 @@ cd app
 echo "Fetching packages..."
 flutter pub get
 
+echo "Running code generation (build_runner)..."
+dart run build_runner build --delete-conflicting-outputs
+
 echo "Building production web bundle..."
 flutter build web --release
 
