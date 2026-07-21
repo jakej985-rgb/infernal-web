@@ -35,7 +35,7 @@ Represents a customer of the studio who receives tattoos, piercings, or consulta
 
 ### Commands
 
-*(Note: As domain models are modeled as immutable freezed classes, "commands" result in the generation of a mutated copy)*
+> Note: As domain models are modeled as immutable freezed classes, "commands" result in the generation of a mutated copy.
 
 * `Client.fromJson(Map<String, dynamic> json)`: Reconstructs a Client instance from persistent serialized maps.
 
