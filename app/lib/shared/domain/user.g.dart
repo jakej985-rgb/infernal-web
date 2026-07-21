@@ -11,7 +11,7 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
   username: json['username'] as String,
   email: json['email'] as String? ?? '',
   displayName: json['displayName'] as String? ?? '',
-  orgId: json['orgId'] as String? ?? 'default-org',
+  orgId: json['orgId'] as String? ?? 'tester',
   passwordHash: json['passwordHash'] as String? ?? '',
   role: $enumDecodeNullable(_$UserRoleEnumMap, json['role']) ?? UserRole.artist,
   themeKey: json['themeKey'] as String? ?? 'InfernalNeon',

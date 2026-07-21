@@ -93,7 +93,7 @@ class AuthService extends _$AuthService {
 
   /// Explicitly initialize user profile document in Supabase after sign-up/login if missing.
   Future<void> initializeUserProfile(String uid, String email, [String? orgId]) async {
-    final resolvedOrgId = orgId ?? 'default-org';
+    final resolvedOrgId = orgId ?? 'tester';
     final userService = ref.read(userServiceProvider);
     var existing = await userService.getUserById(uid);
     if (existing == null) {
@@ -103,7 +103,7 @@ class AuthService extends _$AuthService {
       try {
         await sb.Supabase.instance.client.from('organizations').upsert({
           'id': resolvedOrgId,
-          'name': resolvedOrgId == 'default-org' ? 'Default Sanctum' : 'Shop Sanctum',
+          'name': resolvedOrgId == 'tester' ? 'Tester Sanctum' : 'Shop Sanctum',
         });
       } catch (e) {
         debugPrint('initializeUserProfile: Failed to upsert organization $resolvedOrgId: $e');
@@ -173,7 +173,7 @@ class AuthService extends _$AuthService {
             .select('org_id')
             .eq('id', sbUser.id)
             .maybeSingle();
-        final resolvedOrgId = userMap != null ? (userMap['org_id'] as String? ?? 'default-org') : 'default-org';
+        final resolvedOrgId = userMap != null ? (userMap['org_id'] as String? ?? 'tester') : 'tester';
 
         // Explicitly initialize profile to ensure it exists
         await initializeUserProfile(sbUser.id, sbUser.email ?? resolvedEmail, resolvedOrgId);
@@ -215,7 +215,7 @@ class AuthService extends _$AuthService {
             displayName: 'admin',
             role: 'admin',
             hourlyRate: 150.0,
-            orgId: 'default-org',
+            orgId: 'tester',
             username: 'admin',
           );
         }

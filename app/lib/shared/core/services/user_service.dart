@@ -137,7 +137,7 @@ class UserService {
 
     final createdAt = DateTime.parse(row['created_at'] as String).toLocal();
     final updatedAt = DateTime.parse(row['updated_at'] as String).toLocal();
-    final resolvedOrgId = row['org_id'] as String? ?? 'default-org';
+    final resolvedOrgId = row['org_id'] as String? ?? 'tester';
 
     return domain.User(
       id: id,
@@ -169,7 +169,7 @@ class UserService {
 
     final createdAt = DateTime.parse(row['created_at'] as String).toLocal();
     final updatedAt = DateTime.parse(row['updated_at'] as String).toLocal();
-    final resolvedOrgId = row['org_id'] as String? ?? 'default-org';
+    final resolvedOrgId = row['org_id'] as String? ?? 'tester';
 
     return domain.User(
       id: id,

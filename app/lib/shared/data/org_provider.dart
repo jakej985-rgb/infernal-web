@@ -9,6 +9,6 @@ String orgId(Ref ref) {
   final authState = ref.watch(authServiceProvider);
   return authState.value?.maybeMap(
     authenticated: (s) => s.user.orgId,
-    orElse: () => 'default-org',
-  ) ?? 'default-org';
+    orElse: () => 'tester',
+  ) ?? 'tester';
 }

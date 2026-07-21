@@ -24,7 +24,7 @@ abstract class User with _$User {
     @Default('') String displayName,
 
     /// Organization ID for multi-tenant isolation
-    @Default('default-org') String orgId,
+    @Default('tester') String orgId,
 
     /// Hashed password (BCrypt)
     @Default('') String passwordHash,

@@ -252,7 +252,7 @@ return $default(_that.id,_that.username,_that.email,_that.displayName,_that.orgI
 @JsonSerializable()
 
 class _User extends User {
-  const _User({required this.id, required this.username, this.email = '', this.displayName = '', this.orgId = 'default-org', this.passwordHash = '', this.role = UserRole.artist, this.themeKey = 'InfernalNeon', this.avatarPath = '', this.hourlyRate = 150.0, this.speedFactor = 1.0, required this.createdAt, required this.updatedAt, this.lastLoginAt, this.isActive = true, this.isDeleted = false, this.deletedAt, this.department = '', this.commissionRate = 0.0, this.fontSize = 14, this.keyboardShortcutsJson = '', this.permissionsJson = ''}): super._();
+  const _User({required this.id, required this.username, this.email = '', this.displayName = '', this.orgId = 'tester', this.passwordHash = '', this.role = UserRole.artist, this.themeKey = 'InfernalNeon', this.avatarPath = '', this.hourlyRate = 150.0, this.speedFactor = 1.0, required this.createdAt, required this.updatedAt, this.lastLoginAt, this.isActive = true, this.isDeleted = false, this.deletedAt, this.department = '', this.commissionRate = 0.0, this.fontSize = 14, this.keyboardShortcutsJson = '', this.permissionsJson = ''}): super._();
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 /// Primary key
