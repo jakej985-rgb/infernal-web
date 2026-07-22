@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../app/theme/tokens.dart';
+import '../../../shared/presentation/widgets/neon_plate.dart';
 import '../../../../shared/domain/appointment.dart' as domain;
 import '../data/appointments_provider.dart';
 import 'widgets/appointment_status_chip.dart';
@@ -163,68 +164,184 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
 
     return Column(
       children: [
-        TableCalendar<domain.Appointment>(
-          firstDay: DateTime.utc(2020, 1, 1),
-          lastDay: DateTime.utc(2030, 12, 31),
-          focusedDay: _focusedDay,
-          calendarFormat: _calendarFormat,
-          selectedDayPredicate: (day) => isSameDay(selectedDay, day),
-          onDaySelected: (selectedDay, focusedDay) {
-            ref.read(selectedDateProvider.notifier).state = selectedDay;
-            setState(() {
-              _focusedDay = focusedDay;
-            });
-          },
-          onFormatChanged: (format) {
-            setState(() {
-              _calendarFormat = format;
-            });
-          },
-          onPageChanged: (focusedDay) {
-            _focusedDay = focusedDay;
-          },
-          eventLoader: _getEventsForDay,
-          calendarStyle: CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: InfernalColors.blood.withValues(alpha: 0.3),
-              shape: BoxShape.circle,
-            ),
-            selectedDecoration: const BoxDecoration(
-              color: InfernalColors.blood,
-              shape: BoxShape.circle,
-            ),
-            markerDecoration: const BoxDecoration(
-              color: InfernalColors.blood, // Use blood instead of accent
-              shape: BoxShape.circle,
-            ),
-            outsideDaysVisible: false,
-          ),
-          headerStyle: const HeaderStyle(
-            formatButtonVisible: true,
-            titleCentered: true,
-            titleTextStyle: TextStyle(
-              color: InfernalColors.textPrimary,
-              fontSize: 18,
-            ),
-            formatButtonTextStyle: TextStyle(color: InfernalColors.textPrimary),
-            formatButtonDecoration: BoxDecoration(
-              border: Border.fromBorderSide(
-                BorderSide(color: InfernalColors.divider),
+        Padding(
+          padding: const EdgeInsets.all(InfernalSpacing.md),
+          child: NeonPlate(
+            color: InfernalColors.blood,
+            padding: const EdgeInsets.all(InfernalSpacing.sm),
+            child: TableCalendar<domain.Appointment>(
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              focusedDay: _focusedDay,
+              calendarFormat: _calendarFormat,
+              selectedDayPredicate: (day) => isSameDay(selectedDay, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                ref.read(selectedDateProvider.notifier).state = selectedDay;
+                setState(() {
+                  _focusedDay = focusedDay;
+                });
+              },
+              onFormatChanged: (format) {
+                setState(() {
+                  _calendarFormat = format;
+                });
+              },
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+              },
+              eventLoader: _getEventsForDay,
+              calendarStyle: const CalendarStyle(
+                outsideDaysVisible: false,
+                markersMaxCount: 0, // Disable default markers to use markerBuilder
               ),
-              borderRadius: BorderRadius.all(Radius.circular(12.0)),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: true,
+                titleCentered: true,
+                formatButtonShowsNext: false,
+                titleTextStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: InfernalColors.blood,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
+                    ) ?? const TextStyle(color: InfernalColors.blood, fontSize: 16),
+                formatButtonTextStyle: const TextStyle(
+                  color: InfernalColors.gold,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+                formatButtonDecoration: BoxDecoration(
+                  border: Border.all(color: InfernalColors.gold.withValues(alpha: 0.5)),
+                  borderRadius: BorderRadius.circular(InfernalRadius.sm),
+                  color: InfernalColors.gold.withValues(alpha: 0.1),
+                ),
+                leftChevronIcon: const Icon(
+                  Icons.chevron_left,
+                  color: InfernalColors.blood,
+                ),
+                rightChevronIcon: const Icon(
+                  Icons.chevron_right,
+                  color: InfernalColors.blood,
+                ),
+              ),
+              daysOfWeekStyle: const DaysOfWeekStyle(
+                weekdayStyle: TextStyle(
+                  color: InfernalColors.textSecondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+                weekendStyle: TextStyle(
+                  color: InfernalColors.blood,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  return Center(
+                    child: Text(
+                      '${day.day}',
+                      style: const TextStyle(
+                        color: InfernalColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  );
+                },
+                selectedBuilder: (context, day, focusedDay) {
+                  return Center(
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: InfernalColors.blood.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: InfernalColors.blood,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: InfernalColors.blood.withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${day.day}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                todayBuilder: (context, day, focusedDay) {
+                  return Center(
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: InfernalColors.arcane.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: InfernalColors.arcane.withValues(alpha: 0.8),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${day.day}',
+                          style: const TextStyle(
+                            color: InfernalColors.arcane,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                markerBuilder: (context, day, events) {
+                  if (events.isEmpty) return const SizedBox.shrink();
+                  
+                  return Positioned(
+                    bottom: 4,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: events.take(3).map((event) {
+                        Color dotColor = InfernalColors.blood;
+                        if (event.status.toLowerCase() == 'completed') {
+                          dotColor = Colors.green;
+                        } else if (event.status.toLowerCase() == 'cancelled') {
+                          dotColor = InfernalColors.error;
+                        }
+                        
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 1.0),
+                          width: 5,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: dotColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: dotColor.withValues(alpha: 0.8),
+                                blurRadius: 3,
+                                spreadRadius: 0.5,
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  );
+                },
+              ),
             ),
-            leftChevronIcon: Icon(
-              Icons.chevron_left,
-              color: InfernalColors.textPrimary,
-            ),
-            rightChevronIcon: Icon(
-              Icons.chevron_right,
-              color: InfernalColors.textPrimary,
-            ),
-          ),
-          daysOfWeekStyle: const DaysOfWeekStyle(
-            weekdayStyle: TextStyle(color: InfernalColors.textSecondary),
-            weekendStyle: TextStyle(color: InfernalColors.blood),
           ),
         ),
         const Divider(color: InfernalColors.divider),
