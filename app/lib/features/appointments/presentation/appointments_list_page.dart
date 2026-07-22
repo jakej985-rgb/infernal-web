@@ -158,6 +158,84 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
         .toList();
   }
 
+  Widget _buildDayCell({
+    required DateTime day,
+    required Color textColor,
+    BoxDecoration? decoration,
+    required List<domain.Appointment> events,
+  }) {
+    final hasEvents = events.isNotEmpty;
+
+    return Container(
+      margin: const EdgeInsets.all(2),
+      decoration: decoration ??
+          (hasEvents
+              ? BoxDecoration(
+                  color: InfernalColors.blood.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(InfernalRadius.sm),
+                  border: Border.all(
+                    color: InfernalColors.blood.withValues(alpha: 0.25),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: InfernalColors.blood.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      spreadRadius: 0.5,
+                    ),
+                  ],
+                )
+              : null),
+      child: Stack(
+        children: [
+          Center(
+            child: Text(
+              '${day.day}',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: hasEvents ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
+          if (hasEvents)
+            Positioned(
+              top: 2,
+              right: 4,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: InfernalColors.blood,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: InfernalColors.blood.withValues(alpha: 0.6),
+                      blurRadius: 4,
+                      spreadRadius: 0.5,
+                    ),
+                  ],
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 14,
+                  minHeight: 14,
+                ),
+                child: Center(
+                  child: Text(
+                    '${events.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedDay = ref.watch(selectedDateProvider);
@@ -236,73 +314,50 @@ class _CalendarViewState extends ConsumerState<_CalendarView> {
               ),
               calendarBuilders: CalendarBuilders(
                 defaultBuilder: (context, day, focusedDay) {
-                  return Center(
-                    child: Text(
-                      '${day.day}',
-                      style: const TextStyle(
-                        color: InfernalColors.textPrimary,
-                        fontSize: 14,
-                      ),
-                    ),
+                  final events = _getEventsForDay(day);
+                  return _buildDayCell(
+                    day: day,
+                    textColor: events.isNotEmpty ? InfernalColors.blood : InfernalColors.textPrimary,
+                    events: events,
                   );
                 },
                 selectedBuilder: (context, day, focusedDay) {
-                  return Center(
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: InfernalColors.blood.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: InfernalColors.blood,
-                          width: 2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: InfernalColors.blood.withValues(alpha: 0.5),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ],
+                  final events = _getEventsForDay(day);
+                  return _buildDayCell(
+                    day: day,
+                    textColor: Colors.white,
+                    decoration: BoxDecoration(
+                      color: InfernalColors.blood.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: InfernalColors.blood,
+                        width: 2,
                       ),
-                      child: Center(
-                        child: Text(
-                          '${day.day}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: InfernalColors.blood.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          spreadRadius: 1,
                         ),
-                      ),
+                      ],
                     ),
+                    events: events,
                   );
                 },
                 todayBuilder: (context, day, focusedDay) {
-                  return Center(
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: InfernalColors.arcane.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: InfernalColors.arcane.withValues(alpha: 0.8),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${day.day}',
-                          style: const TextStyle(
-                            color: InfernalColors.arcane,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
+                  final events = _getEventsForDay(day);
+                  return _buildDayCell(
+                    day: day,
+                    textColor: InfernalColors.arcane,
+                    decoration: BoxDecoration(
+                      color: InfernalColors.arcane.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: InfernalColors.arcane.withValues(alpha: 0.8),
+                        width: 1.5,
                       ),
                     ),
+                    events: events,
                   );
                 },
                 markerBuilder: (context, day, events) {
