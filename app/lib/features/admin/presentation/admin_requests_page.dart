@@ -9,6 +9,7 @@ import '../../auth/domain/auth_service.dart';
 import '../../auth/domain/auth_state.dart';
 import '../../../shared/domain/enums.dart';
 import '../../../shared/presentation/widgets/neon_plate.dart';
+import '../../../shared/util/url_helper.dart';
 
 class AdminRequestsPage extends ConsumerStatefulWidget {
   const AdminRequestsPage({super.key});
@@ -243,6 +244,28 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
     }
   }
 
+  void _resendInviteEmail({
+    required String email,
+    required String shopName,
+    required String id,
+    required String token,
+  }) {
+    final baseUri = Uri.base;
+    final claimLink = '${baseUri.scheme}://${baseUri.authority}/#/register/claim?id=$id&token=$token';
+
+    final subject = 'Infernal Ink & Steel - Sanctuary Setup Invitation: $shopName';
+    final body = 'Greetings,\n\n'
+        'Your sanctuary request for $shopName has been approved!\n\n'
+        'Please click the link below to finalize your registration and set up your database password:\n'
+        '$claimLink\n\n'
+        'If you did not request this sanctuary setup, please ignore this communication.\n\n'
+        'Regards,\n'
+        'Arch-Admin';
+
+    _copyLink(id, token);
+    openMailto(to: email, subject: subject, body: body);
+  }
+
   void _copyLink(String id, String token) {
     final baseUri = Uri.base;
     final claimLink = '${baseUri.scheme}://${baseUri.authority}/#/register/claim?id=$id&token=$token';
@@ -405,11 +428,30 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
                                   style: TextStyle(color: InfernalColors.textMuted, fontStyle: FontStyle.italic),
                                 ),
                               ),
-                              ElevatedButton.icon(
-                                onPressed: () => _copyLink(id, inviteToken),
-                                style: ElevatedButton.styleFrom(backgroundColor: InfernalColors.success),
-                                icon: const Icon(Icons.copy, size: 16),
-                                label: const Text('COPY CLAIM LINK'),
+                              Row(
+                                children: [
+                                  ElevatedButton.icon(
+                                    onPressed: () => _copyLink(id, inviteToken),
+                                    style: ElevatedButton.styleFrom(backgroundColor: InfernalColors.success),
+                                    icon: const Icon(Icons.copy, size: 16),
+                                    label: const Text('COPY LINK'),
+                                  ),
+                                  const SizedBox(width: InfernalSpacing.sm),
+                                  ElevatedButton.icon(
+                                    onPressed: () => _resendInviteEmail(
+                                      email: email,
+                                      shopName: shopName,
+                                      id: id,
+                                      token: inviteToken,
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: InfernalColors.gold,
+                                      foregroundColor: Colors.black,
+                                    ),
+                                    icon: const Icon(Icons.email, size: 16),
+                                    label: const Text('EMAIL INVITE'),
+                                  ),
+                                ],
                               ),
                             ],
                           )

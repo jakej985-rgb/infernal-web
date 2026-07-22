@@ -9,3 +9,15 @@ void handleHashRedirect() {
     html.window.location.replace(cleanHref);
   }
 }
+
+void openMailto({required String to, required String subject, required String body}) {
+  final uri = Uri(
+    scheme: 'mailto',
+    path: to,
+    queryParameters: {
+      'subject': subject,
+      'body': body,
+    },
+  );
+  html.window.open(uri.toString(), '_self');
+}
