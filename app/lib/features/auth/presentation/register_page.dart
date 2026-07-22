@@ -371,12 +371,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       TextFormField(
                         controller: _shopNameController,
-                        enabled: !_isClaimMode,
+                        enabled: true,
                         decoration: const InputDecoration(
                           labelText: 'Shop Name',
                           prefixIcon: Icon(Icons.storefront),
                         ),
                         style: const TextStyle(color: InfernalColors.textPrimary),
+                        onChanged: (value) {
+                          final slug = value
+                              .toLowerCase()
+                              .replaceAll(RegExp(r'[^a-z0-9\s-]'), '')
+                              .replaceAll(RegExp(r'\s+'), '-');
+                          _shopIdController.text = slug;
+                        },
                         validator: (value) => value == null || value.isEmpty
                             ? 'Shop name required'
                             : null,
@@ -384,7 +391,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       const SizedBox(height: InfernalSpacing.md),
                       TextFormField(
                         controller: _shopIdController,
-                        enabled: !_isClaimMode,
+                        enabled: true,
                         decoration: const InputDecoration(
                           labelText: 'Shop Code (Workspace ID)',
                           prefixIcon: Icon(Icons.link),

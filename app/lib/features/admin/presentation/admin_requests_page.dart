@@ -31,12 +31,29 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
       final requestId = _uuid.v4();
       final inviteToken = _uuid.v4();
 
+      String finalShopName = shopName.trim();
+      String finalShopId = shopId.trim();
+      String finalDisplayName = displayName.trim();
+
+      final prefix = email.split('@').first;
+      final cleanPrefix = prefix.toLowerCase().replaceAll(RegExp(r'[^a-z0-9-]'), '');
+
+      if (finalShopId.isEmpty) {
+        finalShopId = '$cleanPrefix-shop';
+      }
+      if (finalShopName.isEmpty) {
+        finalShopName = '${prefix[0].toUpperCase()}${prefix.substring(1)} Shop';
+      }
+      if (finalDisplayName.isEmpty) {
+        finalDisplayName = '${prefix[0].toUpperCase()}${prefix.substring(1)}';
+      }
+
       await client.from('requests').insert({
         'id': requestId,
         'email': email,
-        'shop_name': shopName,
-        'shop_id': shopId,
-        'display_name': displayName,
+        'shop_name': finalShopName,
+        'shop_id': finalShopId,
+        'display_name': finalDisplayName,
         'status': 'approved',
         'invite_token': inviteToken,
         'requested_at': DateTime.now().toUtc().toIso8601String(),
@@ -89,11 +106,9 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
                   controller: shopNameCtrl,
                   style: const TextStyle(color: InfernalColors.textPrimary),
                   decoration: const InputDecoration(
-                    labelText: 'Shop Name',
+                    labelText: 'Shop Name (Optional)',
                     hintText: 'e.g., Valhalla Ink',
                   ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Shop name is required' : null,
                   onChanged: (value) {
                     final slug = value
                         .toLowerCase()
@@ -107,15 +122,14 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
                   controller: shopIdCtrl,
                   style: const TextStyle(color: InfernalColors.textPrimary),
                   decoration: const InputDecoration(
-                    labelText: 'Shop ID (Slug)',
+                    labelText: 'Shop ID / Slug (Optional)',
                     hintText: 'e.g., valhalla-ink',
                   ),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Shop ID slug is required';
-                    }
-                    if (!RegExp(r'^[a-z0-9-]+$').hasMatch(value)) {
-                      return 'Only lowercase letters, numbers, and dashes allowed';
+                    if (value != null && value.trim().isNotEmpty) {
+                      if (!RegExp(r'^[a-z0-9-]+$').hasMatch(value)) {
+                        return 'Only lowercase letters, numbers, and dashes allowed';
+                      }
                     }
                     return null;
                   },
@@ -125,11 +139,9 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
                   controller: ownerNameCtrl,
                   style: const TextStyle(color: InfernalColors.textPrimary),
                   decoration: const InputDecoration(
-                    labelText: 'Owner Name',
+                    labelText: 'Owner Name (Optional)',
                     hintText: 'e.g., Jane Doe',
                   ),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Owner name is required' : null,
                 ),
                 const SizedBox(height: InfernalSpacing.md),
                 TextFormField(
