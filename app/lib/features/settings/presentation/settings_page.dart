@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/auth/domain/auth_service.dart';
 import '../../../features/auth/domain/auth_state.dart';
+import '../../../shared/domain/enums.dart';
 
 import '../../../app/router.dart';
 import '../../../app/theme/tokens.dart';
@@ -21,11 +22,10 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(shopSettingsProvider);
     final authState = ref.watch(authServiceProvider).value;
-    final userEmail = authState?.maybeWhen(
-      authenticated: (user) => user.email,
-      orElse: () => '',
-    );
-    final isSystemAdmin = userEmail == 'admin.ink.steel@gmail.com' || userEmail == 'admin@inkandsteel.xyz';
+    final isSystemAdmin = authState?.maybeWhen(
+      authenticated: (user) => user.role == UserRole.su,
+      orElse: () => false,
+    ) ?? false;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,

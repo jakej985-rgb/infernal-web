@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:uuid/uuid.dart';
 
 import '../../../app/theme/tokens.dart';
 import '../../auth/domain/auth_service.dart';
 import '../../auth/domain/auth_state.dart';
+import '../../../shared/domain/enums.dart';
 import '../../../shared/presentation/widgets/neon_plate.dart';
 
 class AdminRequestsPage extends ConsumerStatefulWidget {
@@ -17,6 +19,170 @@ class AdminRequestsPage extends ConsumerStatefulWidget {
 
 class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
   final _uuid = const Uuid();
+
+  Future<void> _sendInvite({
+    required String email,
+    required String shopName,
+    required String shopId,
+    required String displayName,
+  }) async {
+    try {
+      final client = sb.Supabase.instance.client;
+      final requestId = _uuid.v4();
+      final inviteToken = _uuid.v4();
+
+      await client.from('requests').insert({
+        'id': requestId,
+        'email': email,
+        'shop_name': shopName,
+        'shop_id': shopId,
+        'display_name': displayName,
+        'status': 'approved',
+        'invite_token': inviteToken,
+        'requested_at': DateTime.now().toUtc().toIso8601String(),
+        'approved_at': DateTime.now().toUtc().toIso8601String(),
+      });
+
+      if (mounted) {
+        _copyLink(requestId, inviteToken);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation created & claim link copied to clipboard!'),
+            backgroundColor: InfernalColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send invite: $e'),
+            backgroundColor: InfernalColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showInviteDialog() {
+    final formKey = GlobalKey<FormState>();
+    final shopNameCtrl = TextEditingController();
+    final shopIdCtrl = TextEditingController();
+    final ownerNameCtrl = TextEditingController();
+    final ownerEmailCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: InfernalColors.surface,
+        title: const Text(
+          'SEND NEW INVITATION',
+          style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold),
+        ),
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: shopNameCtrl,
+                  style: const TextStyle(color: InfernalColors.textPrimary),
+                  decoration: const InputDecoration(
+                    labelText: 'Shop Name',
+                    hintText: 'e.g., Valhalla Ink',
+                  ),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Shop name is required' : null,
+                  onChanged: (value) {
+                    final slug = value
+                        .toLowerCase()
+                        .replaceAll(RegExp(r'[^a-z0-9\s-]'), '')
+                        .replaceAll(RegExp(r'\s+'), '-');
+                    shopIdCtrl.text = slug;
+                  },
+                ),
+                const SizedBox(height: InfernalSpacing.md),
+                TextFormField(
+                  controller: shopIdCtrl,
+                  style: const TextStyle(color: InfernalColors.textPrimary),
+                  decoration: const InputDecoration(
+                    labelText: 'Shop ID (Slug)',
+                    hintText: 'e.g., valhalla-ink',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Shop ID slug is required';
+                    }
+                    if (!RegExp(r'^[a-z0-9-]+$').hasMatch(value)) {
+                      return 'Only lowercase letters, numbers, and dashes allowed';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: InfernalSpacing.md),
+                TextFormField(
+                  controller: ownerNameCtrl,
+                  style: const TextStyle(color: InfernalColors.textPrimary),
+                  decoration: const InputDecoration(
+                    labelText: 'Owner Name',
+                    hintText: 'e.g., Jane Doe',
+                  ),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Owner name is required' : null,
+                ),
+                const SizedBox(height: InfernalSpacing.md),
+                TextFormField(
+                  controller: ownerEmailCtrl,
+                  style: const TextStyle(color: InfernalColors.textPrimary),
+                  decoration: const InputDecoration(
+                    labelText: 'Owner Email',
+                    hintText: 'e.g., owner@valhallaink.com',
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Owner email is required';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Enter a valid email address';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: InfernalColors.textMuted),
+            child: const Text('CANCEL'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                final shopName = shopNameCtrl.text.trim();
+                final shopId = shopIdCtrl.text.trim();
+                final ownerName = ownerNameCtrl.text.trim();
+                final ownerEmail = ownerEmailCtrl.text.trim();
+                
+                Navigator.pop(ctx);
+                _sendInvite(
+                  email: ownerEmail,
+                  shopName: shopName,
+                  shopId: shopId,
+                  displayName: ownerName,
+                );
+              }
+            },
+            child: const Text('SEND & COPY LINK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _approve(String requestId) async {
     final inviteToken = _uuid.v4();
@@ -81,17 +247,17 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authServiceProvider).value;
-    final userEmail = authState?.maybeWhen(
-      authenticated: (user) => user.email,
-      orElse: () => '',
-    );
+    final isSu = authState?.maybeWhen(
+      authenticated: (user) => user.role == UserRole.su,
+      orElse: () => false,
+    ) ?? false;
 
-    if (userEmail != 'admin.ink.steel@gmail.com' && userEmail != 'admin@inkandsteel.xyz') {
+    if (!isSu) {
       return const Scaffold(
         backgroundColor: InfernalColors.background,
         body: Center(
           child: Text(
-            'ACCESS DENIED: SYSTEM ADMIN ONLY',
+            'ACCESS DENIED: SUPER ADMIN ONLY',
             style: TextStyle(color: InfernalColors.error, letterSpacing: 2),
           ),
         ),
@@ -105,6 +271,13 @@ class _AdminRequestsPageState extends ConsumerState<AdminRequestsPage> {
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
         centerTitle: true,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: InfernalColors.blood,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.send),
+        label: const Text('SEND INVITE'),
+        onPressed: _showInviteDialog,
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: ref.watch(authServiceProvider.notifier).watchRequests(),

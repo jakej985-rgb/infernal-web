@@ -36,6 +36,9 @@ enum ClientStatus {
 /// User role for authorization
 /// Maps to legacy UserRole enum
 enum UserRole {
+  /// Super user / Platform administrator
+  su,
+
   /// Full access admin
   admin,
 

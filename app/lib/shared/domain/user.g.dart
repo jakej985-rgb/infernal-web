@@ -60,4 +60,8 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'permissionsJson': instance.permissionsJson,
 };
 
-const _$UserRoleEnumMap = {UserRole.admin: 'admin', UserRole.artist: 'artist'};
+const _$UserRoleEnumMap = {
+  UserRole.su: 'su',
+  UserRole.admin: 'admin',
+  UserRole.artist: 'artist',
+};
