@@ -21,6 +21,12 @@ class StatsOverviewPage extends ConsumerWidget {
         title: Text(UiLabels.get('stats_title', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
+        leading: MediaQuery.sizeOf(context).width < 800
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              )
+            : null,
       ),
       body: statsAsync.when(
         data: (stats) => _buildBody(context, stats),

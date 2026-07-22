@@ -35,6 +35,12 @@ class DashboardPage extends ConsumerWidget {
             floating: false,
             pinned: true,
             backgroundColor: InfernalColors.background,
+            leading: width < 800
+                ? IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  )
+                : null,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: Text(

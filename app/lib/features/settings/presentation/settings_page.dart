@@ -40,6 +40,12 @@ class SettingsPage extends ConsumerWidget {
         centerTitle: true,
         backgroundColor: InfernalColors.surface,
         elevation: 0,
+        leading: MediaQuery.sizeOf(context).width < 800
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              )
+            : null,
       ),
       body: _buildSettingsList(context, ref, settings, isSystemAdmin),
     );

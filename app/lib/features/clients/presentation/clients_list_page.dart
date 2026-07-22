@@ -23,6 +23,12 @@ class ClientsListPage extends ConsumerWidget {
         title: Text(UiLabels.get('contacts', useInfernal, customLabels)),
         backgroundColor: InfernalColors.surface,
         foregroundColor: InfernalColors.textPrimary,
+        leading: MediaQuery.sizeOf(context).width < 800
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              )
+            : null,
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: InfernalColors.blood,

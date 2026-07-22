@@ -86,24 +86,127 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width >= 800;
+    final currentPath = GoRouterState.of(context).matchedLocation;
 
     return Scaffold(
+      drawer: isWide ? null : _AppDrawer(currentPath: currentPath),
       body: isWide
           ? Row(
               children: [
                 _NavigationRail(
-                  currentPath: GoRouterState.of(context).matchedLocation,
+                  currentPath: currentPath,
                 ),
                 const VerticalDivider(width: 1),
                 Expanded(child: child),
               ],
             )
           : child,
-      bottomNavigationBar: isWide
-          ? null
-          : _BottomNavBar(
-              currentPath: GoRouterState.of(context).matchedLocation,
+    );
+  }
+}
+
+class _AppDrawer extends ConsumerWidget {
+  const _AppDrawer({required this.currentPath});
+
+  final String currentPath;
+
+  int _selectedIndex() {
+    for (int i = 0; i < navItems.length; i++) {
+      final route = navItems[i].route;
+      if (currentPath == route || currentPath.startsWith('$route/')) {
+        return i;
+      }
+    }
+    if (currentPath.startsWith(AppRoutes.inventory) ||
+        currentPath.startsWith(AppRoutes.communications)) {
+      return 6;
+    }
+    return 0;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final useInfernal = ref.watch(labelModeProvider);
+    final customLabels = ref.watch(orgLabelsProvider).value;
+    final appTitle = UiLabels.get('app_title', useInfernal, customLabels);
+    final selectedIdx = _selectedIndex();
+
+    return Drawer(
+      backgroundColor: InfernalColors.background,
+      child: Column(
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: InfernalColors.surface,
+              border: Border(
+                bottom: BorderSide(color: InfernalColors.border, width: 1),
+              ),
             ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: InfernalColors.blood.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(InfernalRadius.md),
+                    border: Border.all(color: InfernalColors.blood, width: 2),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: InfernalSpacing.md),
+                Expanded(
+                  child: Text(
+                    appTitle,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: InfernalColors.blood,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2.0,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: InfernalSpacing.sm),
+              itemCount: navItems.length,
+              itemBuilder: (context, index) {
+                final item = navItems[index];
+                final isSelected = index == selectedIdx;
+                return ListTile(
+                  leading: Icon(
+                    isSelected ? item.selectedIcon : item.icon,
+                    color: isSelected ? InfernalColors.blood : InfernalColors.textSecondary,
+                  ),
+                  title: Text(
+                    UiLabels.get(item.id, useInfernal, customLabels),
+                    style: TextStyle(
+                      color: isSelected ? InfernalColors.blood : InfernalColors.textPrimary,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  selected: isSelected,
+                  selectedTileColor: InfernalColors.blood.withValues(alpha: 0.1),
+                  onTap: () {
+                    // Close the drawer first
+                    Navigator.pop(context);
+                    // Navigate to destination
+                    context.go(item.route);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -203,45 +306,3 @@ class _NavigationRail extends ConsumerWidget {
   }
 }
 
-class _BottomNavBar extends ConsumerWidget {
-  const _BottomNavBar({required this.currentPath});
-
-  final String currentPath;
-
-  int _selectedIndex() {
-    for (int i = 0; i < navItems.length; i++) {
-      final route = navItems[i].route;
-      if (currentPath == route || currentPath.startsWith('$route/')) {
-        return i;
-      }
-    }
-    if (currentPath.startsWith(AppRoutes.inventory) ||
-        currentPath.startsWith(AppRoutes.communications)) {
-      return 6;
-    }
-    return 0;
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final useInfernal = ref.watch(labelModeProvider);
-    final customLabels = ref.watch(orgLabelsProvider).value;
-
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex(),
-      onTap: (index) => _navigate(context, index),
-      type: BottomNavigationBarType.fixed,
-      items: navItems.map((item) {
-        return BottomNavigationBarItem(
-          icon: Icon(item.icon),
-          activeIcon: Icon(item.selectedIcon),
-          label: UiLabels.get(item.id, useInfernal, customLabels),
-        );
-      }).toList(),
-    );
-  }
-
-  void _navigate(BuildContext context, int index) {
-    context.go(navItems[index].route);
-  }
-}

@@ -23,6 +23,12 @@ class ToolsHubPage extends ConsumerWidget {
         foregroundColor: InfernalColors.textPrimary,
         centerTitle: true,
         elevation: 0,
+        leading: MediaQuery.sizeOf(context).width < 800
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              )
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(InfernalSpacing.lg),
