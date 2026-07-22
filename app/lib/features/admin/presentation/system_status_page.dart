@@ -2,9 +2,10 @@ import 'package:infernal_ink_steel/shared/data/org_labels_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../app/theme/tokens.dart';
 import '../../../shared/data/infernal_labels_provider.dart';
-import '../../../shared/util/app_version_helper.dart';
+import '../../../shared/presentation/widgets/neon_plate.dart';
 
 class AuditLog {
   final String action;
@@ -20,11 +21,54 @@ class AuditLog {
   });
 }
 
-class SystemStatusPage extends ConsumerWidget {
+class SystemStatusPage extends ConsumerStatefulWidget {
   const SystemStatusPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SystemStatusPage> createState() => _SystemStatusPageState();
+}
+
+class _SystemStatusPageState extends ConsumerState<SystemStatusPage> {
+  bool _isDbOnline = false;
+  bool _isChecking = true;
+  String _supabaseUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  Future<void> _checkStatus() async {
+    setState(() {
+      _isChecking = true;
+    });
+
+    try {
+      final client = Supabase.instance.client;
+      _supabaseUrl = 'https://nmrnbwnyivxktbjukspu.supabase.co';
+      
+      // Ping database via lightweight select against public table
+      await client.from('organizations').select('id').limit(1);
+      if (mounted) {
+        setState(() {
+          _isDbOnline = true;
+          _isChecking = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Supabase connection check failed: $e');
+      if (mounted) {
+        setState(() {
+          _isDbOnline = false;
+          _isChecking = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final logsAsync = ref.watch(
       StreamProvider((ref) => Stream.value(<AuditLog>[])),
     );
@@ -41,7 +85,7 @@ class SystemStatusPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(InfernalSpacing.lg),
         children: [
-          _buildSystemInfo(context, ref),
+          _buildSystemInfo(context),
           const SizedBox(height: InfernalSpacing.xl),
           Text(
             UiLabels.get('recent_logs', useInfernal, customLabels).toUpperCase(),
@@ -65,33 +109,79 @@ class SystemStatusPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSystemInfo(BuildContext context, WidgetRef ref) {
-    return Container(
+  Widget _buildSystemInfo(BuildContext context) {
+    return NeonPlate(
+      color: _isDbOnline ? InfernalColors.success : InfernalColors.error,
       padding: const EdgeInsets.all(InfernalSpacing.lg),
-      decoration: BoxDecoration(
-        color: InfernalColors.surface,
-        borderRadius: BorderRadius.circular(InfernalRadius.md),
-        border: Border.all(color: InfernalColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'SANCTUARY STANDING',
-            style: TextStyle(
-              color: InfernalColors.gold,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'SANCTUARY MONITORING',
+                style: TextStyle(
+                  color: InfernalColors.gold,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              if (_isChecking)
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: InfernalColors.arcane,
+                  ),
+                )
+              else
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _isDbOnline ? Colors.green : Colors.red,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_isDbOnline ? Colors.green : Colors.red).withValues(alpha: 0.8),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _isDbOnline ? 'DB ONLINE' : 'DB OFFLINE',
+                      style: TextStyle(
+                        color: _isDbOnline ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
           ),
           const SizedBox(height: InfernalSpacing.md),
-          _InfoRow(label: 'Database Version', value: 'PostgreSQL (Cloud SQL)'),
-          _InfoRow(label: 'Spirit Sync', value: 'Online (Central Go API)'),
-          _InfoRow(label: 'Security Level', value: 'Inquisition Standard'),
+          const Divider(color: InfernalColors.divider),
+          const SizedBox(height: InfernalSpacing.sm),
+          const _InfoRow(label: 'Database Engine', value: 'PostgreSQL (Supabase DB)'),
           _InfoRow(
-            label: 'Persistence Path',
-            value: 'https://api.inkandsteel.xyz',
+            label: 'Connection Status',
+            value: _isChecking ? 'Checking...' : (_isDbOnline ? 'Connected' : 'Offline / Failed'),
           ),
+          _InfoRow(
+            label: 'Supabase Endpoint',
+            value: _supabaseUrl.isNotEmpty ? _supabaseUrl : 'Initializing...',
+          ),
+          const _InfoRow(label: 'Platform Version', value: 'v1.0.3 (Flutter Web)'),
+          const _InfoRow(label: 'Spirit Sync Mode', value: 'Offline-First + Cloud Hybrid'),
           const SizedBox(height: InfernalSpacing.lg),
           Center(
             child: SizedBox(
@@ -101,11 +191,9 @@ class SystemStatusPage extends ConsumerWidget {
                   backgroundColor: InfernalColors.blood,
                   foregroundColor: InfernalColors.textPrimary,
                 ),
-                onPressed: () async {
-                  await resetApp();
-                },
+                onPressed: _checkStatus,
                 icon: const Icon(Icons.refresh),
-                label: const Text('HARD RESET APP'),
+                label: const Text('RE-VERIFY CONNECTION'),
               ),
             ),
           ),
