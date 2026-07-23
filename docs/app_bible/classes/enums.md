@@ -30,17 +30,19 @@ Categorizes a customer's active lifecycle phase and standing in the studio ledge
 
 ### Purpose — UserRole
 
-Defines system access boundaries and role-based permissions for studio staff members.
+Defines system access boundaries and role-based permissions for studio staff members, distinguishing between local studio operators and platform-wide super administrators.
 
 ### Values — UserRole
 
-* `artist`: Professional tattoo artist or body piercer. Permissions are limited to scheduling their own calendar bookings, checking their personal quotes, managing active stencils, and viewing their performance metrics.
-* `admin`: Studio administrator or owner. Grants full, unrestricted permissions to edit global configurations, modify operating hours, manage the entire roster of artists, overwrite inventory items, view financial reports, and inspect the system audit logs.
+* `su`: Super User / Platform Administrator. Grants platform-wide capabilities bypassable of organization boundaries, including managing tenant shop requests, issuing invitations, and reviewing multi-tenant system logs.
+* `admin`: Studio administrator or owner. Grants full, unrestricted permissions to edit global configurations, modify operating hours, manage the entire roster of artists, overwrite inventory items, view financial reports, and inspect the system audit logs within their specific organization.
+* `artist`: Professional tattoo artist or body piercer. Permissions are limited to scheduling their own calendar bookings, checking their personal quotes, managing active stencils, and viewing their performance metrics within their organization.
 
 ### Methods — UserRole
 
 #### Queries — UserRole
 
+* `bool get isSu`: Syntactic query shortcut returning `true` if role is `su`.
 * `bool get isAdmin`: Syntactic query shortcut returning `true` if role is `admin`.
 * `bool get isArtist`: Syntactic query shortcut returning `true` if role is `artist`.
 

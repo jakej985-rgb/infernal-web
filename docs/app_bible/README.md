@@ -62,20 +62,20 @@ End-to-end user workflows, detailing rules, classes, and edge cases:
 
 ### [4. Screens](./screens/)
 
-UI/UX screen-by-screen specifications including empty states, inputs/outputs, and widget mappings:
+UI/UX screen-by-screen specifications including empty states, inputs/outputs, and widget mappings, with one dedicated document matching each Dart presentation file:
 
-* [Dashboard Screen](./screens/dashboard_screen.md)
-* [Login Screen](./screens/login_screen.md)
-* [Client Directory & Forms](./screens/client_screens.md)
-* [Calendar & Booking Forms](./screens/appointment_screens.md)
-* [Quote Vault & Calculator](./screens/quote_screens.md)
-* [Document Vault & Forms](./screens/document_screens.md)
-* [Inventory Hub & Forms](./screens/inventory_screens.md)
-* [Communications Hub](./screens/communications_screen.md)
-* [Settings & Integrations Screens](./screens/settings_screens.md)
-* [Statistics Overview](./screens/stats_screens.md)
-* [Tools Hub (Pain Estimator / Flash Roulette)](./screens/tools_screens.md)
-* [User Management & System Status Screens](./screens/admin_screens.md)
+* **Authentication**: [Login Page](./screens/login_page.md) • [Register Page / Claim Setup](./screens/register_page.md)
+* **Dashboard**: [Dashboard Page](./screens/dashboard_page.md)
+* **Appointments / Calendar**: [Appointments List Page](./screens/appointments_list_page.md) • [Appointment Form Page](./screens/appointment_form_page.md) • [Appointment Details Page](./screens/appointment_details_page.md)
+* **Clients**: [Clients List Page](./screens/clients_list_page.md) • [Client Form Page](./screens/client_form_page.md) • [Client Details Page](./screens/client_details_page.md)
+* **Quotes**: [Quotes List Page](./screens/quotes_list_page.md) • [Quote Form Page](./screens/quote_form_page.md) • [Quote Details Page](./screens/quote_details_page.md)
+* **Documents**: [Documents List Page](./screens/documents_list_page.md) • [Document Form Page](./screens/document_form_page.md) • [Document Details Page](./screens/document_details_page.md)
+* **Settings**: [Settings Page](./screens/settings_page.md) • [Integrations Page](./screens/integrations_page.md)
+* **Statistics**: [Stats Overview Page](./screens/stats_overview_page.md)
+* **Tools**: [Tools Hub Page](./screens/tools_hub_page.md) • [Pain Estimator Page](./screens/pain_estimator_page.md) • [Flash Roulette Page](./screens/flash_roulette_page.md)
+* **Inventory**: [Inventory Hub Page](./screens/inventory_hub_page.md) • [Inventory Form Page](./screens/inventory_form_page.md)
+* **Communications**: [Communications Hub Page](./screens/communications_hub_page.md)
+* **Administration**: [User List Page](./screens/user_list_page.md) • [User Form Page](./screens/user_form_page.md) • [System Status Page](./screens/system_status_page.md) • [Admin Requests Page](./screens/admin_requests_page.md)
 
 ### [5. Architecture](./architecture/architecture.md)
 

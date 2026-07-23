@@ -2,13 +2,14 @@
 
 ## Purpose
 
-Represents an authenticated staff member of the studio, who may operate under the role of either **Admin** or **Artist**. A User handles studio setup, executes scheduling rituals, builds estimates, and configures their own UI preferences.
+Represents an authenticated staff member of the studio, who may operate under the role of **Super User (su)**, **Admin**, or **Artist**. A User handles studio setup, executes scheduling rituals, builds estimates, and configures their own UI preferences.
 
 ## Responsibilities
 
 * Store authentication credentials securely (local BCrypt hashing).
 * Manage individual artist details (hourly pricing rates, speed factors, commission tiers).
 * Persist user-specific application choices (theming selections, custom fonts, keyboard shortcut mappings, permission nodes).
+* Enforce access control partitions, restricting global platform management (multi-tenant shop setup and approval) to Super Users only.
 
 ## Properties
 
@@ -18,7 +19,7 @@ Represents an authenticated staff member of the studio, who may operate under th
 * `displayName` (`String`): Friendly display name for screens and timelines.
 * `orgId` (`String`): Identifier for separating multiple clinics/shops in multi-tenant installations.
 * `passwordHash` (`String`): Hashed password text generated via BCrypt algorithm.
-* `role` (`UserRole`): System authority tier (`admin` or `artist`).
+* `role` (`UserRole`): System authority tier (`su`, `admin`, or `artist`).
 * `themeKey` (`String`): Key of the active user-selected color palette.
 * `avatarPath` (`String`): File storage path to the user's profile image.
 * `hourlyRate` (`double`): Base pricing rate charged per hour of tattooing (defaults to $150.0).
@@ -43,6 +44,7 @@ Represents an authenticated staff member of the studio, who may operate under th
 
 ### Queries
 
+* `isSu` (`bool`): Returns `true` if the user's role is `UserRole.su`.
 * `isAdmin` (`bool`): Returns `true` if the user's role is `UserRole.admin`.
 * `effectiveDisplayName` (`String`): Returns the user's customized `displayName` if set, otherwise falls back to their unique `username`.
 * `toJson()` (`Map<String, dynamic>`): Serializes the user record into JSON format.
