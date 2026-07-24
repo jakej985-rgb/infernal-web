@@ -22,20 +22,16 @@ class DashboardPage extends ConsumerWidget {
     final useInfernal = ref.watch(labelModeProvider);
     final customLabels = ref.watch(orgLabelsProvider).value;
     final width = MediaQuery.of(context).size.width;
-    // Cap layout width at 1200px to prevent extremely oversized grid elements on full screen web
-    final layoutWidth = width > 1200 ? 1200.0 : width;
-    final statsCrossAxisCount = layoutWidth < 600 ? 2 : (layoutWidth < 1000 ? 3 : 4);
-    final statsAspectRatio = layoutWidth < 600 ? 1.2 : (layoutWidth < 1000 ? 1.4 : 1.5);
-    final actionsCrossAxisCount = layoutWidth < 500 ? 2 : (layoutWidth < 800 ? 3 : (layoutWidth < 1000 ? 4 : 5));
-    final actionsAspectRatio = layoutWidth < 500 ? 1.4 : (layoutWidth < 800 ? 1.6 : 1.8);
+    // Calculate highly responsive grid metrics to use the full screen width while keeping elements perfectly sized
+    final statsCrossAxisCount = width < 600 ? 2 : (width < 1000 ? 3 : 4);
+    final statsAspectRatio = width < 600 ? 1.3 : (width < 1000 ? 1.6 : (width < 1400 ? 2.0 : 2.5));
+    final actionsCrossAxisCount = (width / 220).round().clamp(2, 10);
+    final actionsAspectRatio = width < 600 ? 1.4 : 1.6;
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: CustomScrollView(
-            slivers: [
+      body: CustomScrollView(
+        slivers: [
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
@@ -321,8 +317,6 @@ class DashboardPage extends ConsumerWidget {
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
-    ),
-    ),
     );
   }
 }
