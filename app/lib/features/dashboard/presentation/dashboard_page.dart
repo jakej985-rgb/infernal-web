@@ -22,14 +22,20 @@ class DashboardPage extends ConsumerWidget {
     final useInfernal = ref.watch(labelModeProvider);
     final customLabels = ref.watch(orgLabelsProvider).value;
     final width = MediaQuery.of(context).size.width;
-    final statsCrossAxisCount = width < 600 ? 2 : (width < 1000 ? 3 : 4);
-    final actionsCrossAxisCount = width < 500 ? 2 : (width < 800 ? 3 : 4);
-    final actionsAspectRatio = width < 500 ? 1.4 : 1.6;
+    // Cap layout width at 1200px to prevent extremely oversized grid elements on full screen web
+    final layoutWidth = width > 1200 ? 1200.0 : width;
+    final statsCrossAxisCount = layoutWidth < 600 ? 2 : (layoutWidth < 1000 ? 3 : 4);
+    final statsAspectRatio = layoutWidth < 600 ? 1.2 : (layoutWidth < 1000 ? 1.4 : 1.5);
+    final actionsCrossAxisCount = layoutWidth < 500 ? 2 : (layoutWidth < 800 ? 3 : (layoutWidth < 1000 ? 4 : 5));
+    final actionsAspectRatio = layoutWidth < 500 ? 1.4 : (layoutWidth < 800 ? 1.6 : 1.8);
 
     return Scaffold(
       backgroundColor: InfernalColors.background,
-      body: CustomScrollView(
-        slivers: [
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: CustomScrollView(
+            slivers: [
           SliverAppBar(
             expandedHeight: 120,
             floating: false,
@@ -79,7 +85,7 @@ class DashboardPage extends ConsumerWidget {
                 crossAxisCount: statsCrossAxisCount,
                 crossAxisSpacing: InfernalSpacing.md,
                 mainAxisSpacing: InfernalSpacing.md,
-                childAspectRatio: 1.2,
+                childAspectRatio: statsAspectRatio,
                 children: [
                   MetricCard(
                     label: UiLabels.get('todays_appointments', useInfernal, customLabels),
@@ -315,6 +321,8 @@ class DashboardPage extends ConsumerWidget {
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
+    ),
+    ),
     );
   }
 }
