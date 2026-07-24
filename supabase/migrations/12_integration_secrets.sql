@@ -29,7 +29,7 @@ RETURNS TRIGGER LANGUAGE plpgsql
 SECURITY DEFINER AS $$
 BEGIN
   PERFORM net.http_post(
-    url := 'https://nmrnbwnyivxktbjukspu.supabase.co/functions/v1/send-email',
+    url := 'https://nmrnbwnyivxktbjukspu.supabase.co/functions/v1/send-email'::text,
     headers := '{"Content-Type": "application/json"}'::jsonb,
     body := jsonb_build_object(
       'type', TG_OP,
@@ -56,7 +56,7 @@ RETURNS TRIGGER LANGUAGE plpgsql
 SECURITY DEFINER AS $$
 BEGIN
   PERFORM net.http_post(
-    url := 'https://nmrnbwnyivxktbjukspu.supabase.co/functions/v1/sync-appointment',
+    url := 'https://nmrnbwnyivxktbjukspu.supabase.co/functions/v1/sync-appointment'::text,
     headers := '{"Content-Type": "application/json"}'::jsonb,
     body := jsonb_build_object(
       'type', TG_OP,
@@ -83,7 +83,7 @@ RETURNS TRIGGER LANGUAGE plpgsql
 SECURITY DEFINER AS $$
 BEGIN
   PERFORM net.http_post(
-    url := 'https://nmrnbwnyivxktbjukspu.supabase.co/functions/v1/sync-contact',
+    url := 'https://nmrnbwnyivxktbjukspu.supabase.co/functions/v1/sync-contact'::text,
     headers := '{"Content-Type": "application/json"}'::jsonb,
     body := jsonb_build_object(
       'type', TG_OP,
