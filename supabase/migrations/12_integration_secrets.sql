@@ -36,8 +36,7 @@ BEGIN
       'table', TG_TABLE_NAME,
       'schema', TG_TABLE_SCHEMA,
       'record', to_jsonb(NEW)
-    ),
-    timeout_ms := 10000
+    )
   );
   RETURN NEW;
 END;
@@ -64,8 +63,7 @@ BEGIN
       'schema', TG_TABLE_SCHEMA,
       'record', CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END,
       'old_record', CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END
-    ),
-    timeout_ms := 10000
+    )
   );
   RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
 END;
@@ -91,8 +89,7 @@ BEGIN
       'schema', TG_TABLE_SCHEMA,
       'record', CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END,
       'old_record', CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END
-    ),
-    timeout_ms := 10000
+    )
   );
   RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
 END;
