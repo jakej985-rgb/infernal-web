@@ -88,18 +88,24 @@ class DashboardPage extends ConsumerWidget {
                     value: stats.todayRituals.toString(),
                     icon: Icons.auto_awesome,
                     color: InfernalColors.blood,
+                    onTap: () => context.go(AppRoutes.appointments),
+                    onActionTap: () => context.go('${AppRoutes.appointments}/new'),
                   ),
                   MetricCard(
                     label: UiLabels.get('active_clients', useInfernal, customLabels),
                     value: stats.boundSouls.toString(),
                     icon: Icons.people_outline,
                     color: InfernalColors.arcane,
+                    onTap: () => context.go(AppRoutes.clients),
+                    onActionTap: () => context.go('${AppRoutes.clients}/new'),
                   ),
                   MetricCard(
                     label: UiLabels.get('open_quotes', useInfernal, customLabels),
                     value: stats.openScrolls.toString(),
                     icon: Icons.history_edu,
                     color: InfernalColors.gold,
+                    onTap: () => context.go(AppRoutes.quotes),
+                    onActionTap: () => context.go('${AppRoutes.quotes}/new'),
                   ),
                   MetricCard(
                     label: UiLabels.get('pending_actions', useInfernal, customLabels),
@@ -251,24 +257,6 @@ class DashboardPage extends ConsumerWidget {
               crossAxisSpacing: InfernalSpacing.md,
               childAspectRatio: actionsAspectRatio,
               children: [
-                _QuickActionBtn(
-                  icon: Icons.calendar_month,
-                  label: UiLabels.get('action_new_ritual', useInfernal, customLabels),
-                  color: InfernalColors.blood,
-                  onTap: () => context.go('${AppRoutes.appointments}/new'),
-                ),
-                _QuickActionBtn(
-                  icon: Icons.person_add,
-                  label: UiLabels.get('action_new_soul', useInfernal, customLabels),
-                  color: InfernalColors.arcane,
-                  onTap: () => context.go('${AppRoutes.clients}/new'),
-                ),
-                _QuickActionBtn(
-                  icon: Icons.calculate,
-                  label: UiLabels.get('action_new_quote', useInfernal, customLabels),
-                  color: InfernalColors.gold,
-                  onTap: () => context.go('${AppRoutes.quotes}/new'),
-                ),
                 _QuickActionBtn(
                   icon: Icons.inventory_2_outlined,
                   label: UiLabels.get('action_supplies', useInfernal, customLabels),

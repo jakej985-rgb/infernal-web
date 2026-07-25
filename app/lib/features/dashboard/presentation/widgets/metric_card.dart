@@ -8,6 +8,8 @@ class MetricCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
+  final VoidCallback? onActionTap;
+  final IconData? actionIcon;
 
   const MetricCard({
     super.key,
@@ -16,6 +18,8 @@ class MetricCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.onTap,
+    this.onActionTap,
+    this.actionIcon,
   });
 
   @override
@@ -24,25 +28,57 @@ class MetricCard extends StatelessWidget {
       color: color,
       onTap: onTap,
       padding: const EdgeInsets.all(InfernalSpacing.md),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Icon(icon, color: color, size: InfernalIconSize.lg),
-          const SizedBox(height: InfernalSpacing.sm),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: InfernalColors.textPrimary,
-              fontWeight: FontWeight.bold,
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: InfernalIconSize.lg),
+                const SizedBox(height: InfernalSpacing.sm),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: InfernalColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: InfernalColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: InfernalColors.textSecondary,
+          if (onActionTap != null)
+            Positioned(
+              right: -4,
+              bottom: -4,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onActionTap,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: color, width: 1.5),
+                    ),
+                    child: Icon(
+                      actionIcon ?? Icons.add,
+                      color: color,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
