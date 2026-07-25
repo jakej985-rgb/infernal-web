@@ -100,3 +100,39 @@ CREATE TRIGGER on_client_changes_trigger
 AFTER INSERT OR UPDATE OR DELETE ON public.clients
 FOR EACH ROW
 EXECUTE FUNCTION public.on_client_changes();
+
+-- Enable RLS and set policies for requests to allow public/anon insert, select, and update
+ALTER TABLE public.requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public access to requests" ON public.requests;
+CREATE POLICY "Allow public access to requests" 
+ON public.requests 
+TO public 
+USING (true) 
+WITH CHECK (true);
+
+-- Enable RLS and set policies for organizations
+ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public access to organizations" ON public.organizations;
+CREATE POLICY "Allow public access to organizations" 
+ON public.organizations 
+TO public 
+USING (true) 
+WITH CHECK (true);
+
+-- Enable RLS and set policies for settings
+ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public access to settings" ON public.settings;
+CREATE POLICY "Allow public access to settings" 
+ON public.settings 
+TO public 
+USING (true) 
+WITH CHECK (true);
+
+-- Enable RLS and set policies for users
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public access to users" ON public.users;
+CREATE POLICY "Allow public access to users" 
+ON public.users 
+TO public 
+USING (true) 
+WITH CHECK (true);
